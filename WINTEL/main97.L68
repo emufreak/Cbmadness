@@ -1,0 +1,1639 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 03.05.2019 13:04:49
+
+00000000  =00000000                  1  DEBUG equ 0
+Line 2 ERROR: Invalid opcode
+00000000                             2  SOUND    = 0
+Line 3 ERROR: Invalid opcode
+00000000                             3  BLITTER  = 0
+Line 4 ERROR: Invalid opcode
+00000000                             4  BPLWIDTH  = 40
+Line 5 ERROR: Invalid opcode
+00000000                             5  BPLHEIGHT = 256
+Line 6 ERROR: Invalid opcode
+00000000                             6  BPLCOUNT  = 8  
+Line 7 ERROR: Invalid opcode
+00000000                             7  MAXDEPTH = 8
+Line 8 ERROR: Invalid opcode
+00000000                             8  CHKBLLINE = 0 ;Extra bit in map for empty line for fast processing
+Line 9 ERROR: Invalid opcode
+00000000                             9  USEMAPHEIGHT = 1
+Line 10 ERROR: Invalid syntax
+00000000                            10  AGA=1
+00000000                            11  
+00000000                            12             include      "sources:p61settings.i"
+Line 13 ERROR: Unable to access specified file
+00000000                            13             include      "sources:p61settings.i"
+00000000                 TRUE       14       ifeq DEBUG-0
+00000000                            15         include  "sources:startup1.s"
+Line 16 ERROR: Unable to access specified file
+00000000                            16         include  "sources:startup1.s"
+00000000                            17       else
+Line 18 ERROR: Invalid syntax
+00000000                            18       else
+00000000  4EF9 00000006             19             jmp          StartProg        
+00000006                            20       endc 
+00000006                            21             include      "sources:utils.s"
+Line 22 ERROR: Unable to access specified file
+00000006                            22             include      "sources:utils.s"
+00000006                            23  *****************************************************************************u
+00000006                            24  
+00000006                            25          ;5432109876543210
+Line 26 ERROR: Invalid opcode
+00000006                            26  DMASET  =   %1001001111100000   ; copper,bitplane,blitter DMA
+00000006                            27  
+00000006                            28  
+00000006                            29  STARTPROG:
+00000006  4DF9 00DFF000             30      lea    $dff000, a6                  ;a6 shall point to graphics register
+0000000C                            31   
+0000000C                 TRUE       32      ifeq DEBUG-0
+Line 33 ERROR: Undefined symbol
+0000000C  3D7C BD16 0096            33      move.w  #DMASET,$96(a6)     ; DMACON - abilita bitplane, copper
+00000012                            34      ;move.l     view_copper,$80(a6)
+00000012                            35  
+00000012                 TRUE       36      ifeq SOUND-1
+00000012  3F2E 001C                 37      move.w  $1c(a6),-(sp)       ;Old IRQ
+00000016  3D7C 7FFF 009A            38      move.w  #$7fff,$9a(a6)      ;Disable IRQs
+0000001C  3D7C E000 009A            39      move.w  #$e000,$9a(a6)      ;Master and lev6
+00000022                            40      endc                ;NO COPPER-IRQ!
+00000022                            41      
+00000022                            42      ;move.w d0,$88(a6)      ; restart copperlist
+00000022                 TRUE       43      IFEQ AGA-1
+00000022  3D7C 0003 01FC            44      move.w  #$3,$1fc(a6)
+00000028  3D7C 0C00 0106            45      move.w  #$c00,$106(a6)
+0000002E  3D7C 0011 010C            46      move.w  #$11,$10c(a6)
+00000034                            47      ELSE
+Line 48 ERROR: Invalid syntax
+00000034                            48      ELSE
+00000034  3D7C 0000 01FC            49      move.w  #$0,$1fc(a6)        ; 64bit Fetchmode for bpl and spr
+0000003A  3D7C 0C00 0106            50      move.w  #$c00,$106(a6)      ; disactivate AGA
+00000040  3D7C 0011 010C            51      move.w  #$11,$10c(a6)       ; disactivate AGA           
+00000046                            52      ENDC
+00000046                            53      ENDC    
+00000046                            54  
+00000046  6100 00C2                 55      bsr.w   InitScreenBuffers   
+Line 56 ERROR: Undefined symbol
+0000004A  6100 BCCA                 56      bsr.w       SetCopperList   
+Line 57 ERROR: Undefined symbol
+0000004E  6100 BCC6                 57      bsr.w   SetBitplanePointers
+00000052                            58                  
+Line 59 ERROR: Symbol value differs between first and second pass
+00000052                            59  MainLoop:
+00000052  223C 0001FF00             60      move.l #$1ff00,d1                       ; bits that contain vpos
+00000058  243C 00013000             61      move.l #$13000,d2                       ; line to wait for = $130
+Line 62 ERROR: Symbol value differs between first and second pass
+0000005E                            62  .mlwaity:
+0000005E  202E 0004                 63      move.l 4(a6),d0                     ; read register with 
+00000062                            64                                              ; positions
+Line 65 ERROR: Invalid addressing mode
+00000062                            65      ANDI.L D1,D0                    ; select vpos
+Line 66 ERROR: Invalid addressing mode
+00000062                            66      CMPI.L D2,D0                            ; selected vpos reached
+00000062  66C6                      67      BNE.S  .mlwaity
+00000064                            68  
+00000064  207A FFF6                 69      move.l counterpos(pc),a0
+00000068  5350                      70      sub.w  #1,(a0)                
+0000006A  66D8                      71      bne.s  .br1             
+0000006C  5479 0000005C             72      add.w  #2,counterpos                    ;go to next counter
+00000072  58B9 00000062             73      add.l  #4,jmplistpos
+Line 74 ERROR: Symbol value differs between first and second pass
+00000078                            74  .br1   
+00000078  207A FFE8                 75      move.l jmplistpos(pc),a0     
+0000007C  4EE8 0000                 76      jmp    0(a0)                    
+00000080                            77          
+Line 78 ERROR: Symbol value differs between first and second pass
+00000080                            78  mlgoon: 
+00000080  4DF9 00DFF000             79      lea         $dff000,a6
+00000086  082E 000A 0016            80      btst.b  #10,$16(a6) ; left mouse button clicked
+0000008C  6690                      81      bne.s   MainLoop        ; if not continue programm
+0000008E  4E75                      82      rts     
+00000090                            83  
+Line 84 ERROR: Symbol value differs between first and second pass
+00000090                            84  counterpos:
+00000090= 00000060                  85          dc.l counters
+00000094                            86  
+Line 87 ERROR: Symbol value differs between first and second pass
+00000094                            87  counters:
+00000094= 01F4                      88          dc.w 500
+00000096                            89  
+Line 90 ERROR: Symbol value differs between first and second pass
+00000096                            90  jmplistpos:
+00000096= 00000066                  91          dc.l  jmplist
+Line 92 ERROR: Symbol value differs between first and second pass
+0000009A                            92  jmplist:
+0000009A  6000 FFD0                 93          bra.w Effect1_1
+0000009E  4E75                      94          rts
+000000A0                            95  
+Line 96 ERROR: Invalid opcode
+000000A0                            96  BLINCREMENT = 1
+Line 97 ERROR: Invalid opcode
+000000A0                            97  SPINCREMENT = 2
+Line 98 ERROR: Invalid syntax
+000000A0                            98  FRAMES=150
+000000A0                            99  
+Line 100 ERROR: Symbol value differs between first and second pass
+000000A0                           100  Effect1_1:
+000000A0                           101  ;D0 = i 
+000000A0                           102  ;a0 = blarraydim
+000000A0                           103  ;a1 = frmdat[]
+000000A0                           104  ;a2 = laydat
+000000A0                           105  ;a3 = frame
+000000A0  5379 000000DC            106          subq   #1, .counter             ;if(counter-- == 0)
+000000A6  6630                     107          bne.s  .br1                     ;{
+Line 108 ERROR: Undefined symbol
+000000A8  6100 BC6C                108          bsr.w    SetCopperList          ;  Setcopperlist();
+Line 109 ERROR: Undefined symbol
+000000AC  6100 BC68                109          bsr.w    SetBitPlanePointers    ;  SetBitplanePointers();
+000000B0  33FC 0001 000000DC       110          move.w #1, .counter             ;  counter = 1; //50 fps
+000000B8  33FC 000F 00DFF180       111          move.w #$00f,$dff180            ;  Req_Col0 = 00f; //Coppermonitor
+000000C0  47F9 000000DE            112          lea    .frame, a3               ; 
+Line 113 ERROR: Undefined symbol
+000000C6  43F9 004DBD16            113          lea    EF1_PATTERNDATA0,a1      ;  frmdat = EFF1_PATTERNDATA
+000000CC  45F9 000014A8            114          lea    blarraycont,a2           ;  laydat = blarraycont.data    
+000000D2  41F9 00001480            115          lea    blarraydim, a0           ;  blarraydim.width = 
+Line 116 ERROR: Undefined symbol
+000000D8  316A FFFC 55C0           116          move.w -4(a2), DIMWIDTH(a0)     ;               blarraycont.width;
+Line 117 ERROR: Undefined symbol
+000000DE  316A FFFE 55C4           117          move.w -2(a2), DIMHEIGHT(a0)    ;  blarraydim.height =    
+000000E4                           118                                          ;               blarraycont.height;
+000000E4  7007                     119          moveq  #8-1,D0                  ;  for(int i=0;i<8;i++) { 
+Line 120 ERROR: Symbol value differs between first and second pass
+000000E6                           120  .lp1                                    ;    SetFrameDefault(    
+000000E6  61F8                     121          bsr.s  SetFrameDefault          ;    frmdat, laydat, frame);
+Line 122 ERROR: Undefined symbol
+000000E8  D3FC 004DBD16            122          add.l  #FRMSIZE, a1             ;    frmdat++; //Next object
+Line 123 ERROR: Undefined symbol
+000000EE  D5FC 004DBD16            123          add.l  #CNTOBJSIZE, a2          ;    laydat++;
+000000F4  51C8 FFBC                124          dbf    d0, .lp1                 ;  }        
+000000F8                           125          ;bsr.s  SetColData              ;  SetColData(frame);
+000000F8                           126          ;add.w  #2, (a3)                    ;  frame++
+000000F8  6100 0042                127          bsr.w  DrawLines                ;  DrawLines(); 
+000000FC  33FC 0C00 00DFF106       128          move.w #$c00,$dff106            ;  Reg_Col0 = 00;
+00000104  33FC 0000 00DFF180       129          move.w #$0,$dff180
+Line 130 ERROR: Symbol value differs between first and second pass
+0000010C                           130  .br1                                    ;}
+0000010C  6000 FF3E                131          bra.w  MlGoon
+00000110                           132          
+Line 133 ERROR: Symbol value differs between first and second pass
+00000110                           133  .counter:
+00000110= 0001                     134          dc.w 1
+00000112                           135  
+Line 136 ERROR: Symbol value differs between first and second pass
+00000112                           136  .frame  
+00000112= 0000                     137          dc.w 0
+00000114                           138  
+Line 139 ERROR: Symbol value differs between first and second pass
+00000114                           139  SetFrameDefault:                        ;SetFrameDefault(  frmdat,
+00000114                           140  ;a1 = frmdat[]
+00000114                           141  ;a2 = laydat
+00000114                           142  ;a3 = frame
+Line 143 ERROR: Undefined symbol
+00000114  2551 55C8                143          move.l (a1), CNTBLMAP(a2)       ;  *frmdat.blmap = *frmdat.blmap
+00000118  D2D3                     144          add.w (a3), a1                 ;  //Get to right frame
+Line 145 ERROR: Undefined symbol
+0000011A  3569 BD16 55C8           145          move.w FDOPOSX(a1), CNTPOSX(a2) ;  *frmdat.posx[frame] = *frmdat.posx
+Line 146 ERROR: Undefined symbol
+00000120  3569 BD16 55C0           146          move.w FDOPOSY(a1), CNTPOSY(a2) ;  '
+Line 147 ERROR: Undefined symbol
+00000126  3569 BD16 55BC           147          move.w FDOPOSXDET(a1), CNTBLPOSX(a2) ;'s
+Line 148 ERROR: Undefined symbol
+0000012C  3569 BD16 55BC           148          move.w FDOPOSYDET(a1), CNTBLPOSY(a2) ;'
+Line 149 ERROR: Undefined symbol
+00000132  3569 BD16 55BC           149          move.w FDOBLSIZE(a1), CNTBLSIZE(a2) ;'
+00000138  4E75                     150          rts                             ;}
+0000013A                           151  
+Line 152 ERROR: Symbol value differs between first and second pass
+0000013A                           152  .ptrtomap
+Line 153 ERROR: Undefined symbol
+0000013A= 0019F5AC                 153      dc.l blarraycont+CNTBLMAP
+0000013E                           154  
+Line 155 ERROR: Symbol value differs between first and second pass
+0000013E                           155  InitScreenBuffers:
+0000013E                           156  ; Needs to be aligned to $10000. This way only low word has to be
+0000013E                           157  ;changed in copper
+0000013E                           158  
+Line 159 ERROR: Undefined symbol
+0000013E  203C 004DBD16            159      move.l #bitplane,d0             
+00000144  9040                     160      sub.w  d0,d0
+00000146  0680 00010000            161      add.l  #$10000,d0
+Line 162 ERROR: Undefined symbol
+0000014C  23C0 005455B8            162      move.l d0,view_buffer
+Line 163 ERROR: Invalid syntax
+00000152                           163      add.w  #BPLWIDTH*40*BPLCOUNT,d0
+Line 164 ERROR: Undefined symbol
+00000152  23C0 005455B8            164      move.l d0,draw_buffer   
+00000158  4E75                     165      rts 
+0000015A                           166  
+Line 167 ERROR: Symbol value differs between first and second pass
+0000015A                           167  mapypos:
+0000015A= 0000                     168          dc.w 0
+Line 169 ERROR: Symbol value differs between first and second pass
+0000015C                           169  blmappos:
+0000015C= 00000000                 170          dc.l 0
+Line 171 ERROR: Symbol value differs between first and second pass
+00000160                           171  bllnflagpos: 
+00000160= 00000000                 172          dc.l 0
+00000164                           173  
+Line 174 ERROR: Symbol value differs between first and second pass
+00000164                           174  GetArrValue:
+00000164                           175  ;input
+00000164                           176  ;a1 - Array Start
+00000164                           177  ;d4 - Index for value
+00000164                           178  ;d3 - Array depth
+00000164                           179  ;
+00000164                           180  ;output
+00000164                           181  ;a2 - value first pos pointer
+Line 182 ERROR: Symbol value differs between first and second pass
+00000164                           182  i
+00000164  45F1 4000                183          lea      (a1,d4),a2
+00000168  4E75                     184          rts
+0000016A                           185  
+0000016A                           186  ;1 - depth
+0000016A                           187          ;2 - index
+0000016A                           188          ;3 - output register
+0000016A                           189          
+Line 190 ERROR: Symbol value differs between first and second pass
+0000016A                           190  DrawBlankLine:
+0000016A                 TRUE      191          IFEQ BLITTER-0
+0000016A  2A79 000005DC            192          move.l    currentdrawpos,a5
+Line 193 ERROR: Invalid opcode
+00000170                           193          REPT 10
+00000170  2AFC 00000000            194          move.l    #0, (a5)+
+Line 195 ERROR: Invalid opcode
+00000176                           195          ENDR
+00000176                           196          ENDC
+00000176  4E75                     197          rts
+00000178                           198  
+Line 199 ERROR: Symbol value differs between first and second pass
+00000178                           199  DrawLines:
+00000178                           200          ;input
+00000178                           201          ;a0 - map dimension
+00000178                           202          ;d0 - plane number
+00000178                           203          
+00000178                           204          ;processing
+00000178                           205          ;a1 - dimcontent
+00000178                           206          ;a2 - space size
+00000178                           207          ;a3 - ypos
+00000178                           208          ;a5 - bl map y
+00000178                           209          ;a6 - bl map x
+00000178                           210  
+Line 211 ERROR: Undefined symbol
+00000178  3A28 BD16                211          move.w   DIMDEPTH(a0),d5
+0000017C  5345                     212          subq     #1,d5 
+Line 213 ERROR: Undefined symbol
+0000017E  43E8 BD16                213          lea      DIMCONTENT(a0),a1           ; load start of ptr list
+00000182  23C9 0000030C            214          move.l   a1,.contentptr              ; save ptr list pos
+Line 215 ERROR: Symbol value differs between first and second pass
+00000188                           215  .lp1
+00000188  2251                     216          move.l   (a1),a1                     ; load ptr to first layer
+Line 217 ERROR: Undefined symbol
+0000018A  23F9 004DBD16 000003B4   217          move.l   draw_copper, copperpos
+Line 218 ERROR: Undefined symbol
+00000194  06B9 004DBD16 000003B4   218          add.l    #OFFSCLBLOCKDRAW,copperpos
+0000019E  BABC 00000000            219          cmp.l    #0,d5
+000001A4  67D4                     220          beq.s    .br6
+000001A6  5CB9 000003B4            221          addq.l   #6,copperpos
+000001AC  2005                     222          move.l   d5,d0
+000001AE  E548                     223          lsl.w    #2,d0
+000001B0  D1B9 000003B4            224          add.l    d0,copperpos
+Line 225 ERROR: Symbol value differs between first and second pass
+000001B6                           225  .br6
+Line 226 ERROR: Undefined symbol
+000001B6  2479 004DBD16            226          move.l   draw_buffer,a2
+000001BC  2005                     227          move.l   d5,d0
+Line 228 ERROR: Invalid syntax
+000001BE                           228          mulu.w   #BPLWIDTH*40,d0
+000001BE  D5C0                     229          add.l    d0,a2
+000001C0  23CA 000005DC            230          move.l   a2,currentdrawpos
+000001C6                           231          
+Line 232 ERROR: Undefined symbol
+000001C6  47E9 BD16                232          lea      CNTPOSY(a1),a3       
+Line 233 ERROR: Undefined symbol
+000001CA  4BE9 BD16                233          lea      CNTBLPOSY(a1),a5
+Line 234 ERROR: Undefined symbol
+000001CE  4DE9 BD16                234          lea      CNTBLPOSX(a1),a6
+Line 235 ERROR: Undefined symbol
+000001D2  45E9 BD16                235          lea      CNTSPSIZE(a1),a2
+000001D6                           236   
+000001D6                           237          ;calc map startpos
+000001D6  9281                     238          sub.l    d1,d1
+000001D8  3216                     239          move.w   (a6),d1
+000001DA  EA49                     240          lsr.w    #5, d1               ; divide through 32
+000001DC  E549                     241          lsl.w    #2, d1               ; start pos for x in bytes rounded to lw        
+000001DE  3C01                     242          move.w   d1, d6               ; save blxpos          
+Line 243 ERROR: Undefined symbol
+000001E0  3028 BD16                243          move.w   DIMWIDTH(a0), d0
+000001E4  C0D5                     244          mulu.w   (a5),d0
+000001E6  D041                     245          add.w    d1,d0
+Line 246 ERROR: Undefined symbol
+000001E8  21E9 BD16 012C           246          move.l   CNTBLMAP(a1), blmappos
+Line 247 ERROR: Undefined symbol
+000001EE  21E9 BD16 0130           247          move.l   CNTBLLNFLAG(a1), bllnflagpos
+000001F4  D1B8 012C                248          add.l    d0,blmappos  
+000001F8                 TRUE      249          IFNE chkblline-0             
+000001F8  3015                     250          move.w   (a5),d0
+Line 251 ERROR: Comma expected
+000001FA                           251          lsl.w    d0                  ;word size it
+000001FA  D1B8 0130                252          add.l    d0,bllnflagpos        
+000001FE                           253          ENDC
+000001FE                           254               
+Line 255 ERROR: Undefined symbol
+000001FE  3029 BD16                255          move.w   CNTBLSIZE(a1),d0
+00000202  B07C 001F                256          cmp.w    #31,d0
+00000206  66CA                     257          bne.s    .nodebug
+00000208  3000                     258          move.w   d0,d0
+Line 259 ERROR: Symbol value differs between first and second pass
+0000020A                           259  .nodebug
+0000020A  3412                     260          move.w   (a2),d2
+0000020C  D440                     261          add.w    d0,d2
+0000020E  33C2 00000308            262          move.w   d2,.totsize
+00000214  48F9 07FA 000002CC       263          movem.l  a0-a2/d1/d3-d7,.saveregs
+0000021C  49F9 00000550            264          lea      DrawLine,a4
+00000222  B47C 0020                265          cmp.w    #32,d2
+00000226  64D8                     266          bhs.s    .br7
+Line 267 ERROR: Undefined symbol
+00000228  3229 BD16                267          move.w   CNTPOSX(a1),d1
+0000022C  3A12                     268          move.w   (a2),d5         
+0000022E  6100 01A8                269          bsr.w    PreProcessDL
+00000232  49F9 00001568            270          lea      dldata,a4
+Line 271 ERROR: Symbol value differs between first and second pass
+00000238                           271  .br7  
+00000238  4CFA 07FA 0090           272          movem.l  .saveregs(pc),a0-a2/d1/d3-d7      
+0000023E                           273  
+0000023E  31D5 012A                274          move.w    (a5), mapypos
+00000242                           275  
+00000242                           276          ;d0 - temp use              
+00000242                           277          ;d1 - temp use
+00000242                           278          ;d2 - number of lines to repeat
+00000242                           279          ;d3 - gets cleared by subroutine
+00000242                           280          ;d4 - temp use
+00000242                           281          ;d5 - layer counter 
+00000242                           282          ;d6 - copperpos to draw              
+00000242                           283  
+00000242                 TRUE      284          IFEQ USEMAPHEIGHT-1
+00000242                           285          ;save counter for mapheight. Subtract 1 
+Line 286 ERROR: Undefined symbol
+00000242  33E9 BD16 0000030A       286          move.w   CNTHEIGHT(a1),.heightpos                  
+0000024A                           287          ENDC
+0000024A                           288  
+0000024A  303C 00FF                289          move.w   #255,d0               
+0000024E  1C3C 002C                290          move.b   #$2c, d6
+Line 291 ERROR: Undefined symbol
+00000252  3229 BD16                291          move.w   CNTBLSIZE(a1),d1
+00000256                 TRUE      292          IFEQ CHKBLLINE-1
+00000256                           293          ;move.l   a4,.lfuncbak
+00000256                           294          ENDC
+00000256  9253                     295          sub.w    (a3),d1
+00000258  671E                     296          beq.s    .linesleftspace
+0000025A  6B1C                     297          bmi.s    .linesleftspace
+0000025C                           298   
+Line 299 ERROR: Symbol value differs between first and second pass
+0000025C                           299  .linesleftblock                        ;Still block to draw for this element
+0000025C                           300          
+0000025C                 TRUE      301          IFEQ CHKBLLINE-1
+0000025C  2A7A FED2                302          move.l   bllnflagpos(pc),a5
+00000260  0C55 0000                303          cmp.w    #0, (a5)                 ; check for line marker empty
+Line 304 ERROR: Undefined symbol
+00000264  67B0                     304          beq.s    .br8
+00000266                           305          ;lea        DrawBlankline,a4  
+00000266  6100 FED2                306          bsr.w      DrawBlankLine  
+0000026A  60EA                     307          bra.s    .br10
+Line 308 ERROR: Undefined symbol
+0000026C                           308  .br8    
+0000026C                           309          ;move.l    .lfuncbak,a4
+0000026C                           310          ENDC
+0000026C                           311  
+0000026C  48F9 4E73 000002CC       312          movem.l         a1-a3/a6/d0-d1/d4-d6, .saveregs
+00000274  3A16                     313          move.w          (a6),d5                      ;load mapxpos for later
+00000276  4DEA 0000                314          lea             0(a2),a6
+Line 315 ERROR: Undefined symbol
+0000027A  47E9 BD16                315          lea             CNTPOSX(a1),a3          
+0000027E  247A 035C                316          move.l          currentdrawpos(pc),a2        
+00000282  2A7A FEA8                317          move.l          blmappos(pc),a5
+00000286                           318          ;shift mapppos to exact position
+00000286  201D                     319          move.l          (a5)+,d0                         ;load mappos
+00000288  CA7C 001F                320          and.w           #%11111,d5                       ;get relevant part
+0000028C  EBA8                     321          lsl.l           d5,d0                            ;shift map part 1
+0000028E  2C15                     322          move.l          (a5),d6                          ;load map part2
+00000290  0445 0020                323          sub.w           #32,d5
+00000294  4445                     324          neg.w           d5
+00000296  EAAE                     325          lsr.l           d5,d6                            ;rotate to right pos
+00000298  8086                     326          or.l            d6,d0                            ;combine words
+0000029A                           327                                      
+0000029A  7A00                     328          moveq           #0,d5
+0000029C  4EAC 0000                329          jsr             0(a4)
+000002A0  4CFA 4E73 0028           330          movem.l         .saveregs(pc),a1-a3/a6/d0-d1/d4-d6 
+Line 331 ERROR: Symbol value differs between first and second pass
+000002A6                           331  .br10
+000002A6  BABC 00000000            332          cmp.l           #0,d5
+000002AC  66B6                     333          bne.s           .br2
+000002AE  6100 00D2                334          bsr.w           WriteCopper
+000002B2  60B4                     335          bra.s           .br3
+Line 336 ERROR: Symbol value differs between first and second pass
+000002B4                           336  .br2
+000002B4  6100 0102                337          bsr.w           WriteCopperPosAdd     
+Line 338 ERROR: Symbol value differs between first and second pass
+000002B8                           338  .br3
+000002B8  B07C 0000                339          cmp.w           #0,d0
+000002BC  67FA                     340          beq.s           .br1  
+Line 341 ERROR: Undefined symbol
+000002BE  06B9 004DBD16 000005DC   341          add.l           #BPLWIDTH,currentdrawpos                
+Line 342 ERROR: Symbol value differs between first and second pass
+000002C8                           342  .linesleftspace
+000002C8  3812                     343          move.w          (a2),d4
+Line 344 ERROR: Symbol value differs between first and second pass
+000002CA                           344  .llftspcempty
+000002CA  D244                     345          add.w           d4, d1             ;get pixels left to draw y for space
+000002CC  66B2                     346          bne.s           .next
+000002CE  3201                     347          move.w          d1,d1
+Line 348 ERROR: Symbol value differs between first and second pass
+000002D0                           348  .next
+000002D0  6100 FE68                349          bsr.w           DrawBlankLine
+000002D4  BA7C 0000                350          cmp.w           #0,d5
+000002D8  66B8                     351          bne.s           .br4
+000002DA  6100 00A6                352          bsr.w           WriteCopper 
+000002DE  6000 FFB6                353          bra.w           .br5
+Line 354 ERROR: Symbol value differs between first and second pass
+000002E2                           354  .br4   
+000002E2  6100 00D4                355          bsr.w           WriteCopperPosAdd
+Line 356 ERROR: Symbol value differs between first and second pass
+000002E6                           356  .br5   
+000002E6  B07C 0000                357          cmp.w           #0,d0
+000002EA  67CC                     358          beq.s           .br1
+000002EC                           359  
+000002EC                 TRUE      360          IFEQ            USEMAPHEIGHT-1
+000002EC  5379 0000030A            361          sub.w           #1,.heightpos
+000002F2  6AA8                     362          bpl.s           .br9
+000002F4  6100 001A                363          bsr.w           RepeatCopper
+000002F8  60BE                     364          bra.s           .br1
+000002FA                           365          ENDC
+Line 366 ERROR: Symbol value differs between first and second pass
+000002FA                           366  .br9
+Line 367 ERROR: Undefined symbol
+000002FA  06B9 004DBD16 000005DC   367          add.l           #BPLWIDTH,currentdrawpos
+Line 368 ERROR: Undefined symbol
+00000304  3229 BD16                368          move.w          CNTBLSIZE(a1),d1
+00000308  9E87                     369          sub.l           d7,d7
+Line 370 ERROR: Undefined symbol
+0000030A  3E28 BD16                370          move.w          DIMWIDTH(a0),d7
+0000030E                 TRUE      371          IFEQ CHKBLLINE-1
+0000030E  54B8 0130                372          add.l           #2,bllnflagpos
+00000312                           373          ENDC 
+00000312  DFB8 012C                374          add.l           d7,blmappos
+00000316  6000 FF04                375          bra.w           .linesleftblock
+Line 376 ERROR: Symbol value differs between first and second pass
+0000031A                           376  .br1        
+0000031A  43F9 0000030C            377          lea             .contentptr,a1         ;load ptr pos
+00000320  5891                     378          addq.l          #4,(a1)               ;increase ptr
+00000322  2251                     379          move.l          (a1), a1              ;load content of ptr
+00000324                           380                                                ;which is ptr to cont array
+00000324                           381                    
+00000324  51CD FE26                382          dbf             d5,.lp1
+00000328  4E75                     383          rts
+0000032A                           384  
+Line 385 ERROR: Symbol value differs between first and second pass
+0000032A                           385  .lfuncbak:
+0000032A= 00000000                 386          dc.l 0
+Line 387 ERROR: Symbol value differs between first and second pass
+0000032E                           387  .saveregs
+0000032E= 00000000 00000000 ...    388           dc.l     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0000036A                           389  
+Line 390 ERROR: Symbol value differs between first and second pass
+0000036A                           390  .totsize
+0000036A= 0000                     391           dc.w     0
+0000036C                           392  
+Line 393 ERROR: Symbol value differs between first and second pass
+0000036C                           393  .heightpos:
+0000036C= 0000                     394           dc.w     0
+0000036E                           395  
+Line 396 ERROR: Symbol value differs between first and second pass
+0000036E                           396  .contentptr
+0000036E= 00000000                 397           dc.l     0
+00000372                           398  
+Line 399 ERROR: Symbol value differs between first and second pass
+00000372                           399  RepeatCopper:
+Line 400 ERROR: Undefined symbol
+00000372  06B9 004DBD16 000005DC   400           add.l    #BPLWIDTH, currentdrawpos
+0000037C  9884                     401           sub.l    d4,d4
+0000037E                           402           ;Revert bitplanepointer
+Line 403 ERROR: Undefined symbol
+0000037E  3E29 BD16                403           move.w   CNTHEIGHT(a1), d7          ;Number of blocks
+00000382  3807                     404           move.w   d7,d4              ;Copy to d7 we need d7 later      
+Line 405 ERROR: Comma expected
+00000384                           405       lsl      d4                         ;One block line and one block gap
+Line 406 ERROR: Undefined symbol
+00000384  C8FC BD16                406       mulu.w   #BPLWIDTH,d4               ;Get Number of Bytes    
+00000388                           407  
+Line 408 ERROR: Symbol value differs between first and second pass
+00000388                           408  .lp2 ;Loop for whole map
+00000388                           409   
+00000388  99B9 000005DC            410           sub.l    d4, currentdrawpos         ;Revert bplpointer             
+0000038E  5347                     411       subq.w   #1, d7                     ;Prepare use of d0 as loopcounter
+00000390                           412  
+Line 413 ERROR: Symbol value differs between first and second pass
+00000390                           413  .lp1 ; Loop for one lines of block
+00000390                           414           ;Copper for Block
+Line 415 ERROR: Undefined symbol
+00000390  3229 BD16                415           move.w   CNTBLSIZE(a1), d1
+00000394  5341                     416           subq.w   #1,d1
+00000396                           417       ;Different Copperroutine for first plane                             
+00000396  BA7C 0000                418       cmp.w    #0,d5
+0000039A  66A2                     419       bne.s    .br1
+0000039C  61E4                     420           bsr.s    WriteCopper
+0000039E  60A2                     421           bra.s    .br2
+Line 422 ERROR: Symbol value differs between first and second pass
+000003A0                           422  .br1    
+000003A0  6100 0016                423           bsr.w    WriteCopperPosAdd   
+Line 424 ERROR: Symbol value differs between first and second pass
+000003A4                           424  .br2
+000003A4  B07C 0000                425           cmp.w    #0, d0
+000003A8  67D4                     426           beq.s    .br3 
+000003AA                           427  
+Line 428 ERROR: Undefined symbol
+000003AA  06B9 004DBD16 000005DC   428           add.l    #BPLWIDTH, currentdrawpos
+000003B4                           429  
+000003B4                           430           ;Copper for Space
+Line 431 ERROR: Undefined symbol
+000003B4  3229 BD16                431           move.w   CNTSPSIZE(a1), d1
+000003B8  5341                     432           subq.w   #1,d1
+000003BA                           433       ;Different Copperroutine for first plane                             
+000003BA  BA7C 0000                434       cmp.w    #0,d5
+000003BE  66A2                     435       bne.s    .br4
+000003C0  61C0                     436           bsr.s    WriteCopper
+000003C2  60A0                     437           bra.s    .br5
+Line 438 ERROR: Symbol value differs between first and second pass
+000003C4                           438  .br4    
+000003C4  61F2                     439           bsr.s    WriteCopperPosAdd   
+Line 440 ERROR: Symbol value differs between first and second pass
+000003C6                           440  .br5
+000003C6  B07C 0000                441           cmp.w    #0,d0
+000003CA  67B2                     442           beq.s    .br3                      ;End of screen reached
+000003CC                           443       
+Line 444 ERROR: Undefined symbol
+000003CC  06B9 004DBD16 000005DC   444       add.l    #BPLWIDTH, currentdrawpos 
+000003D6  51CF FF56                445       dbf      d7,.lp1
+Line 446 ERROR: Undefined symbol
+000003DA  3E29 BD16                446           move.w   CNTHEIGHT(a1),d7          ;Restore d7
+Line 447 ERROR: Branch instruction displacement is out of range or invalid
+000003DE  6046                     447       bra.s    .lp2 
+Line 448 ERROR: Symbol value differs between first and second pass
+000003E0                           448  .br3
+000003E0  4E75                     449       rts
+000003E2                           450  
+Line 451 ERROR: Symbol value differs between first and second pass
+000003E2                           451  .backup:
+000003E2= 0000                     452           dc.w 0
+000003E4                           453          
+Line 454 ERROR: Symbol value differs between first and second pass
+000003E4                           454  WriteCopper:
+000003E4                           455          ;d1  number of lines
+000003E4                           456          ;subq     #1,d1
+000003E4                           457          ;d6 copperpos
+000003E4  2A7A FFCE                458          move.l   copperpos(pc), a5
+000003E8  163C 0001                459          move.b   #$1,d3
+000003EC  2439 000005DC            460          move.l   currentdrawpos,d2
+Line 461 ERROR: Symbol value differs between first and second pass
+000003F2                           461  .lp1        
+000003F2  1A86                     462          move.b   d6,(a5)
+000003F4  5C4D                     463          addq.w   #6, a5       
+000003F6                           464          ;swap    d2
+000003F6                           465          ;move.w  d2,(a5)
+000003F6                           466          ;addq    #4,a5
+000003F6                           467          ;swap    d2
+000003F6  3A82                     468          move.w   d2,(a5)
+000003F8                           469          ;add.l   #(BPLCOUNT-1)*8+2,a5
+Line 470 ERROR: Invalid syntax
+000003F8                           470          add.l    #(BPLCOUNT-1)*4+2,a5
+000003F8  DC03                     471          add.b    d3,d6 
+000003FA  65B4                     472          bcs.s    .resetpos
+Line 473 ERROR: Symbol value differs between first and second pass
+000003FC                           473  .br1
+000003FC  5340                     474          subq     #1,d0
+000003FE  67A8                     475          beq.s    .br2
+00000400  51C9 FF8E                476          dbf      d1, .lp1
+Line 477 ERROR: Symbol value differs between first and second pass
+00000404                           477  .br2  
+00000404  23CD 000003B4            478          move.l   a5,copperpos
+0000040A  4E75                     479          rts
+0000040C                           480  
+Line 481 ERROR: Symbol value differs between first and second pass
+0000040C                           481  .resetpos
+0000040C  9C46                     482          sub.w    d6,d6
+0000040E  6090                     483          bra.s    .br1
+00000410                           484  
+Line 485 ERROR: Symbol value differs between first and second pass
+00000410                           485  copperpos:
+Line 486 ERROR: Undefined symbol
+00000410= 0019F5AC                 486          dc.l draw_copper+OFFSCLBLOCKDRAW
+00000414                           487  
+Line 488 ERROR: Symbol value differs between first and second pass
+00000414                           488  WriteCopperPosAdd:
+00000414                           489          ;d1  number of lines
+00000414                           490          ;d6 copperpos
+00000414  2A7A FF9E                491          move.l   copperpos(pc), a5
+00000418  2439 000005DC            492          move.l   currentdrawpos,d2
+Line 493 ERROR: Symbol value differs between first and second pass
+0000041E                           493  .lp1              
+0000041E                           494          ;swap     d2
+0000041E  3A82                     495          move.w   d2,(a5)
+00000420                           496          ;addq.l   #4,a5
+00000420                           497          ;swap     d2
+00000420                           498          ;move.w   d2,(a5)
+Line 499 ERROR: Invalid syntax
+00000420                           499          add.l    #(BPLCOUNT)*4+4,a5 
+00000420  5340                     500          subq     #1,d0
+00000422  67AE                     501          beq.s    .br2
+00000424  51C9 FF9C                502          dbf      d1, .lp1  
+Line 503 ERROR: Symbol value differs between first and second pass
+00000428                           503  .br2               
+00000428  21CD 03B4                504          move.l   a5,copperpos
+0000042C  4E75                     505          rts
+0000042E                           506  
+Line 507 ERROR: Symbol value differs between first and second pass
+0000042E                           507  PreProcessDL:
+0000042E                           508          ;d0 - Width / Width including space
+0000042E                           509          ;d1 - Offset / Width
+0000042E                           510          ;d2 - most left block
+0000042E                           511          ;d3 - recent block
+0000042E                           512          ;a1 - patternbit to test
+0000042E                           513          ;a2 - lwcount
+0000042E                           514          ;d5 - tempuse
+0000042E                           515          ;d6 - most right block
+0000042E                           516          ;d7 - old block
+0000042E                           517          ;d4 - position lw
+0000042E                           518                  
+0000042E                           519          ;get start pattern
+0000042E  347C 000A                520          move.w          #10,a2
+00000432  74FF                     521          moveq           #-1,d2
+00000434  7620                     522          moveq           #32,d3 
+00000436  9640                     523          sub.w           d0,d3 
+00000438  E7AA                     524          lsl.l           d3,d2             ;blockdata
+0000043A  2C02                     525          move.l          d2,d6
+0000043C  E1BE                     526          rol.l           d0,d6             ;most right block
+0000043E                           527          ;get lw pos 
+0000043E  3800                     528          move.w          d0,d4
+00000440  9841                     529          sub.w           d1,d4
+00000442                           530          ;calculate complete block size
+00000442  3E00                     531          move.w          d0,d7           ;backup copy
+00000444                           532          ;move.w          d0,d4           
+00000444                           533          ;lsr.w           d4
+00000444  D045                     534          add.w           d5,d0
+00000446                           535  
+00000446  227C 0000001F            536          move.l          #31,a1            ;bit of pattern to test
+0000044C  41FA 111A                537          lea             dldata(pc),a0         ;write the binary here
+00000450  30FA 0042                538          move.w          .init(pc),(a0)+
+00000454                           539  
+00000454  3801                     540          move.w          d1,d4             ;recent lw pos = offset
+00000456                           541          ;get 1st block with offset
+00000456  2602                     542          move.l          d2,d3            
+00000458  E9AB                     543          lsl.l           d4,d3
+0000045A                           544          ;Write Single block
+0000045A  6100 0040                545          bsr.w           WriteBlock1
+0000045E  5349                     546          subq            #1,a1             ;next block in pattern
+00000460  2602                     547          move.l          d2,d3             ;restore block start data
+00000462  2A00                     548          move.l          d0,d5             ;working copy of block size
+00000464  9A84                     549          sub.l           d4,d5             ;get rshift for 2nd block
+00000466  3805                     550          move.w           d5,d4             ;new block pos      
+00000468  2207                     551          move.l          d7,d1             ;blocksize without space to d1
+Line 552 ERROR: Symbol value differs between first and second pass
+0000046A                           552  .lp1
+0000046A  B2FC FFFF                553          cmp.w           #-1,a1
+0000046E  6714                     554          beq.s           .resetmap 
+Line 555 ERROR: Symbol value differs between first and second pass
+00000470                           555  .br6                                                       
+00000470  2E03                     556          move.l          d3,d7             ;save old block
+00000472  EAAB                     557          lsr.l           d5,d3             ;calc 2nd block
+00000474  67C2                     558          beq.s           .br2              ;block partly or complete in this lw
+00000476  BC83                     559          cmp.l           d3,d6
+00000478  6FB4                     560          ble.s           .br5              ;block complete in this lw
+0000047A                           561          ;block cut now check for last lw 
+0000047A  B4FC 0001                562          cmp.w           #1,a2
+0000047E  66D8                     563          bne.s           .br3              ;jump to block partly in lw handling
+00000480  611A                     564          bsr.s           WriteBlock1
+00000482  60F6                     565          bra.s           .br4
+Line 566 ERROR: Symbol value differs between first and second pass
+00000484                           566  .br5                                      
+00000484  6116                     567          bsr.s           WriteBlock1
+00000486  D840                     568          add.w           d0,d4
+00000488  2A00                     569          move.l          d0,d5
+0000048A  5349                     570          subq            #1,a1
+0000048C  6086                     571          bra.s           .lp1
+Line 572 ERROR: Symbol value differs between first and second pass
+0000048E                           572  .br2                                      ;block in next lw
+0000048E  534A                     573          subq            #1,a2
+00000490  B4FC 0000                574          cmp.w           #0,a2
+00000494  67E4                     575          beq.s           .br4
+00000496  0444 0020                576          sub.w           #32,d4
+0000049A  30FA FFFC                577          move.w          .writelw(pc),(a0)+
+0000049E  30FA FFF4                578          move.w          .init(pc),(a0)+
+000004A2  E0BF                     579          ror.l           d0,d7
+000004A4  2607                     580          move.l          d7,d3
+000004A6  61F4                     581          bsr.s           WriteBlock1 
+000004A8  5349                     582          subq            #1,a1
+000004AA  D840                     583          add.w           d0,d4
+Line 584 ERROR: Branch instruction displacement is out of range or invalid
+000004AC  6066                     584          bra.s           .lp1
+Line 585 ERROR: Symbol value differs between first and second pass
+000004AE                           585  .br3                                      ;block partly in this lw
+000004AE  D841                     586          add.w            d1,d4  
+000004B0  0444 0020                587          sub.w            #32,d4 
+000004B4  3E01                     588          move.w           d1,d7           
+000004B6  9E44                     589          sub.w            d4,d7            ;bits to shift left
+000004B8  2A02                     590          move.l           d2,d5            ;most left pattern   
+000004BA  EFAD                     591          lsl.l            d7,d5            ;shift it
+000004BC  DE44                     592          add.w            d4,d7
+000004BE  61F6                     593          bsr.s            WriteBlock2
+000004C0  9841                     594          sub.w            d1,d4 
+000004C2  D840                     595          add.w            d0,d4
+000004C4  534A                     596          subq             #1,a2
+000004C6  67B2                     597          beq.s            .br4
+000004C8  5349                     598          subq             #1,a1  
+000004CA  2602                     599          move.l           d2,d3            ;startpattern = most left
+000004CC  2A04                     600          move.l           d4,d5            ;ls to pos in lw     
+Line 601 ERROR: Branch instruction displacement is out of range or invalid
+000004CE  6044                     601          bra.s            .lp1
+Line 602 ERROR: Symbol value differs between first and second pass
+000004D0                           602  .br4   
+000004D0  30FA FFC6                603          move.w           .writelw(pc),(a0)+ 
+000004D4  30FA FFC0                604          move.w           .end(pc),(a0)+
+000004D8  4E75                     605          rts
+000004DA                           606  
+Line 607 ERROR: Symbol value differs between first and second pass
+000004DA                           607  .resetmap
+000004DA  30F9 0000049A            608          move.w           .mapfwd,(a0)+
+000004E0  227C 0000001F            609          move.l           #31,a1
+000004E6  6000 FF32                610          bra.w            .br6
+000004EA                           611          
+Line 612 ERROR: Symbol value differs between first and second pass
+000004EA                           612  .init
+000004EA  9884                     613          sub.l           d4,d4
+000004EC                           614  
+Line 615 ERROR: Symbol value differs between first and second pass
+000004EC                           615  .end
+000004EC  4E75                     616          rts
+000004EE                           617  
+Line 618 ERROR: Symbol value differs between first and second pass
+000004EE                           618  .writelw
+000004EE  24C4                     619          move.l          d4,(a2)+       
+000004F0                           620  
+Line 621 ERROR: Symbol value differs between first and second pass
+000004F0                           621  .mapfwd
+000004F0  201D                     622          move.l          (a5)+,d0
+000004F2                           623          
+Line 624 ERROR: Symbol value differs between first and second pass
+000004F2                           624  WriteBlock1:
+000004F2                           625  ;input
+000004F2                           626  ;a1 - pattern position to test
+000004F2                           627  ;d3 - block data
+000004F2                           628  
+000004F2  30FA FFB6                629          move.w          .bl1(pc),(a0)+
+000004F6  30C9                     630          move.w          a1,(a0)+         ;set btst to correct block
+000004F8  20FA FFB4                631          move.l          .bl1+4(pc),(a0)+
+000004FC  20C3                     632          move.l          d3,(a0)+
+000004FE  4E75                     633          rts
+00000500                           634  
+Line 635 ERROR: Symbol value differs between first and second pass
+00000500                           635  .bl1
+00000500  0800 001F                636          btst.l          #31,d0
+00000504  67B0                     637          beq.s           .br1
+00000506  88BC FFF00000            638          or.l          #$fff00000,d4
+Line 639 ERROR: Symbol value differs between first and second pass
+0000050C                           639  .br1
+0000050C                           640  
+Line 641 ERROR: Symbol value differs between first and second pass
+0000050C                           641  WriteBlock2:
+0000050C                           642  ;input
+0000050C                           643  ;a1 - pattern pos to test
+0000050C                           644  ;d3 - block data w
+0000050C                           645  ;d5 - block data lw
+0000050C                           646  
+0000050C  30FA FFE6                647          move.w          .bl2(pc),(a0)+
+00000510  30C9                     648          move.w          a1,(a0)+
+00000512  B6BC 0000FFFF            649          cmp.l           #$ffff,d3
+00000518  62B4                     650          bhi.s           .br3                  ;write word
+0000051A  20F9 000004F8            651          move.l          .bl2+4,(a0)+
+00000520  30C3                     652          move.w          d3,(a0)+
+00000522  60BA                     653          bra.s           .br4
+Line 654 ERROR: Symbol value differs between first and second pass
+00000524                           654  .br3
+00000524  10F9 000004F8            655          move.b          .bl2+4,(a0)+
+0000052A  10FC 0010                656          move.b          #$10,(a0)+
+0000052E  30FA FFDC                657          move.w          .writelw(pc),(a0)+
+00000532  20C3                     658          move.l          d3,(a0)+        
+Line 659 ERROR: Symbol value differs between first and second pass
+00000534                           659  .br4        
+00000534  20F9 000004FE            660          move.l          .bl2+10,(a0)+   
+0000053A  20C5                     661          move.l          d5,(a0)+ 
+Line 662 ERROR: Symbol value differs between first and second pass
+0000053C                           662  .br5        
+0000053C  20F9 00000506            663          move.l          .bl2+18,(a0)+
+00000542  30F9 0000050A            664          move.w          .bl2+22,(a0)+
+00000548  4E75                     665          rts
+0000054A                           666          
+Line 667 ERROR: Symbol value differs between first and second pass
+0000054A                           667  .bl2
+0000054A  0800 001F                668          btst.l          #31,d0
+0000054E  67B8                     669          beq.s           .br1
+00000550  887C 03FF                670          or.w            #$03ff,d4 
+00000554  24C4                     671          move.l          d4,(a2)+           ;2
+00000556  283C C0000000            672          move.l          #$c0000000,d4
+0000055C  60AE                     673          bra.s           .br2 
+Line 674 ERROR: Symbol value differs between first and second pass
+0000055E                           674  .br1
+0000055E  24C4                     675          move.l          d4,(a2)+           ;2
+00000560  9884                     676          sub.l           d4,d4
+Line 677 ERROR: Symbol value differs between first and second pass
+00000562                           677  .br2
+00000562                           678       
+Line 679 ERROR: Symbol value differs between first and second pass
+00000562                           679  .writelw:
+00000562  88BC 00FFF000            680          or.l            #$00fff000,d4
+00000568                           681  
+Line 682 ERROR: Symbol value differs between first and second pass
+00000568                           682  WriteBlock3:
+00000568                           683  ;input
+00000568                           684  ;a1 - pattern pos to test
+00000568                           685  ;d3 - block data w
+00000568                           686  ;d5 - block data lw
+00000568                           687  
+00000568  30FA FFCC                688          move.w          .bl2(pc),(a0)+
+0000056C  30C9                     689          move.w          a1,(a0)+
+0000056E  20F9 0000053A            690          move.l          .bl2+4,(a0)+
+00000574  30C3                     691          move.w          d3,(a0)+
+00000576  20F9 00000540            692          move.l          .bl2+10,(a0)+
+0000057C  20C5                     693          move.l          d5,(a0)+
+0000057E  20F9 00000548            694          move.l          .bl2+18,(a0)+
+00000584  30F9 0000054C            695          move.w          .bl2+22,(a0)+
+0000058A  4E75                     696          rts
+Line 697 ERROR: Symbol value differs between first and second pass
+0000058C                           697  .bl2
+0000058C  0800 001F                698          btst.l          #31,d0
+00000590  67B8                     699          beq.s           .br1
+00000592  887C 03FF                700          or.w            #$03ff,d4 
+00000596  24C4                     701          move.l          d4,(a2)+           ;2
+00000598  283C C0000000            702          move.l          #$c0000000,d4
+0000059E  60AE                     703          bra.s           .br2 
+Line 704 ERROR: Symbol value differs between first and second pass
+000005A0                           704  .br1
+000005A0  24C4                     705          move.l          d4,(a2)+           ;2
+000005A2  9884                     706          sub.l           d4,d4
+Line 707 ERROR: Symbol value differs between first and second pass
+000005A4                           707  .br2
+000005A4                           708  
+Line 709 ERROR: Symbol value differs between first and second pass
+000005A4                           709  LwMapLength:
+000005A4= 0000                     710          dc.w 0
+000005A6                           711  
+Line 712 ERROR: Symbol value differs between first and second pass
+000005A6                           712  DrawLine:
+000005A6                           713          ;d2 - number of lines to repeat
+000005A6                           714          ;d5 - layer counter        
+000005A6                           715          ;a0 - blarraydim
+000005A6                           716          ;a1 - blarraycontent
+000005A6                           717          ;a2 - space size
+000005A6                           718          ;a5 - blmap
+000005A6                           719          ;a3 - bl map y
+000005A6                           720  
+000005A6  3E3C 0020                721          move.w  #32,d7
+000005AA                           722          ;calculate map position
+000005AA  33FC 000A 000005DA       723          move.w   #10, .lwrdcounter        
+000005B2                           724  
+000005B2                 TRUE      725          IFEQ blitter-0     
+000005B2                           726          
+000005B2                           727          ;Line Calculation
+Line 728 ERROR: Undefined symbol
+000005B2  3829 BD16                728          move.w   CNTBLSIZE(a1),d4      ;get width block
+000005B6  3613                     729          move.w    (a3),d3              ;xpos (offset)
+000005B8  47FA FB70                730          lea      mapypos(pc), a3
+000005BC  9C46                     731          sub.w     d6,d6 
+000005BE  9A85                     732          sub.l     d5,d5                ;lw to write
+000005C0  9281                     733          sub.l     d1,d1                ;cleanup d1
+Line 734 ERROR: Undefined symbol
+000005C2                           734  .ldrawbl2
+000005C2  3204                     735          move.w    d4,d1
+000005C4  9482                     736          sub.l     d2,d2                ;full lw base for calc = 0 
+000005C6  0800 001F                737          btst.l    #31,d0               ;block to draw?                 
+Line 738 ERROR: Undefined symbol
+000005CA  674A                     738          beq.s       .br5         
+000005CC  5382                     739          subq.l    #1,d2                ;#ffffffff = d2                      
+Line 740 ERROR: Undefined symbol
+000005CE                           740  .br5           
+000005CE  0441 0020                741          sub.w     #32,d1               ;calculate empty ...
+000005D2  9243                     742          sub.w     d3,d1                ;... space in this lw to the left
+000005D4  6A90                     743          bpl.s     .bigblock            ;Result > 32 ?
+Line 744 ERROR: Undefined symbol
+000005D6                           744  .br1        
+000005D6  4441                     745          neg.w     d1                   ;if not 
+000005D8  B27C 0020                746          cmp.w     #32,d1
+000005DC  6E84                     747          bgt.s     .clearalllw          ;offset greater than than lw       
+000005DE  E3AA                     748          lsl.l     d1,d2                ;cut off part not visible and too much..
+000005E0  ECAA                     749          lsr.l     d6,d2                ;.... or move to right
+Line 750 ERROR: Undefined symbol
+000005E2                           750  .br7
+000005E2                           751          ;prepare next block
+000005E2  4441                     752          neg.w     d1                   ;offset to left (neg) ...
+000005E4  0641 0020                753          add.w     #32,d1               ;....and size of lw
+000005E8  D246                     754          add.w     d6,d1                ;....and lsr offset = last pos block
+Line 755 ERROR: Undefined symbol
+000005EA                           755  .br2
+000005EA  8A82                     756          or.l      d2,d5                ;write to register
+000005EC  B27C 0020                757          cmp.w     #32,d1               ;block ends in next lw?
+Line 758 ERROR: Undefined symbol
+000005F0  6F24                     758          ble.s     .br3                 ;if no jump
+Line 759 ERROR: Undefined symbol
+000005F2                           759  .br6   
+000005F2  24C5                     760          move.l    d5,(a2)+             ;write lw
+000005F4  5379 000005DA            761          sub.w     #1, .lwrdcounter
+Line 762 ERROR: Undefined symbol
+000005FA  671A                     762          beq.s     .end
+000005FC  9A85                     763          sub.l     d5,d5                ;delete data 
+000005FE  0441 0020                764          sub.w     #32,d1                          
+00000602  9244                     765          sub.w     d4,d1                ;calc offset to left        
+00000604  4441                     766          neg.w     d1
+00000606  3601                     767          move.w    d1,d3   
+00000608  9C46                     768          sub.w     d6,d6                ;lsr = 0  
+Line 769 ERROR: Undefined symbol
+0000060A  600A                     769          bra.s     .ldrawbl2
+Line 770 ERROR: Undefined symbol
+0000060C                           770  .br3 
+Line 771 ERROR: Comma expected
+0000060C                           771          lsl.l     d0
+0000060C  5347                     772          subq      #1, d7
+0000060E  6788                     773          beq.s     .mapfwd                           
+00000610  D256                     774          add.w     (a6),d1   ;add blspace = startpos next block
+00000612  B27C 0020                775          cmp.w     #32,d1
+Line 776 ERROR: Undefined symbol
+00000616  6DFE                     776          blt.s     .br4
+00000618  24C5                     777          move.l    d5,(a2)+
+0000061A  9A85                     778          sub.l     d5,d5
+0000061C  5379 000005DA            779          sub.w     #1, .lwrdcounter
+Line 780 ERROR: Undefined symbol
+00000622  67F2                     780          beq.s     .end  
+00000624  0441 0020                781          sub.w     #32,d1
+00000628  B27C 0020                782          cmp.w     #32,d1
+Line 783 ERROR: Branch instruction displacement is out of range or invalid
+0000062C  6C72                     783          bge.s     .bigspace   
+Line 784 ERROR: Undefined symbol
+0000062E                           784  .br4    
+0000062E  C27C 001F                785          and.w     #%11111,d1           ;get offset for lsr 
+00000632  3C01                     786          move.w    d1,d6
+00000634  9643                     787          sub.w     d3,d3                ;no loffset for block
+Line 788 ERROR: Undefined symbol
+00000636  60DE                     788          bra.s     .ldrawbl2
+Line 789 ERROR: Undefined symbol
+00000638                           789  .end
+00000638                           790          ENDC
+Line 791 ERROR: Undefined symbol
+00000638  3E28 BD16                791          move.w    DIMWIDTH(a0),d7
+0000063C  4E75                     792          rts
+0000063E                           793  
+Line 794 ERROR: Symbol value differs between first and second pass
+0000063E                           794  .clearalllw:
+0000063E  9482                     795          sub.l     d2,d2
+Line 796 ERROR: Undefined symbol
+00000640  60D4                     796          bra.s     .br7 
+00000642                           797  
+Line 798 ERROR: Symbol value differs between first and second pass
+00000642                           798  .bigblock:
+00000642  D286                     799          add.l     d6,d1                      ;offset of block to draw later
+00000644  2602                     800          move.l    d2,d3                      ;d3 unused atm use this to save d2
+00000646  ECAB                     801          lsr.l     d6,d3                      ;offset to right for first lw
+00000648  8A83                     802          or.l      d3,d5                      ;finish pattern this lw
+0000064A  24C5                     803          move.l    d5,(a2)+                   ;write to screenbuffer
+0000064C  5379 000005DA            804          sub.w     #1,.lwrdcounter
+Line 805 ERROR: Undefined symbol
+00000652  67C2                     805          beq.s     .end
+00000654  0441 0020                806          sub.w     #32,d1
+Line 807 ERROR: Branch instruction displacement is out of range or invalid
+00000658  6B34                     807          bmi.s     .bb1
+Line 808 ERROR: Symbol value differs between first and second pass
+0000065A                           808  .bb2
+0000065A  24C2                     809          move.l    d2,(a2)+                   ;save complete block
+0000065C  5379 000005DA            810          sub.w     #1, .lwrdcounter
+Line 811 ERROR: Undefined symbol
+00000662  67B2                     811          beq.s     .end
+00000664  0441 0020                812          sub.w     #32,d1
+Line 813 ERROR: Branch instruction displacement is out of range or invalid
+00000668  6A14                     813          bpl.s     .bb2
+Line 814 ERROR: Symbol value differs between first and second pass
+0000066A                           814  .bb1
+0000066A  9A85                     815          sub.l     d5,d5
+0000066C  9C86                     816          sub.l     d6,d6
+0000066E  9683                     817          sub.l     d3,d3
+Line 818 ERROR: Undefined symbol
+00000670  6000 B6A4                818          bra.w     .br1        
+00000674                           819  
+Line 820 ERROR: Symbol value differs between first and second pass
+00000674                           820  .mapfwd:
+00000674  2019                     821          move.l     (a1)+,d0            
+00000676  7E20                     822          moveq.l     #32,d7
+Line 823 ERROR: Undefined symbol
+00000678  6000 B69C                823          bra.w      .br5
+0000067C                           824  
+Line 825 ERROR: Symbol value differs between first and second pass
+0000067C                           825  .bigspace
+0000067C  7400                     826          moveq.l    #0,d2
+Line 827 ERROR: Symbol value differs between first and second pass
+0000067E                           827  .bs1
+0000067E  24C2                     828          move.l     d2,(a2)+
+00000680  5379 000005DA            829          sub.w      #1, .lwrdcounter
+Line 830 ERROR: Undefined symbol
+00000686  678E                     830          beq.s      .end
+00000688  0441 0020                831          sub.w      #32, d1
+0000068C  B27C 0020                832          cmp.w      #32, d1
+Line 833 ERROR: Branch instruction displacement is out of range or invalid
+00000690  6C10                     833          bge.s      .bs1
+Line 834 ERROR: Undefined symbol
+00000692  6082                     834          bra.s      .br4
+00000694                           835  
+Line 836 ERROR: Symbol value differs between first and second pass
+00000694=                          836  .saveregs: dc.l 0,0,0,0,0,0,0,0
+Line 837 ERROR: Symbol value differs between first and second pass
+00000694=                          837  .savespacewidth: dc.w 0
+Line 838 ERROR: Symbol value differs between first and second pass
+00000694=                          838  .lwrdcounter: dc.w BPLWIDTH 
+00000694                           839  
+Line 840 ERROR: Symbol value differs between first and second pass
+00000694=                          840  currentdrawpos: dc.l 0
+Line 841 ERROR: Symbol value differs between first and second pass
+00000694=                          841  patternpos: dc.l 0
+00000694                           842                                                              
+Line 843 ERROR: Symbol value differs between first and second pass
+00000694                           843  mpchkblline:
+00000694= 0000 0000 0000 0...      844          dcb.w 4*60,0
+00000874                           845  
+Line 846 ERROR: Symbol value differs between first and second pass
+00000874                           846  bllnflag:
+Line 847 ERROR: Invalid opcode
+00000874                           847          REPT 5
+00000874                           848          ;dcb.w 14,1
+00000874= 0000 0000 0000 0...      849          dcb.w 11,0
+0000088A= 0001 0001 0001           850          dcb.w 3,1 
+Line 851 ERROR: Invalid opcode
+00000890                           851          ENDR
+Line 852 ERROR: Symbol value differs between first and second pass
+00000890                           852  bllnflag2:
+Line 853 ERROR: Invalid opcode
+00000890                           853          REPT 5
+00000890                           854          ;dcb.w 14,1
+00000890= 0001 0001 0001 0...      855          dcb.w 5,1
+0000089A= 0000 0000 0000           856          dcb.w 3,0
+000008A0= 0001 0001                857          dcb.w 2,1
+000008A4= 0000 0000 0000           858          dcb.w 3,0
+000008AA= 0001                     859          dc.w 1
+Line 860 ERROR: Invalid opcode
+000008AC                           860          ENDR
+Line 861 ERROR: Symbol value differs between first and second pass
+000008AC                           861  bllnflag3:
+Line 862 ERROR: Invalid opcode
+000008AC                           862          REPT 5
+000008AC                           863          ;dcb.w 11,1
+000008AC= 0000 0000 0000 0000      864          dcb.w 4,0
+000008B4= 0001 0001                865          dcb.w 2,1
+000008B8= 0000 0000                866          dcb.w 2,0
+000008BC= 0001 0001 0001           867          dcb.w 3,1
+Line 868 ERROR: Invalid opcode
+000008C2                           868          ENDR
+Line 869 ERROR: Symbol value differs between first and second pass
+000008C2                           869  bllnflag4:
+Line 870 ERROR: Invalid opcode
+000008C2                           870          REPT 5
+000008C2                           871          ;dcb.w 11,1
+000008C2= 0001 0001 0001 0001      872          dcb.w 4,1
+000008CA= 0000 0000 0000 0...      873          dcb.w 6,0
+000008D6= 0001                     874          dc.w 1
+Line 875 ERROR: Invalid opcode
+000008D8                           875          ENDR
+Line 876 ERROR: Symbol value differs between first and second pass
+000008D8                           876  bllnflag5:
+Line 877 ERROR: Invalid opcode
+000008D8                           877          REPT 5
+000008D8                           878          ;dcb.w 14,1
+000008D8= 0001                     879          dcb.w 1,1
+000008DA= 0000 0000 0000 0...      880          dcb.w 6,0
+000008E6= 0001                     881          dcb.w 1,1
+000008E8= 0000                     882          dcb.w 1,0
+000008EA= 0001                     883          dcb.w 1,1
+000008EC= 0000 0000                884          dcb.w 2,0
+000008F0= 0001 0001                885          dcb.w 2,1
+Line 886 ERROR: Invalid opcode
+000008F4                           886          ENDR
+Line 887 ERROR: Symbol value differs between first and second pass
+000008F4                           887  bllnflag6:
+Line 888 ERROR: Invalid opcode
+000008F4                           888          REPT 5
+000008F4                           889          ;dcb.w 14,1
+000008F4= 0001 0001 0001           890          dcb.w 3,1
+000008FA= 0000 0000 0000 0...      891          dcb.w 11,0
+Line 892 ERROR: Invalid opcode
+00000910                           892          ENDR
+Line 893 ERROR: Symbol value differs between first and second pass
+00000910                           893  bllnflag7:
+Line 894 ERROR: Invalid opcode
+00000910                           894          REPT 5
+00000910                           895          ;dcb.w 11,1
+00000910= 0001                     896          dcb.w 1,1
+00000912= 0000 0000 0000 0...      897          dcb.w 7,0
+Line 898 ERROR: Invalid opcode
+00000920                           898          ENDR
+Line 899 ERROR: Symbol value differs between first and second pass
+00000920                           899  bllnflag8:
+Line 900 ERROR: Invalid opcode
+00000920                           900          REPT 5
+00000920                           901          ;dcb.w 11,1
+00000920= 0001                     902          dcb.w 1,1
+00000922= 0000 0000 0000           903          dcb.w 3,0
+00000928= 0001 0001 0001 0001      904          dcb.w 4,1
+Line 905 ERROR: Invalid opcode
+00000930                           905          ENDR
+00000930                           906  
+00000930                           907  
+00000930                           908  
+Line 909 ERROR: Symbol value differs between first and second pass
+00000930                           909  blmap:
+00000930= FF FF FF FF FF FF ...    910      dcb.b 384,$ff 
+00000AB0                           911          ;incbin "sources:raw/bellpl1.raw"
+Line 912 ERROR: Symbol value differs between first and second pass
+00000AB0                           912  blmap2:
+00000AB0= FF FF FF FF FF FF ...    913      dcb.b 384,$ff
+00000C30                           914          ;incbin "sources:raw/bellpl2.raw"
+Line 915 ERROR: Symbol value differs between first and second pass
+00000C30                           915  blmap3:
+00000C30= FF FF FF FF FF FF ...    916      dcb.b 384,$ff
+00000DB0                           917          ;incbin "sources:raw/cherrypl1.raw"
+Line 918 ERROR: Symbol value differs between first and second pass
+00000DB0                           918  blmap4:
+00000DB0= FF FF FF FF FF FF ...    919      dcb.b 384,$ff
+00000F30                           920          ;incbin "sources:raw/cherrypl2.raw"          
+Line 921 ERROR: Symbol value differs between first and second pass
+00000F30                           921  blmap5:
+00000F30= FF FF FF FF FF FF ...    922      dcb.b 384,$ff
+000010B0                           923          ;incbin "sources:raw/strawberrypl1.raw"
+Line 924 ERROR: Symbol value differs between first and second pass
+000010B0                           924  blmap6:
+000010B0= FF FF FF FF FF FF ...    925      dcb.b 384,$ff
+00001230                           926          ;incbin "sources:raw/strawberrypl2.raw"
+Line 927 ERROR: Symbol value differs between first and second pass
+00001230                           927  blmap7:
+00001230= FF FF FF FF FF FF ...    928      dcb.b 384,$ff
+000013B0                           929          ;incbin "sources:raw/zwetschgepl1.raw"
+Line 930 ERROR: Symbol value differs between first and second pass
+000013B0                           930  blmap8:
+000013B0= FF FF FF FF FF FF ...    931      dcb.b 384,$ff
+00001530                           932          ;incbin "sources:raw/zwetschgepl2.raw"
+00001530                           933  
+00001530                           934  
+Line 935 ERROR: Symbol value differs between first and second pass
+00001530                           935  blarraydim:
+Line 936 ERROR: Symbol value differs between first and second pass
+00001530=                          936  .blwidth: dc.w 6 ;width in bytes
+Line 937 ERROR: Symbol value differs between first and second pass
+00001530=                          937  .blheight: dc.w 14
+Line 938 ERROR: Symbol value differs between first and second pass
+00001530=                          938  .bldepth: dc.w MAXDEPTH
+Line 939 ERROR: Symbol value differs between first and second pass
+00001530=                          939  .frames: dc.w 130
+Line 940 ERROR: Symbol value differs between first and second pass
+00001530=                          940  .blstruct: dc.l blarraycont, blarraycont2, blarraycont3, blarraycont4
+00001530= 00001508 00001520 ...    941         dc.l blarraycont5, blarraycont6,blarraycont7, blarraycont8
+00001540                           942  
+Line 943 ERROR: Symbol value differs between first and second pass
+00001540                           943  blarraycont:
+Line 944 ERROR: Symbol value differs between first and second pass
+00001540=                          944  .posx: dc.w 0
+Line 945 ERROR: Symbol value differs between first and second pass
+00001540=                          945  .posy: dc.w 0
+Line 946 ERROR: Symbol value differs between first and second pass
+00001540=                          946  .blsize: dc.w 7
+Line 947 ERROR: Symbol value differs between first and second pass
+00001540=                          947  .spsize: dc.w 0
+Line 948 ERROR: Symbol value differs between first and second pass
+00001540=                          948  .blposy: dc.w 1-1
+Line 949 ERROR: Symbol value differs between first and second pass
+00001540=                          949  .blposx: dc.w 1
+Line 950 ERROR: Symbol value differs between first and second pass
+00001540=                          950  .blpfrstrt: dc.w 99
+Line 951 ERROR: Symbol value differs between first and second pass
+00001540=                          951  .blmap: dc.l blmap8
+Line 952 ERROR: Symbol value differs between first and second pass
+00001540=                          952  .bllnflag: dc.l bllnflag8
+Line 953 ERROR: Symbol value differs between first and second pass
+00001540=                          953  .blheight: dc.w 9
+00001540                           954  
+Line 955 ERROR: Symbol value differs between first and second pass
+00001540                           955  blarraycont2:
+Line 956 ERROR: Symbol value differs between first and second pass
+00001540=                          956  .posx: dc.w 0
+Line 957 ERROR: Symbol value differs between first and second pass
+00001540=                          957  .posy: dc.w 0
+Line 958 ERROR: Symbol value differs between first and second pass
+00001540=                          958  .blsize: dc.w 8
+Line 959 ERROR: Symbol value differs between first and second pass
+00001540=                          959  .spsize: dc.w 0
+Line 960 ERROR: Symbol value differs between first and second pass
+00001540=                          960  .blposy: dc.w 1-1
+Line 961 ERROR: Symbol value differs between first and second pass
+00001540=                          961  .blposx: dc.w 1
+Line 962 ERROR: Symbol value differs between first and second pass
+00001540=                          962  .blfrstrt: dc.w 99
+Line 963 ERROR: Symbol value differs between first and second pass
+00001540=                          963  .blmap: dc.l blmap7
+Line 964 ERROR: Symbol value differs between first and second pass
+00001540=                          964  .bllnflag: dc.l bllnflag7
+Line 965 ERROR: Symbol value differs between first and second pass
+00001540=                          965  .blheight: dc.w 9
+00001540                           966  
+Line 967 ERROR: Symbol value differs between first and second pass
+00001540                           967  blarraycont3:
+Line 968 ERROR: Symbol value differs between first and second pass
+00001540=                          968  .posx: dc.w 0
+Line 969 ERROR: Symbol value differs between first and second pass
+00001540=                          969  .posy: dc.w 0
+Line 970 ERROR: Symbol value differs between first and second pass
+00001540=                          970  .blsize: dc.w 9
+Line 971 ERROR: Symbol value differs between first and second pass
+00001540=                          971  .spsize: dc.w 0
+Line 972 ERROR: Symbol value differs between first and second pass
+00001540=                          972  .blposy: dc.w 1-1
+Line 973 ERROR: Symbol value differs between first and second pass
+00001540=                          973  .blposx: dc.w 1
+Line 974 ERROR: Symbol value differs between first and second pass
+00001540=                          974  .blfrstart: dc.w 66
+Line 975 ERROR: Symbol value differs between first and second pass
+00001540=                          975  .blmap: dc.l blmap6
+Line 976 ERROR: Symbol value differs between first and second pass
+00001540=                          976  .bllnflag dc.l bllnflag6
+Line 977 ERROR: Symbol value differs between first and second pass
+00001540=                          977  .blheight: dc.w 9
+00001540                           978  
+Line 979 ERROR: Symbol value differs between first and second pass
+00001540                           979  blarraycont4:
+Line 980 ERROR: Symbol value differs between first and second pass
+00001540=                          980  .posx: dc.w 0
+Line 981 ERROR: Symbol value differs between first and second pass
+00001540=                          981  .posy: dc.w 0
+Line 982 ERROR: Symbol value differs between first and second pass
+00001540=                          982  .blsize: dc.w 10
+Line 983 ERROR: Symbol value differs between first and second pass
+00001540=                          983  .spsize: dc.w 0
+Line 984 ERROR: Symbol value differs between first and second pass
+00001540=                          984  .blposy: dc.w 1-1
+Line 985 ERROR: Symbol value differs between first and second pass
+00001540=                          985  .blposx: dc.w 1
+Line 986 ERROR: Symbol value differs between first and second pass
+00001540=                          986  .blfrstrt: dc.w 66
+Line 987 ERROR: Symbol value differs between first and second pass
+00001540=                          987  .blmap: dc.l blmap5
+Line 988 ERROR: Symbol value differs between first and second pass
+00001540=                          988  .bllnflag dc.l bllnflag5
+Line 989 ERROR: Symbol value differs between first and second pass
+00001540=                          989  .blheight: dc.w 9
+00001540                           990  
+Line 991 ERROR: Symbol value differs between first and second pass
+00001540                           991  blarraycont5:
+Line 992 ERROR: Symbol value differs between first and second pass
+00001540=                          992  .posx: dc.w 0
+Line 993 ERROR: Symbol value differs between first and second pass
+00001540=                          993  .posy: dc.w 0
+Line 994 ERROR: Symbol value differs between first and second pass
+00001540=                          994  .blsize: dc.w 14
+Line 995 ERROR: Symbol value differs between first and second pass
+00001540=                          995  .spsize: dc.w 0
+Line 996 ERROR: Symbol value differs between first and second pass
+00001540=                          996  .blposy: dc.w 1-1
+Line 997 ERROR: Symbol value differs between first and second pass
+00001540=                          997  .blposx: dc.w 1
+Line 998 ERROR: Symbol value differs between first and second pass
+00001540=                          998  .blpfrstrt: dc.w 34 
+Line 999 ERROR: Symbol value differs between first and second pass
+00001540=                          999  .blmap: dc.l blmap4
+Line 1000 ERROR: Symbol value differs between first and second pass
+00001540=                         1000  .bllnflag: dc.l bllnflag4
+Line 1001 ERROR: Symbol value differs between first and second pass
+00001540=                         1001  .blheight: dc.w 11
+00001540                          1002  
+Line 1003 ERROR: Symbol value differs between first and second pass
+00001540                          1003  blarraycont6:
+Line 1004 ERROR: Symbol value differs between first and second pass
+00001540=                         1004  .posx: dc.w 0
+Line 1005 ERROR: Symbol value differs between first and second pass
+00001540=                         1005  .posy: dc.w 0
+Line 1006 ERROR: Symbol value differs between first and second pass
+00001540=                         1006  .blsize: dc.w 14
+Line 1007 ERROR: Symbol value differs between first and second pass
+00001540=                         1007  .spsize: dc.w 0
+Line 1008 ERROR: Symbol value differs between first and second pass
+00001540=                         1008  .blposy: dc.w 1-1
+Line 1009 ERROR: Symbol value differs between first and second pass
+00001540=                         1009  .blposx: dc.w 1
+Line 1010 ERROR: Symbol value differs between first and second pass
+00001540=                         1010  .blfrstrt: dc.w 34
+Line 1011 ERROR: Symbol value differs between first and second pass
+00001540=                         1011  .blmap: dc.l blmap3
+Line 1012 ERROR: Symbol value differs between first and second pass
+00001540=                         1012  .bllnflag: dc.l bllnflag3
+Line 1013 ERROR: Symbol value differs between first and second pass
+00001540=                         1013  .blheight: dc.w 11
+00001540                          1014  
+Line 1015 ERROR: Symbol value differs between first and second pass
+00001540                          1015  blarraycont7:
+Line 1016 ERROR: Symbol value differs between first and second pass
+00001540=                         1016  .posx: dc.w 0
+Line 1017 ERROR: Symbol value differs between first and second pass
+00001540=                         1017  .posy: dc.w 0
+Line 1018 ERROR: Symbol value differs between first and second pass
+00001540=                         1018  .blsize: dc.w 12
+Line 1019 ERROR: Symbol value differs between first and second pass
+00001540=                         1019  .spsize: dc.w 0
+00001540= 0000                    1020  .blposy: dc.w 1-1
+00001542= 0001                    1021  .blposx: dc.w 1
+00001544= 0001                    1022  .blfrstart: dc.w 1
+00001546= 00000A00                1023  .blmap: dc.l blmap2
+0000154A= 000007E0                1024  .bllnflag dc.l bllnflag2
+0000154E= 000E                    1025  .blheight: dc.w 14 
+00001550                          1026  
+00001550                          1027  blarraycont8:
+00001550= 0000                    1028  .posx: dc.w 0
+00001552= 0000                    1029  .posy: dc.w 0
+00001554= 000C                    1030  .blsize: dc.w 12
+00001556= 0000                    1031  .spsize: dc.w 0
+00001558= 0000                    1032  .blposy: dc.w 1-1
+0000155A= 0001                    1033  .blposx: dc.w 1
+0000155C= 0001                    1034  .blfrstrt: dc.w 1
+0000155E= 00000880                1035  .blmap: dc.l blmap
+00001562= 000007C4                1036  .bllnflag dc.l bllnflag
+00001566= 000E                    1037  .blheight: dc.w 14
+00001568                          1038  
+Line 1039 ERROR: Invalid syntax
+00001568=                         1039  dldata:dcb.b 2000
+00001568                          1040          
+Line 1041 ERROR: Invalid opcode
+00001568                          1041  DIMWIDTH = 0
+Line 1042 ERROR: Invalid opcode
+00001568                          1042  DIMHEIGHT = 2
+Line 1043 ERROR: Invalid opcode
+00001568                          1043  DIMDEPTH = 4
+Line 1044 ERROR: Invalid opcode
+00001568                          1044  DIMFRAMES = 6
+Line 1045 ERROR: Invalid opcode
+00001568                          1045  DIMCONTENT = 8
+00001568                          1046  
+Line 1047 ERROR: Invalid opcode
+00001568                          1047  CNTPOSX = 0
+Line 1048 ERROR: Invalid opcode
+00001568                          1048  CNTPOSY = 2
+Line 1049 ERROR: Invalid opcode
+00001568                          1049  CNTBLSIZE = 4
+Line 1050 ERROR: Invalid opcode
+00001568                          1050  CNTSPSIZE = 6
+Line 1051 ERROR: Invalid opcode
+00001568                          1051  CNTBLPOSY = 8
+Line 1052 ERROR: Invalid opcode
+00001568                          1052  CNTBLPOSX = 10
+Line 1053 ERROR: Invalid opcode
+00001568                          1053  CNTFRAME = 12
+Line 1054 ERROR: Invalid opcode
+00001568                          1054  CNTBLMAP = 14
+Line 1055 ERROR: Invalid opcode
+00001568                          1055  CNTBLLNFLAG = 18
+Line 1056 ERROR: Invalid opcode
+00001568                          1056  CNTHEIGHT = 22
+Line 1057 ERROR: Invalid opcode
+00001568                          1057  CNTOBJSIZE = 24
+00001568                          1058  
+00001568                          1059        INCLUDE sources:graphics.s
+Line 1060 ERROR: Unable to access specified file
+00001568                          1060        INCLUDE sources:graphics.s
+Line 1061 ERROR: Undefined symbol
+00001568                          1061     SECTION FRAMEDATA,DATA
+00001568                          1062        INCLUDE sources:FrameData.i   
+Line 1063 ERROR: Unable to access specified file
+00001568                          1063        INCLUDE sources:FrameData.i   
+00001568                          1064      
+Line 1065 WARNING: Address expected
+00001568                          1065   END
+
+345 errors detected
+1 warning generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+BLARRAYCONT         14A8
+BLARRAYCONT2        14C0
+BLARRAYCONT2:BLFRSTRT  14CC
+BLARRAYCONT2:BLHEIGHT  14D6
+BLARRAYCONT2:BLLNFLAG  14D2
+BLARRAYCONT2:BLMAP  14CE
+BLARRAYCONT2:BLPOSX  14CA
+BLARRAYCONT2:BLPOSY  14C8
+BLARRAYCONT2:BLSIZE  14C4
+BLARRAYCONT2:POSX   14C0
+BLARRAYCONT2:POSY   14C2
+BLARRAYCONT2:SPSIZE  14C6
+BLARRAYCONT3        14D8
+BLARRAYCONT3:BLFRSTART  14E4
+BLARRAYCONT3:BLHEIGHT  14EE
+BLARRAYCONT3:BLLNFLAG  14EA
+BLARRAYCONT3:BLMAP  14E6
+BLARRAYCONT3:BLPOSX  14E2
+BLARRAYCONT3:BLPOSY  14E0
+BLARRAYCONT3:BLSIZE  14DC
+BLARRAYCONT3:POSX   14D8
+BLARRAYCONT3:POSY   14DA
+BLARRAYCONT3:SPSIZE  14DE
+BLARRAYCONT4        14F0
+BLARRAYCONT4:BLFRSTRT  14FC
+BLARRAYCONT4:BLHEIGHT  1506
+BLARRAYCONT4:BLLNFLAG  1502
+BLARRAYCONT4:BLMAP  14FE
+BLARRAYCONT4:BLPOSX  14FA
+BLARRAYCONT4:BLPOSY  14F8
+BLARRAYCONT4:BLSIZE  14F4
+BLARRAYCONT4:POSX   14F0
+BLARRAYCONT4:POSY   14F2
+BLARRAYCONT4:SPSIZE  14F6
+BLARRAYCONT5        1508
+BLARRAYCONT5:BLHEIGHT  151E
+BLARRAYCONT5:BLLNFLAG  151A
+BLARRAYCONT5:BLMAP  1516
+BLARRAYCONT5:BLPFRSTRT  1514
+BLARRAYCONT5:BLPOSX  1512
+BLARRAYCONT5:BLPOSY  1510
+BLARRAYCONT5:BLSIZE  150C
+BLARRAYCONT5:POSX   1508
+BLARRAYCONT5:POSY   150A
+BLARRAYCONT5:SPSIZE  150E
+BLARRAYCONT6        1520
+BLARRAYCONT6:BLFRSTRT  152C
+BLARRAYCONT6:BLHEIGHT  1536
+BLARRAYCONT6:BLLNFLAG  1532
+BLARRAYCONT6:BLMAP  152E
+BLARRAYCONT6:BLPOSX  152A
+BLARRAYCONT6:BLPOSY  1528
+BLARRAYCONT6:BLSIZE  1524
+BLARRAYCONT6:POSX   1520
+BLARRAYCONT6:POSY   1522
+BLARRAYCONT6:SPSIZE  1526
+BLARRAYCONT7        1538
+BLARRAYCONT7:BLFRSTART  1544
+BLARRAYCONT7:BLHEIGHT  154E
+BLARRAYCONT7:BLLNFLAG  154A
+BLARRAYCONT7:BLMAP  1546
+BLARRAYCONT7:BLPOSX  1542
+BLARRAYCONT7:BLPOSY  1540
+BLARRAYCONT7:BLSIZE  153C
+BLARRAYCONT7:POSX   1538
+BLARRAYCONT7:POSY   153A
+BLARRAYCONT7:SPSIZE  153E
+BLARRAYCONT8        1550
+BLARRAYCONT8:BLFRSTRT  155C
+BLARRAYCONT8:BLHEIGHT  1566
+BLARRAYCONT8:BLLNFLAG  1562
+BLARRAYCONT8:BLMAP  155E
+BLARRAYCONT8:BLPOSX  155A
+BLARRAYCONT8:BLPOSY  1558
+BLARRAYCONT8:BLSIZE  1554
+BLARRAYCONT8:POSX   1550
+BLARRAYCONT8:POSY   1552
+BLARRAYCONT8:SPSIZE  1556
+BLARRAYCONT:BLHEIGHT  14BE
+BLARRAYCONT:BLLNFLAG  14BA
+BLARRAYCONT:BLMAP   14B6
+BLARRAYCONT:BLPFRSTRT  14B4
+BLARRAYCONT:BLPOSX  14B2
+BLARRAYCONT:BLPOSY  14B0
+BLARRAYCONT:BLSIZE  14AC
+BLARRAYCONT:POSX    14A8
+BLARRAYCONT:POSY    14AA
+BLARRAYCONT:SPSIZE  14AE
+BLARRAYDIM          1480
+BLARRAYDIM:BLDEPTH  1484
+BLARRAYDIM:BLHEIGHT  1482
+BLARRAYDIM:BLSTRUCT  1488
+BLARRAYDIM:BLWIDTH  1480
+BLARRAYDIM:FRAMES   1486
+BLLNFLAG            7C4
+BLLNFLAG2           7E0
+BLLNFLAG3           7FC
+BLLNFLAG4           812
+BLLNFLAG5           828
+BLLNFLAG6           844
+BLLNFLAG7           860
+BLLNFLAG8           870
+BLLNFLAGPOS         130
+BLMAP               880
+BLMAP2              A00
+BLMAP3              B80
+BLMAP4              D00
+BLMAP5              E80
+BLMAP6              1000
+BLMAP7              1180
+BLMAP8              1300
+BLMAPPOS            12C
+COPPERPOS           3B4
+COUNTERPOS          5C
+COUNTERS            60
+CURRENTDRAWPOS      5DC
+DEBUG               0
+DLDATA              1568
+DRAWBLANKLINE       13A
+DRAWLINE            550
+DRAWLINE:BB1        58E
+DRAWLINE:BB2        57E
+DRAWLINE:BIGBLOCK   566
+DRAWLINE:BIGSPACE   5A0
+DRAWLINE:BS1        5A2
+DRAWLINE:CLEARALLLW  562
+DRAWLINE:LWRDCOUNTER  5DA
+DRAWLINE:MAPFWD     598
+DRAWLINE:SAVEREGS   5B8
+DRAWLINE:SAVESPACEWIDTH  5D8
+DRAWLINES           13C
+DRAWLINES:BR1       2B8
+DRAWLINES:BR10      256
+DRAWLINES:BR2       264
+DRAWLINES:BR3       268
+DRAWLINES:BR4       292
+DRAWLINES:BR5       296
+DRAWLINES:BR6       17A
+DRAWLINES:BR7       200
+DRAWLINES:BR9       29C
+DRAWLINES:CONTENTPTR  30C
+DRAWLINES:HEIGHTPOS  30A
+DRAWLINES:LFUNCBAK  2C8
+DRAWLINES:LINESLEFTBLOCK  21C
+DRAWLINES:LINESLEFTSPACE  278
+DRAWLINES:LLFTSPCEMPTY  27A
+DRAWLINES:LP1       14C
+DRAWLINES:NEXT      280
+DRAWLINES:NODEBUG   1D2
+DRAWLINES:SAVEREGS  2CC
+DRAWLINES:TOTSIZE   308
+EFFECT1_1           6C
+EFFECT1_1:BR1       D8
+EFFECT1_1:COUNTER   DC
+EFFECT1_1:FRAME     DE
+EFFECT1_1:LP1       B2
+GETARRVALUE         134
+I                   134
+INITSCREENBUFFERS   10A
+JMPLIST             66
+JMPLISTPOS          62
+LWMAPLENGTH         54E
+MAINLOOP            1E
+MAINLOOP:BR1        44
+MAINLOOP:MLWAITY    2A
+MAPYPOS             12A
+MLGOON              4C
+MPCHKBLLINE         5E4
+PATTERNPOS          5E0
+PREPROCESSDL        3D8
+PREPROCESSDL:BR2    438
+PREPROCESSDL:BR3    458
+PREPROCESSDL:BR4    47A
+PREPROCESSDL:BR5    42E
+PREPROCESSDL:BR6    41A
+PREPROCESSDL:END    496
+PREPROCESSDL:INIT   494
+PREPROCESSDL:LP1    414
+PREPROCESSDL:MAPFWD  49A
+PREPROCESSDL:RESETMAP  484
+PREPROCESSDL:WRITELW  498
+REPEATCOPPER        310
+REPEATCOPPER:BACKUP  380
+REPEATCOPPER:BR1    33E
+REPEATCOPPER:BR2    342
+REPEATCOPPER:BR3    37E
+REPEATCOPPER:BR4    362
+REPEATCOPPER:BR5    364
+REPEATCOPPER:LP1    32E
+REPEATCOPPER:LP2    326
+SETFRAMEDEFAULT     E0
+SETFRAMEDEFAULT:PTRTOMAP  106
+STARTPROG           6
+WRITEBLOCK1         49C
+WRITEBLOCK1:BL1     4AA
+WRITEBLOCK1:BR1     4B6
+WRITEBLOCK2         4B6
+WRITEBLOCK2:BL2     4F4
+WRITEBLOCK2:BR1     508
+WRITEBLOCK2:BR2     50C
+WRITEBLOCK2:BR3     4CE
+WRITEBLOCK2:BR4     4DE
+WRITEBLOCK2:BR5     4E6
+WRITEBLOCK2:WRITELW  50C
+WRITEBLOCK3         512
+WRITEBLOCK3:BL2     536
+WRITEBLOCK3:BR1     54A
+WRITEBLOCK3:BR2     54E
+WRITECOPPER         382
+WRITECOPPER:BR1     3A0
+WRITECOPPER:BR2     3A8
+WRITECOPPER:LP1     390
+WRITECOPPER:RESETPOS  3B0
+WRITECOPPERPOSADD   3B8
+WRITECOPPERPOSADD:BR2  3D2
+WRITECOPPERPOSADD:LP1  3C2
