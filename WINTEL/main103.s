@@ -81,7 +81,7 @@ counterpos:
 
 counters:
         dc.w 16*50
-		dc.w 66
+		dc.w 67
 		dc.w 16*50-66
 jmplistpos:
         dc.l  jmplist
@@ -100,7 +100,7 @@ Eff1ZoomIn:
 
 Effect1_1:
   move.w #0, Eff1ZoomIn
-  bsr.s  Effect1_Main
+  bsr.w  Effect1_Main
   bra.w  mlgoon
 
 Effect1_2:
@@ -109,17 +109,26 @@ Effect1_2:
   bra.w  mlgoon
 
 Effect1_3:
+  cmp.w  #67, .framecount
+  bne.s  .br1
+  move.w #0, .framecount
+  lea    EF1_MoveX, a0
   bsr.s  RotateMove
+  lea    EF1_MoveY, a0
+  bsr.s  RotateMove
+.br1
   lea    EF1_PATTERNDATA7, a0
   move.l #PTR_CHECKERBOARD_DATA, (a0) 
   move.w #1, Eff1ZoomIn
   bsr.s  Effect1_Main
+  add.w  #1, .framecount
   bra.w  mlgoon
+  
+.framecount: dc.w 0
 
 RotateMove:
-  lea    EF1_MoveY, a0
+  ;a0 Directions
   move.w (a0), d0
-  move.w #8-2, d1
   REPT 7
   move.w 2(a0),(a0)+
   ENDR
