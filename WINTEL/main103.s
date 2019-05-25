@@ -105,10 +105,11 @@ Effect1_1:
 
 Effect1_2:
   move.w #1, Eff1ZoomIn
-  bsr.s  Effect1_Main
+  bsr.w  Effect1_Main
   bra.w  mlgoon
 
 Effect1_3:
+  ;move.w #$000, $dff180
   cmp.w  #67, .framecount
   bne.s  .br1
   move.w #0, .framecount
@@ -123,8 +124,9 @@ Effect1_3:
   bsr.s  Effect1_Main
   add.w  #1, .framecount
   bra.w  mlgoon
-  
-.framecount: dc.w 0
+
+
+.framecount: dc.w 67
 
 RotateMove:
   ;a0 Directions
@@ -135,6 +137,11 @@ RotateMove:
   move.w d0,(a0)
   rts
 
+EF1_dummy: 
+  dc.w 1,-1,0,0,1,-1,0,0
+
+EF1_dummy2: 
+  dc.w 0,0,1,-1,0,0,1,-1
 
 Effect1_Main:
 ;a0 = blarraydim
@@ -150,7 +157,6 @@ Effect1_Main:
         bsr.w   SetCopperList			;  Setcopperlist();
         bsr.w   SetBitPlanePointers     ;  SetBitplanePointers();
         move.w  #1, .counter            ;  counter = 1; //50 fps
-        move.w  #$00f,$dff180           ;  Req_Col0 = 00f; //Coppermonitor
 		lea     .frame, a3              ; 
 		lea     EF1_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
 		;sub.l nam  #FRMSIZE*7, a1         ; DEBUG
@@ -161,19 +167,20 @@ Effect1_Main:
 		move.w  (a6), DIMWIDTH(a0)	;  	        *blarraycont.data.width;
 		move.w  2(a6), DIMHEIGHT(a0)	;  blarraydim.height =	  
 										;  		    blarraycont.data.height;
-        moveq.l #7,d0				    ;  for(int i=0;i<8;i++) 
+        move.w   #7, .i     		    ;  for(int i=0;i<8;i++) 
 		lea      EF1_MoveX, a5
 		lea      EF1_MoveY, a6
 .lp1  									;  {
 		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
-		bsr.w   GetFrame        		;    GetFrame(  framedate, frmnr) 
+		bsr.w   GetFrame        		;    GetFrame(  framedate, frmnr)	
         bsr.w   MoveData		
 		bsr.w   SetFrame                ;    SetFrame(  input, laydat);
 		addq.l  #2,a5
 		addq.l  #2,a6
 		sub.l   #FRMSIZE, a1		    ;  	 frmdat++; //Next object
 		add.l   #CNTOBJSIZE, a2         ;    laydat++;
-		dbf     d0, .lp1			    ;  } 
+		sub.w   #1, .i
+		bpl.s   .lp1			        ;  } 
 
         bsr.w    MoveAdjust             ;  MoveAdjust( );			
 		move.l  .colptr(pc), a5
@@ -191,12 +198,14 @@ Effect1_Main:
 		add.l  #1024, (a5)     	    ;      colptr++	
 .br3                                    ;    }
                                         ;  }
-		bsr.w  DrawLines                ;  DrawLines(blarraydim); 
-	    move.w #$c00,$dff106            ;  Reg_Col0 = 00;
-	    move.w #$0,$dff180
+		bsr.w  DrawLines                ;  DrawLines(blarraydim);
+        ;move.w #$c00,$dff106            ;  Reg_Col0 = 00;
+	    ;move.w #$0,$dff180		
+	
 .br1        							;}
         rts
-		
+
+.i dc.w 7		
 .counter: dc.w 1
 .frame: dc.l 0
 .colptr: dc.l EF1_COLOR0
@@ -241,7 +250,6 @@ SetColData:								 ;SetColData(  colptr)
 ;a4 = copptr 
 ;a5 = colptr
 ;a6 = copptrlw 
-;d0 = i      
                                          ;{	
 		move.l  draw_copper, a4          ;  copptr = draw_buffer;
 		add.l   #2,a4                    ;  copptr += 10;
@@ -277,7 +285,7 @@ MoveData:                               ;MoveData(	input
   beq.s   .br1                          ;  {
   move.w  d3,d0
   move.w  d1, a4
-  bsr.s   MoveDataItem               ;    MoveColDataItem( posdet, pos);
+  bsr.s   MoveDataItem                  ;    MoveColDataItem( posdet, pos);
   move.w  a4, d1
   move.w  d0, d3
 .br1                                    ;  }
@@ -392,7 +400,7 @@ DrawLines:
         ;a3 - ypos
         ;a5 - bl map y
         ;a6 - bl map x
-
+		sub.l    d5, d5
         move.w   DIMDEPTH(a0),d5
         subq     #1,d5 
         lea      DIMCONTENT(a0),a1           ; load start of ptr list
