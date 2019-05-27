@@ -57,10 +57,10 @@ MainLoop:
     CMPI.L D2,D0                            ; selected vpos reached
     BNE.S  .mlwaity
 
-    move.l counterpos(pc),a0
-    sub.w  #1,(a0)                
+    lea    continue,a0
+    cmp.w  #1,(a0)                
     bne.s  .br1             
-    add.l  #2,counterpos                    ;go to next counter
+    move.w #0,(a0)
     add.l  #4,jmplistpos
 .br1   
     move.l jmplistpos(pc),a0     
@@ -79,16 +79,9 @@ mlgoon:
 	endc
 	rts     
 
-counterpos:
-        dc.l counters
-
-counters:
-        dc.w 1*50
-		dc.w 256/4
-		dc.w 1
-        dc.w 16*50
-		dc.w 67
-		dc.w 16*50-66
+continue:
+        dc.w 0
+		
 jmplistpos:
         dc.l  jmplist
 jmplist:
@@ -138,15 +131,31 @@ Effect0_1:
   move.l #BPLLOGO, view_buffer
   bsr.w  SetBitplanePointersDefault
   bsr.w  CalculateFade  
+  sub.w  #1, .counter
+  beq.s  .br1
   bra.w  mlgoon
+.br1
+  move.w #1, continue
+  bra.w  mlgoon
+  
+.counter: dc.w 1*50
 
 Effect0_2:
   bsr.w  SetBitplanePointersDefault
   bsr.w  CalculateFade
   sub.w  #4, Eff0Multiplier
+  sub.w  #1, .counter
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  move.w #1, continue
   bra.w  mlgoon
 
+.counter dc.w 256/4
+
 Effect1_0:
+  move.l #bitplane, draw_buffer
+  move.l #bitplane+40*40*8, view_buffer
   ifeq SOUND-1
         lea Module1,a0
         sub.l 	a1,a1
@@ -154,14 +163,20 @@ Effect1_0:
         moveq 	#0,d0
   jsr	P61_Init
   endc
+  move.w #1, continue
   bra.w mlgoon
 
-Effect1_1:
+Effect1_1: 
   move.w #$f00, $dff180
   move.w #0, Eff1ZoomIn
   bsr.w  Effect1_Main
   move.w #$c00, $dff106
   move.w #$000, $dff180
+  cmp.w #2, P61_Pos
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  move.w #1, continue
   bra.w  mlgoon
 
 Effect1_2:
@@ -170,6 +185,11 @@ Effect1_2:
   bsr.w  Effect1_Main
   move.w #$c00, $dff106
   move.w #$000, $dff180
+  cmp.w  #3, P61_Pos
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  move.w #1, continue
   bra.w  mlgoon
 
 Effect1_3:
@@ -189,6 +209,11 @@ Effect1_3:
   add.w  #1, .framecount
   move.w #$c00, $dff106
   move.w #$000, $dff180
+  cmp.w  #5, P61_Patt
+  beq.s  .br2
+  bra.w  mlgoon
+.br2
+  move.w #1, continue
   bra.w  mlgoon
 
 .framecount: dc.w 67

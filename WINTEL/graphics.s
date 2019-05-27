@@ -1230,7 +1230,7 @@ COLP0B:
  CNOP 0,8
 
 BPLLOGO:
-    INCBIN "sources:raw/voidlogo.raw"
+  INCBIN "sources:raw/voidlogo.raw"
        
 Module1:
   incbin  sources:mod/P61.chippy524   
