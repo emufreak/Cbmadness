@@ -172,12 +172,15 @@ Effect1_1:
   bsr.w  Effect1_Main
   move.w #$c00, $dff106
   move.w #$000, $dff180
-  cmp.w #2, P61_Pos
+  cmp.w  #2, P61_Pos
   beq.s  .br1
+  add.w  #1, .framecount
   bra.w  mlgoon
 .br1
   move.w #1, continue
   bra.w  mlgoon
+
+.framecount dc.w 0
 
 Effect1_2:
   move.w #$f00, $dff180
@@ -185,18 +188,20 @@ Effect1_2:
   bsr.w  Effect1_Main
   move.w #$c00, $dff106
   move.w #$000, $dff180
-  cmp.w  #3, P61_Pos
+  sub.w  #1, .counter
   beq.s  .br1
   bra.w  mlgoon
 .br1
   move.w #1, continue
   bra.w  mlgoon
 
+.counter dc.w 67
+
 Effect1_3:
   move.w #$f00, $dff180
   cmp.w  #67, .framecount
   bne.s  .br1
-  move.w #0, .framecount
+  move.w  #0, .framecount
   lea    EF1_MoveX, a0
   bsr.s  RotateMove
   lea    EF1_MoveY, a0
@@ -209,7 +214,7 @@ Effect1_3:
   add.w  #1, .framecount
   move.w #$c00, $dff106
   move.w #$000, $dff180
-  cmp.w  #5, P61_Patt
+  cmp.w  #4, P61_Pos
   beq.s  .br2
   bra.w  mlgoon
 .br2
@@ -421,7 +426,7 @@ MoveDataItem:                        ;MoveDataItem(	posdet, pos)
   rts									;}
 
 percentage:
-	dc.w 44;
+	dc.w 168;
 
 MoveAdjust:
   move.w  percentage(pc), d7           ;    if(percentage <	200)  
