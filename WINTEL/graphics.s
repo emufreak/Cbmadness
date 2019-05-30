@@ -642,7 +642,7 @@ copperlist:
 
 	CNOP 0,$10000
 
-COPPERLISTLOGO:
+COPPERLISTIMAGE:
 
     ;Sprpointers
     dc.w    $120,0,$122,0,$124,0,$126,0,$128,0,$12a,0
@@ -662,7 +662,7 @@ COPPERLISTLOGO:
 
 	dc.w	$100,$210+$8000              ; bplcon0
 
-LGBPLPOINTERS:
+IMGBPLPOINTERS:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
 	dc.w $e4,$0000,$e6,$0000
     dc.w $e8,$0000,$ea,$0000
@@ -1231,7 +1231,10 @@ COLP0B:
 
 BPLLOGO:
   INCBIN "sources:raw/voidlogo.raw"
-       
+
+BPLTITLE:
+  INCBIN "sources:raw/title.raw"
+  
 Module1:
   incbin  sources:mod/P61.chippy524   
 	

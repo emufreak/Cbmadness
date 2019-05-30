@@ -91,14 +91,16 @@ jmplist:
         bra.w Effect1_1
 		bra.w Effect1_2
 		bra.w Effect1_3
+		bra.w Effect2_0
+		bra.w Effect2_1
         rts
 
 BLINCREMENT = 1
 SPINCREMENT = 2
 FRAMES=150
 
-Eff0Multiplier: dc.w 0
-Eff0Temporaneo: dc.l 0
+ColMultiplier: dc.w 0
+Temporaneo: dc.l 0
 
 Eff1ZoomIn:
   dc.w 0
@@ -111,7 +113,7 @@ SetBitplanePointersDefault:
 	move.l  draw_buffer,d1
 	moveq	#BPLCOUNT-1,d2
 	move.l  draw_copper,a2
-	move.l  #LGBPLPOINTERS,a2
+	move.l  #IMGBPLPOINTERS,a2
 .lp1
 	move.w 	d1,6(a2)
 	swap 	d1
@@ -123,14 +125,18 @@ SetBitplanePointersDefault:
 	rts
 
 Effect0_1:
+  move.w #$f00, $dff180
   IFEQ DEBUG-0
-  move.l #COPPERLISTLOGO, $dff080
+  move.l #COPPERLISTIMAGE, $dff080
   ENDC
-  move.w #256, Eff0Multiplier
+  move.w #256, ColMultiplier
   move.l #BPLLOGO, draw_buffer
   move.l #BPLLOGO, view_buffer
   bsr.w  SetBitplanePointersDefault
+  lea    PalettePic, a3
   bsr.w  CalculateFade  
+  move.w #$c00, $dff106
+  move.w #$000, $dff180
   sub.w  #1, .counter
   beq.s  .br1
   bra.w  mlgoon
@@ -142,8 +148,9 @@ Effect0_1:
 
 Effect0_2:
   bsr.w  SetBitplanePointersDefault
+  lea    PalettePic, a3
   bsr.w  CalculateFade
-  sub.w  #4, Eff0Multiplier
+  sub.w  #4, ColMultiplier
   sub.w  #1, .counter
   beq.s  .br1
   bra.w  mlgoon
@@ -193,6 +200,8 @@ Effect1_2:
   bra.w  mlgoon
 .br1
   move.w #1, continue
+  lea    EF1_PATTERNDATA7, a0
+  move.l #PTR_CHECKERBOARD_DATA, (a0) 
   bra.w  mlgoon
 
 .counter dc.w 67
@@ -201,27 +210,63 @@ Effect1_3:
   move.w #$f00, $dff180
   cmp.w  #67, .framecount
   bne.s  .br1
-  move.w  #0, .framecount
+  sub.w  #1, .ptrnleft
+  bne.s  .br2
+  move.w #1, continue
+  bra.s  mlgoon
+.br2  
+  move.w #0, .framecount
   lea    EF1_MoveX, a0
   bsr.s  RotateMove
   lea    EF1_MoveY, a0
   bsr.s  RotateMove
+  move.l .ptrntohide, a0
+  move.l #PTR_EMPTY_DATA, (a0)
+  add.l  #FRMSIZE,.ptrntohide
 .br1
-  lea    EF1_PATTERNDATA7, a0
-  move.l #PTR_CHECKERBOARD_DATA, (a0) 
   move.w #1, Eff1ZoomIn
   bsr.s  Effect1_Main
   add.w  #1, .framecount
   move.w #$c00, $dff106
   move.w #$000, $dff180
+  bra.s  mlgoon
+
+.framecount: dc.w 67
+.ptrntohide: dc.l EF1_PATTERNDATA0
+.ptrnleft: dc.w 8
+ 
+Effect2_0:
+  move.w #$0, $dff180
   cmp.w  #4, P61_Pos
   beq.s  .br2
   bra.w  mlgoon
 .br2
   move.w #1, continue
+  IFEQ DEBUG-0
+  move.l #COPPERLISTIMAGE, $dff080
+  ENDC
+  move.w #1, ColMultiplier
+  move.l #BPLTITLE, draw_buffer
+  move.l #BPLTITLE, view_buffer
   bra.w  mlgoon
 
-.framecount: dc.w 67
+Effect2_1: 
+  move.w #$f00, $dff180
+  bsr.w  SetBitplanePointersDefault
+  lea    PalTitle, a3
+  bsr.w  CalculateFade  
+  move.w #$c00, $dff106
+  move.w #$000, $dff180
+  cmp.w  #256, ColMultiplier
+  beq.s  .br1
+  add.w  #1, ColMultiplier
+  bra.w  mlgoon
+.br1
+  move.w #1, continue
+  bra.w  mlgoon
+
+PalTitle:
+  INCBIN "sources:raw/titlepal.raw"
 
 RotateMove:
   ;a0 Directions
@@ -441,13 +486,12 @@ MoveAdjust:
   rts
 
 CalculateFade:
-	LEA	Eff0Temporaneo(PC),A0 	; Long temporanea per colore a 24
+	LEA	Temporaneo(PC),A0 	; Long temporanea per colore a 24
 					; bit nel formato $00RrGgBb
 	LEA	COLP0+2,A1		; Indirizzo del primo registro
 					; settato per i nibble ALTI
 	LEA	COLP0B+2,A2		; Indirizzo del primo registro
 					; settato per i nibble BASSI
-	Lea	PalettePic,A3		; 24bit colors tab address
 
 	MOVEQ	#8-1,d7			; 8 banchi da 32 registri ciascuno
 ConvertiPaletteBank:
@@ -463,7 +507,7 @@ DaLongARegistri:	; loop che trasforma i colori $00RrGgBb.l nelle 2
 
 	MOVE.L	(A3),D4			; READ COLOR FROM TAB
 	ANDI.L	#%000011111111,D4	; SELECT BLUE
-	MULU.W	Eff0Multiplier(PC),D4		; Eff0Multiplier
+	MULU.W	ColMultiplier(PC),D4		; Eff0Multiplier
 	ASR.w	#8,D4			; -> 8 BITS
 	ANDI.L	#%000011111111,D4	; SELECT BLUE VAL
 	MOVE.L	D4,D5			; SAVE BLUE TO D5
@@ -473,7 +517,7 @@ DaLongARegistri:	; loop che trasforma i colori $00RrGgBb.l nelle 2
 	MOVE.L	(A3),D4			; READ COLOR FROM TAB
 	ANDI.L	#%1111111100000000,D4	; SELECT GREEN
 	LSR.L	#8,D4			; -> 8 bits (so from 0 to 7)
-	MULU.W	Eff0Multiplier(PC),D4	; Eff0Multiplier
+	MULU.W	ColMultiplier(PC),D4	; Eff0Multiplier
 	ASR.w	#8,D4			; -> 8 BITS
 	ANDI.L	#%0000000011111111,D4	; SELECT GREEN
 	LSL.L	#8,D4			; <- 8 bits (so from 8 to 15)
@@ -485,7 +529,7 @@ DaLongARegistri:	; loop che trasforma i colori $00RrGgBb.l nelle 2
 	ANDI.L	#%111111110000000000000000,D4	; SELECT RED
 	LSR.L	#8,D4			; -> 8 bits (so from 8 to 15)
 	LSR.L	#8,D4			; -> 8 bits (so from 0 to 7)
-	MULU.W	Eff0Multiplier(PC),D4	; Eff0Multiplier
+	MULU.W	ColMultiplier(PC),D4	; Eff0Multiplier
 	ASR.w	#8,D4			; -> 8 BITS
 	ANDI.L	#%0000000011111111,D4	; SELECT RED
 	LSL.L	#8,D4			; <- 8 bits (so from 8 to 15)
