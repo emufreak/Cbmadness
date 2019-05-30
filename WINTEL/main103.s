@@ -174,7 +174,7 @@ Effect1_0:
   bra.w mlgoon
 
 Effect1_1: 
-  move.w #$f00, $dff180
+  move.w #$00, $dff180
   move.w #0, Eff1ZoomIn
   bsr.w  Effect1_Main
   move.w #$c00, $dff106
@@ -190,7 +190,7 @@ Effect1_1:
 .framecount dc.w 0
 
 Effect1_2:
-  move.w #$f00, $dff180
+  move.w #$00, $dff180
   move.w #1, Eff1ZoomIn
   bsr.w  Effect1_Main
   move.w #$c00, $dff106
@@ -207,7 +207,7 @@ Effect1_2:
 .counter dc.w 67
 
 Effect1_3:
-  move.w #$f00, $dff180
+  move.w #$0, $dff180
   cmp.w  #67, .framecount
   bne.s  .br1
   sub.w  #1, .ptrnleft
@@ -251,22 +251,61 @@ Effect2_0:
   bra.w  mlgoon
 
 Effect2_1: 
-  move.w #$f00, $dff180
+  move.w #$000, $dff180
   bsr.w  SetBitplanePointersDefault
   lea    PalTitle, a3
   bsr.w  CalculateFade  
   move.w #$c00, $dff106
   move.w #$000, $dff180
   cmp.w  #256, ColMultiplier
-  beq.s  .br1
+  beq.s  .br2
   add.w  #1, ColMultiplier
-  bra.w  mlgoon
-.br1
+.br2
+  cmp.w  #5, P61_Pos
+  bne.s  .br1
   move.w #1, continue
+.br1
   bra.w  mlgoon
 
 PalTitle:
   INCBIN "sources:raw/titlepal.raw"
+  
+Effect3_1:
+  move.w #$0, $dff180
+  
+  lea    blarraycont, a2
+  lea    #EF1_PATTERNDATA7, a1
+  lea    .arrfrnr, a3
+  move.l #7, .i
+.lp1
+  bsr.w  GetFrame
+  bsr.s  SetFrame
+  add.l  #CNTOBJSIZE,a2
+  addq   #2,a3
+  subq   #FRAMESIZE,a1
+  sub.w  #1, .i
+  bpl.s  .lp1
+  
+  move.w #$c00, $dff106
+  move.w #0, $dff180  
+  cmp.w  #7, P61_Pos
+  bne.s  .br1
+  move.w #1, continue  
+.br1
+  bra.s  mlgoon
+
+.i
+  dc.w 0 
+
+.arrfrnr: 
+  dc.w 67*2, 1*2, 67*2, 1*2, 67*2, 1*2, 67*2, 1*2
+  
+.arrfrptr:
+  dc.l EF1_PosX7+66*2, EF1_PosX6, EF1_PosX5+66*2, EF1_PosX4
+  dc.l EF1_PosX3+66*2, EF1_PosX2, EF1_PosX1+66*2, EF1_PosX0
+  
+.arrdir: 
+  dc.l -1, 1, -1, 1, -1, 1, -1, 1
 
 RotateMove:
   ;a0 Directions
@@ -373,9 +412,7 @@ GetFrame:
         rts								;}
 
 SetFrame:			        		    ;SetFrameDefault(  frmdat,
-;a1 = frmdat[]
 ;a2 = laydat
-;a3 = frame
 		move.w d1, CNTBLPOSX(a2)      ;  *frmdat.posx[frame] = *frmdat.posx
 		move.w d2, CNTBLPOSY(a2)      ;  '
 		move.w d3, CNTPOSX(a2)        ;'
