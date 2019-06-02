@@ -87,6 +87,7 @@
             uniform float _PatternData5[256];
             uniform float _PatternData6[256];
             uniform float _PatternData7[256];
+            uniform float _TotalLayers;
 
             uint cblayer( v2f i, int size, int posx
                                   , int posy, int detposx, int detposy,
@@ -103,21 +104,30 @@
 
             fixed4 frag(v2f i) : SV_Target{ 
 
-              uint colind = cblayer(i, _Size0, _PosX0, 
+              uint colind;
+              if(_TotalLayers >= 1) 
+                colind = cblayer(i, _Size0, _PosX0, 
                          _PosY0, _DetPosX0, _DetPosY0, _PatternData0);
-              colind += cblayer(i, _Size1, _PosX1,
+              if(_TotalLayers >= 2)
+                colind += cblayer(i, _Size1, _PosX1,
                          _PosY1, _DetPosX1, _DetPosY1, _PatternData1) * 2;
-              colind += cblayer(i, _Size2, _PosX2,
+              if (_TotalLayers >= 3)
+                colind += cblayer(i, _Size2, _PosX2,
                          _PosY2, _DetPosX2, _DetPosY2, _PatternData2) * 4;
-              colind += cblayer(i, _Size3, _PosX3,
+              if (_TotalLayers >= 4)
+                colind += cblayer(i, _Size3, _PosX3,
                          _PosY3, _DetPosX3, _DetPosY3, _PatternData3) * 8;
-              colind += cblayer(i, _Size4, _PosX4,
+              if (_TotalLayers >= 5)
+                colind += cblayer(i, _Size4, _PosX4,
                           _PosY4, _DetPosX4, _DetPosY4, _PatternData4) * 16;
-              colind += cblayer(i, _Size5, _PosX5,
+              if (_TotalLayers >= 6)
+                colind += cblayer(i, _Size5, _PosX5,
                           _PosY5, _DetPosX5, _DetPosY5, _PatternData5) * 32;
-              colind += cblayer(i, _Size6, _PosX6,
+              if (_TotalLayers >= 7)
+               colind += cblayer(i, _Size6, _PosX6,
                           _PosY6, _DetPosX6, _DetPosY6, _PatternData6) * 64;
-              colind += cblayer(i, _Size7, _PosX7,
+              if (_TotalLayers >= 8)
+                colind += cblayer(i, _Size7, _PosX7,
                           _PosY7, _DetPosX7, _DetPosY7, _PatternData7) * 128;
 
               //return fixed4(colind/128, 0,0,0);

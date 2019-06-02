@@ -16,9 +16,11 @@ public class CBShaderEffects : MonoBehaviour
   private int Frame = 0;
   private float FrameTime = 0;
   private int PrcMvxy = 44;
-  private int EffectNr =1;
+  private int EffectNr =5;
   private float lasttime = 0;
   private int framecounter = 0;
+
+  private int direction = 1;
 
   private void OnRenderImage(RenderTexture source, RenderTexture destination) { 
 
@@ -44,11 +46,34 @@ public class CBShaderEffects : MonoBehaviour
         case 4: //Show Title
           ShowTitle(  );
           break;
+        case 5:
+          ShowInverted( );
+          break;
       }
       
     }
     Graphics.Blit(source, destination, mat);
   }
+
+  private void ShowInverted()
+  { //Effect 1
+    for(int i = 0; i < GameBrain.instance.FdEffect2.Length; i++)
+      GameBrain.instance.FdEffect2[i].SetShaderData(i, Frame, 6);
+    GameBrain.instance.ColData.SetShaderData(Frame);
+
+    Frame += direction;
+    if( (Frame >=  90) || (Frame < 0)) {
+      direction *= -1;
+      Frame += direction;
+      for(int i = 0; i < 3; i++) {
+        PatternData tmp = GameBrain.instance.FdEffect2[i * 2].ptrndata;
+        GameBrain.instance.FdEffect2[i*2].ptrndata = 
+                               GameBrain.instance.FdEffect2[i * 2 + 1].ptrndata;
+        GameBrain.instance.FdEffect2[i * 2 + 1].ptrndata = tmp;
+      }
+    }
+  }
+
 
   private void ShowXYMoving(  ) { //Effect 1
     for(int i = 0; i < GameBrain.instance.FdEffect1.Length; i++)

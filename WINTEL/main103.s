@@ -269,43 +269,6 @@ Effect2_1:
 
 PalTitle:
   INCBIN "sources:raw/titlepal.raw"
-  
-Effect3_1:
-  move.w #$0, $dff180
-  
-  lea    blarraycont, a2
-  lea    #EF1_PATTERNDATA7, a1
-  lea    .arrfrnr, a3
-  move.l #7, .i
-.lp1
-  bsr.w  GetFrame
-  bsr.s  SetFrame
-  add.l  #CNTOBJSIZE,a2
-  addq   #2,a3
-  subq   #FRAMESIZE,a1
-  sub.w  #1, .i
-  bpl.s  .lp1
-  
-  move.w #$c00, $dff106
-  move.w #0, $dff180  
-  cmp.w  #7, P61_Pos
-  bne.s  .br1
-  move.w #1, continue  
-.br1
-  bra.s  mlgoon
-
-.i
-  dc.w 0 
-
-.arrfrnr: 
-  dc.w 67*2, 1*2, 67*2, 1*2, 67*2, 1*2, 67*2, 1*2
-  
-.arrfrptr:
-  dc.l EF1_PosX7+66*2, EF1_PosX6, EF1_PosX5+66*2, EF1_PosX4
-  dc.l EF1_PosX3+66*2, EF1_PosX2, EF1_PosX1+66*2, EF1_PosX0
-  
-.arrdir: 
-  dc.l -1, 1, -1, 1, -1, 1, -1, 1
 
 RotateMove:
   ;a0 Directions

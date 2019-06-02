@@ -166,13 +166,14 @@ public class FrameData {
     Size = new AsmMatrix<int>();
   }
 
-  public virtual void SetShaderData(int layer, int frame) {
+  public virtual void SetShaderData(int layer, int frame, float totallayers = 8) {
     Shader.SetGlobalFloatArray("_PatternData" + layer, ptrndata.Data);
     Shader.SetGlobalFloat("_PosX" + layer, PosX[frame]);
     Shader.SetGlobalFloat("_PosY" + layer, PosY[frame]);
     Shader.SetGlobalFloat("_DetPosY" + layer, PosyDet[frame]);
     Shader.SetGlobalFloat("_DetPosX" + layer, PosxDet[frame]);
     Shader.SetGlobalFloat("_Size" + layer, Size[frame]);
+    Shader.SetGlobalFloat("_TotalLayers", totallayers);
   } 
 
   public virtual string ToString(  int layer) {
