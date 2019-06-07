@@ -93,6 +93,8 @@ jmplist:
 		bra.w Effect1_3
 		bra.w Effect2_0
 		bra.w Effect2_1
+		bra.w Effect3_0
+		bra.w Effect3_1
         rts
 
 BLINCREMENT = 1
@@ -104,25 +106,6 @@ Temporaneo: dc.l 0
 
 Eff1ZoomIn:
   dc.w 0
-
-SetBitplanePointersDefault:
-    move.l  draw_buffer(pc),a0
-    move.l  view_buffer,draw_buffer
-    move.l  a0,view_buffer
-	;move.l 	#bitplane+4, d1
-	move.l  draw_buffer,d1
-	moveq	#BPLCOUNT-1,d2
-	move.l  draw_copper,a2
-	move.l  #IMGBPLPOINTERS,a2
-.lp1
-	move.w 	d1,6(a2)
-	swap 	d1
-	move.w	d1,2(a2)
-	swap	d1
-	add.l	#80*256,d1
-	addq	#8,a2
-	dbf	d2,.lp1
-	rts
 
 Effect0_1:
   move.w #$f00, $dff180
@@ -213,23 +196,23 @@ Effect1_3:
   sub.w  #1, .ptrnleft
   bne.s  .br2
   move.w #1, continue
-  bra.s  mlgoon
+  bra.w  mlgoon
 .br2  
   move.w #0, .framecount
   lea    EF1_MoveX, a0
-  bsr.s  RotateMove
+  bsr.w  RotateMove
   lea    EF1_MoveY, a0
-  bsr.s  RotateMove
+  bsr.w  RotateMove
   move.l .ptrntohide, a0
   move.l #PTR_EMPTY_DATA, (a0)
   add.l  #FRMSIZE,.ptrntohide
 .br1
   move.w #1, Eff1ZoomIn
-  bsr.s  Effect1_Main
+  bsr.w  Effect1_Main
   add.w  #1, .framecount
   move.w #$c00, $dff106
   move.w #$000, $dff180
-  bra.s  mlgoon
+  bra.w  mlgoon
 
 .framecount: dc.w 67
 .ptrntohide: dc.l EF1_PATTERNDATA0
@@ -266,6 +249,30 @@ Effect2_1:
   move.w #1, continue
 .br1
   bra.w  mlgoon
+  
+Effect3_0:
+  bsr.w  InitScreenBuffers
+  move.l #BITPLANE, view_buffer
+  move.l #BITPLANE+BPLWIDTH*40*BPLCOUNT, draw_buffer
+  move.w #1, continue
+  bra.w  mlgoon
+
+Effect3_1: 
+  move.w #$00, $dff180
+  move.w #1, Eff2ZoomIn
+  bsr.w  Effect2_Main
+  move.w #$c00, $dff106
+  move.w #$000, $dff180
+  cmp.w  #9, P61_Pos
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  move.w #1, continue
+  bra.w  mlgoon
+
+.counter dc.w 67  
+
+Eff2ZoomIn: dc.w 0
 
 PalTitle:
   INCBIN "sources:raw/titlepal.raw"
@@ -316,7 +323,7 @@ Effect1_Main:
 		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
 		bsr.w   GetFrame        		;    GetFrame(  framedate, frmnr)	
         bsr.w   MoveData		
-		bsr.w   SetFrame                ;    SetFrame(  input, laydat);
+		bsr.w   SetFrame                ;    SetFrame(  input, laydat)
 		addq.l  #2,a5
 		addq.l  #2,a6
 		sub.l   #FRMSIZE, a1		    ;  	 frmdat++; //Next object
@@ -337,7 +344,7 @@ Effect1_Main:
 		move.l  #EF1_COLOR0,(a5)        ;    }
 		bra.s   .br3                    ;    else 
 .br2                                    ;    {
-		add.l  #1024, (a5)     	    ;      colptr++	
+		add.l  #1024, (a5)     	        ;      colptr++	
 .br3                                    ;    }
                                         ;  }
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);
@@ -351,6 +358,88 @@ Effect1_Main:
 .counter: dc.w 1
 .frame: dc.l 0
 .colptr: dc.l EF1_COLOR0
+
+Effect2_Main:
+;a0 = blarraydim
+;a1 = frmdat[]
+;a2 = laydat
+;a3 = frame
+;a4 = reserved SetColData
+;a5 = colptr
+;a6 = *blarraycont.data (temp)
+
+        subq    #1, .counter		    ;if(counter-- == 0)
+        bne.w   .br1				    ;{
+        bsr.w   SetCopperList			;  Setcopperlist();
+        bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
+        move.w  #1, .counter            ;  counter = 1; //50 fps
+		lea     .frame, a3              ; 
+		lea     EF2_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
+		;sub.l nam  #FRMSIZE*7, a1         ; DEBUG
+		lea	    blarraycont,a2			;  laydat = blarraycont.data
+		move.l  (a1), a6
+		sub.l   #4, a6	
+		lea     blarraydim, a0			;  blarraydim.width = 
+		move.w  (a6), DIMWIDTH(a0)	;  	        *blarraycont.data.width;
+		move.w  2(a6), DIMHEIGHT(a0)	;  blarraydim.height =	  
+										;  		    blarraycont.data.height;
+        move.w   #7, .i     		    ;  for(int i=0;i<8;i++) 
+		lea      EF1_MoveX, a5
+		lea      EF1_MoveY, a6
+.lp1  									;  {
+		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
+		bsr.w   GetFrame2        		;    GetFrame(  framedate, frmnr)	
+        ;bsr.w   MoveData		
+		bsr.w   SetFrame                ;    SetFrame(  input, laydat)
+		addq.l  #2,a5
+		addq.l  #2,a6
+		sub.l   #FRMSIZE2, a1		    ;  	 frmdat++; //Next object
+		add.l   #CNTOBJSIZE, a2         ;    laydat++;
+		sub.w   #1, .i
+		bpl.s   .lp1			        ;  } 
+        bsr.w    MoveAdjust             ;  MoveAdjust( );			
+		move.l  .colptr(pc), a5
+		bsr.w   SetColData				;  SetColData(  colptr);
+		cmp.w   #0, Eff2ZoomIn          ;  if(Eff1ZoomIn( )
+		beq.s   .br3                    ;  {
+		lea	   .colptr, a5
+		move.l .direction, d1
+	    add.l  d1, (a3)					;    frame += direction
+		move.l .dircolor, d2
+		cmp.l  #90,(a3)                 ;    if(frame > 45 
+		beq.s  .br4                     ;                || frame == 0)
+		cmp.l  #0, (a3)                 ;    {
+		bne.s  .br2
+.br4                                    ;       
+		neg.l   d1                      ;      direction =* -1;
+		move.l  d1, .direction
+		neg.l   d2
+		move.l  d2, .dircolor			;      dircolor =* -1;
+		add.l   d1, (a3)                ;      frame += direction;
+		lea     EF2_PATTERNDATA0, a1
+		move.w  #3, d1                  ;      for(int i=0;i<4;i++)
+.lp2									;      {
+		move.l  (a1), d3     			;        tmp = ptrndata[i*2];	
+		move.l  FRMSIZE2(a1), (a1)	    ;        ptrndata[i*2] =
+		move.l  d3, FRMSIZE2(a1)		;             ptrndata[i*2+1];
+		add.l   #FRMSIZE2*2,a1			;        ptrndata[i*2+1] = tmp;
+		dbf     d1, .lp2				;      }
+		bra.s   .br3                    ;    } 
+.br2                                    ;    else {
+		add.l  d2, (a5)          		;      colptr++	
+.br3                                    ;    }
+		bsr.w  DrawLines                ;  DrawLines(blarraydim);
+        ;move.w #$c00,$dff106           ;  Reg_Col0 = 00;
+	    ;move.w #$0,$dff180			
+.br1        							;}
+        rts
+
+.i dc.w 7		
+.counter: dc.w 1
+.frame: dc.l 0
+.colptr: dc.l EF2_COLOR0
+.direction: dc.l 2
+.dircolor: dc.l 1024
 
 Break:
     rts
@@ -371,6 +460,25 @@ GetFrame:
 		move.w FDOPOSXDET(a1), d3       ;  '
 		move.w FDOPOSYDET(a1), d4       ;  '
 		move.w FDOBLSIZE(a1), d5        ;  '
+		sub.l  (a3), a1                ;  //Get to right frame
+        rts								;}
+
+GetFrame2:
+;input
+;a1 = frmdat[]
+;a3 = frame
+;output;    GetFrame(  framedate, frmnr)
+;d1 = blposx
+;d2 = blposy
+;d3 = detposx
+;d4 = drtposy
+;d5 = size 
+		add.l   (a3), a1                ;  //Get to right frame
+		move.w FDOPOSX2(a1), d1          ;  blposx = *frmdat.blposx[frame]
+		move.w FDOPOSY2(a1), d2          ;  '
+		move.w FDOPOSXDET2(a1), d3       ;  '
+		move.w FDOPOSYDET2(a1), d4       ;  '
+		move.w FDOBLSIZE2(a1), d5        ;  '
 		sub.l  (a3), a1                ;  //Get to right frame
         rts								;}
 
@@ -1546,7 +1654,9 @@ CNTOBJSIZE = 24
 
       INCLUDE sources:graphics.s
    SECTION FRAMEDATA,DATA
+      INCLUDE sources:PatternData.i
       INCLUDE sources:FrameData.i	
+	  INCLUDE sources:FrameData2.i
 	
  END
 

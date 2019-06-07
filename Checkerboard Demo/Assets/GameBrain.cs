@@ -20,6 +20,7 @@ public class GameBrain : MonoBehaviour
   public PatternParent2D Effect0;
   public FrameDataXYMoving[] FdEffect1;
   public FrameData[] FdEffect2;
+  public FrameData[] FdEffect3;
   public int[] pctxmvm;
   public int[] pctymvm;
   public PatternData PtrndtEmpty;
@@ -43,7 +44,7 @@ public class GameBrain : MonoBehaviour
   };
 
   void CreatePatternData() {
-    Patterns = new PatternData[3];
+    Patterns = new PatternData[4];
     Patterns[0] = new PatternData();
     Patterns[0].Data = new float[] { 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
                              , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
@@ -83,43 +84,13 @@ public class GameBrain : MonoBehaviour
     Patterns[0].Height = 64;
 
     Patterns[1] = new PatternData();
-    Patterns[1].Data = new float[] { 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-                             , 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa, 0x5555, 0x5555,0x5555,0x5555
-    };
-    Patterns[1].Name = "PTR_CHECKERBOARD";
+    Patterns[1].Data = new float[32 * 8];
+    Patterns[1].Name = "PTR_EMPTY";
     Patterns[1].Width = 8;
     Patterns[1].Height = 64;
-
+    for(int i = 0; i < 32 * 8; i++)
+      Patterns[1].Data[i] = 0;
+    
     Patterns[2] = new PatternData();
     Patterns[2].Data = new float[] { 0x5555, 0x5555, 0x5555, 0x5555, 0xaaaa, 0xaaaa,0xaaaa,0xaaaa
                              , 0x5555, 0x5555, 0x5555, 0x5555, 0xaaaa, 0xaaaa,0xaaaa,0xaaaa
@@ -158,6 +129,51 @@ public class GameBrain : MonoBehaviour
     Patterns[2].Width = 8;
     Patterns[2].Height = 64;
 
+    Patterns[3] = new PatternData();
+    Patterns[3].Data = new float[] { 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x8000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+                             , 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,0x0000,0x0000
+    };
+    Patterns[3].Name = "PTR_CHECKERBOARDINV";
+    Patterns[3].Width = 8;
+    Patterns[3].Height = 64;
+
+    string AsmData = "";
+    foreach(  PatternData Pattern in Patterns)
+      AsmData += string.Format( "{0}\n\n", Pattern.ToString());
+      
+     System.IO.File.WriteAllText
+        (@"C:\Users\uersu\Documents\GitData\CbMadness\Wintel\"
+                                                       + "PatternData.i", AsmData);
   }
   void WriteEffect1() {
 
@@ -229,15 +245,7 @@ public class GameBrain : MonoBehaviour
       size = sizemax;
     }
 
-    PtrndtEmpty = new PatternData();
-    PtrndtEmpty.Data = new float[32 * 8];
-    PtrndtEmpty.Name = "PTR_EMPTY";
-    PtrndtEmpty.Width = 8;
-    PtrndtEmpty.Height = 64;
-    for(int i = 0; i < 32 * 8; i++)
-      PtrndtEmpty.Data[i] = 0;
-
-    fdeffect1[7].ptrndata = PtrndtEmpty;
+    fdeffect1[7].ptrndata = Patterns[1];
 
     FdEffect1 = fdeffect1;
 
@@ -268,7 +276,7 @@ public class GameBrain : MonoBehaviour
     AsmData += "\n\n";
     AsmData += ColData.ToString();
     System.IO.File.WriteAllText
-      (@"C:\Users\uersu\Desktop\Wintel\"
+      (@"C:\Users\uersu\Documents\GitData\Cbmadness\WINTEL\"
                                                      + "FrameData.i", AsmData);
 
   }
@@ -279,7 +287,7 @@ public class GameBrain : MonoBehaviour
     int posxcnt = 32;
     int posycnt = 31;
 
-    FrameData[] fdeffect2 = new FrameData[6];
+    FrameData[] fdeffect2 = new FrameData[8];
     ColData = new ColorData();
     ColData.Name = "EF2";
 
@@ -291,12 +299,16 @@ public class GameBrain : MonoBehaviour
     {
       fdeffect2[i] = new FrameData();
       fdeffect2[i].Name = "EF2";
-      fdeffect2[i].ptrndata = i % 2 == 0 ? Patterns[1] : Patterns[2];
+      if( i <=5)
+        fdeffect2[i].ptrndata = i % 2 == 0 ? Patterns[0] : Patterns[2];
+      else
+        fdeffect2[i].ptrndata = Patterns[1];
+
       float sizemax = sizemin * multz;
       float size = direction == 1 ? size = sizemin : size = sizemax;
 
       int cntframe = 0;
-      for(int j = 0; j < 90; j++)
+      for(int j = 0; j < 45; j++)
       {
         levelcol = size / 320;
         float[] color = new float[] { (242f * levelcol),
@@ -306,8 +318,7 @@ public class GameBrain : MonoBehaviour
           ColData.Data.Add(new int[512]);
 
 
-        for(int z = 0; z < Math.Pow(2, i) * 2; z += 2)
-        {
+        for(int z = 0; z < Math.Pow(2, i) * 2; z += 2) {
           int index = (int)Math.Pow(2, i) * 2;
           ColData.Data[cntframe][index + z] = (int)(color[0] / 16) * 256
                        + (int)(color[1] / 16) * 16 + (int)(color[2] / 16);
@@ -331,13 +342,14 @@ public class GameBrain : MonoBehaviour
         fdeffect2[i].PosyDet.Add((int)(size -
                         (128 - (posy - 1) * (int)size - (int)size / 2)));
         if( direction == 1)
-          size *= (float)1.006438;
+          size *= (float)1.012919;
         else
-          size /= (float)1.006438;
+          size /= (float)1.012919;
 
         cntframe++;
       }
 
+      if( i <= 5) 
       sizemin = sizemax;
       direction *= -1;
     }
@@ -351,13 +363,15 @@ public class GameBrain : MonoBehaviour
     int fdoposydet = fdoposxdet + fdeffect2[0].PosxDet.Count * 2;
     int fdosize = fdoposydet + fdeffect2[0].PosyDet.Count * 2;
     int frmsize = fdosize + fdeffect2[0].Size.Count * 2;
-    AsmData += string.Format("FDOPOSX equ {0}\n" +
-                             "FDOPOSY equ {1}\n" +
-                             "FDOPOSXDET equ {2}\n" +
-                             "FDOPOSYDET equ {3}\n" +
-                             "FDOBLSIZE equ {4}\n" +
-                             "FRMSIZE equ {5}\n\n", fdoposx, fdoposy, fdoposxdet,
+    AsmData += string.Format("FDOPOSX2 equ {0}\n" +
+                             "FDOPOSY2 equ {1}\n" +
+                             "FDOPOSXDET2 equ {2}\n" +
+                             "FDOPOSYDET2 equ {3}\n" +
+                             "FDOBLSIZE2 equ {4}\n" +
+                             "FRMSIZE2 equ {5}\n\n", fdoposx, fdoposy, fdoposxdet,
                                                  fdoposydet, fdosize, frmsize);
+
+
 
     //Write out effect data
     for(int i = 0; i < fdeffect2.Length; i++)
@@ -371,6 +385,147 @@ public class GameBrain : MonoBehaviour
 
   }
 
+  void WriteEffect3()
+  {
+
+    int posxcnt = 32;
+    int posycnt = 31;
+
+    FrameData[] fdeffect3 = new FrameData[8];
+    ColData = new ColorData();
+    ColData.Name = "EF3";
+
+    float sizemin = 10;
+    float multz = 3.174802f;
+    float levelcol = 0.03137f;
+    int i = 0;
+    float size;
+    for(; i < 6; i++)
+  {
+      float sizemax = 0;
+      fdeffect3[i] = new FrameData();
+      fdeffect3[i].Name = "EF3";
+      if(i <= 2)
+        fdeffect3[i].ptrndata = Patterns[0];
+      else
+        fdeffect3[i].ptrndata = Patterns[1];
+      
+      int cntframe = 0;
+      for(int k = 0;k < 3;k++) { 
+        sizemax = sizemin * multz;
+        size = sizemax;
+        for(int j = 0; j < 90; j++) {
+          levelcol = size / 320;
+          float[] color = new float[] { (242f * levelcol),
+                                      (216f * levelcol), (197f * levelcol), 0f };
+
+          if(i == 0)
+            ColData.Data.Add(new int[512]);
+
+
+          for(int z = 0; z < Math.Pow(2, i) * 2; z += 2) {
+            int index = (int)Math.Pow(2, i) * 2;
+            ColData.Data[cntframe][index + z] = (int)(color[0] / 16) * 256
+                         + (int)(color[1] / 16) * 16 + (int)(color[2] / 16);
+
+            ColData.Data[cntframe][index + z + 1] =
+                            (int)(color[0] - (int)(color[0] / 16) * 16) * 256
+                              + (int)(color[1] - (int)(color[1] / 16) * 16) * 16
+                                   + (int)(color[2] - (int)(color[2] / 16) * 16);
+          }
+
+          fdeffect3[i].Size.Add((int)size);
+          float fposx = (float)((160 - (int)size / 2) / (int)size + 0.99);
+          int posx = (int)((160 - (int)size / 2) / Math.Floor(size) + 0.99);
+          fdeffect3[i].PosX.Add(posxcnt - posx);
+          int posy = (int)((128 - (int)size / 2) / Math.Floor(size) + 0.99);
+
+          fdeffect3[i].PosY.Add(posycnt - posy);
+          fdeffect3[i].PosxDet.Add((int)(size -
+                                  (160 - (posx - 1) * (int)size - (int)size / 2)));
+          fdeffect3[i].PosyDet.Add((int)(size -
+                          (128 - (posy - 1) * (int)size - (int)size / 2)));
+
+           size /= (float)1.012919;
+
+          cntframe++;
+        } 
+      }
+      sizemin = sizemax;
+    }
+    
+    for(;i < 8;i++) { 
+      size = 10;
+      fdeffect3[i] = new FrameData();
+      fdeffect3[i].Name = "EF3";
+      fdeffect3[i].ptrndata = Patterns[3];
+      for(int j = 0; j < 270; j++) {
+
+        levelcol = size / 320;
+        float[] color = new float[] { (242f * levelcol),
+                                    (216f * levelcol), (197f * levelcol), 0f };
+  
+        for(int z = 0; z < Math.Pow(2, i) * 2; z += 2){
+          int index = (int)Math.Pow(2, i) * 2;
+          ColData.Data[j][index + z] = (int)(color[0] / 16) * 256
+                       + (int)(color[1] / 16) * 16 + (int)(color[2] / 16);
+
+          ColData.Data[j][index + z + 1] =
+                          (int)(color[0] - (int)(color[0] / 16) * 16) * 256
+                            + (int)(color[1] - (int)(color[1] / 16) * 16) * 16
+                                 + (int)(color[2] - (int)(color[2] / 16) * 16);
+
+        }
+
+        fdeffect3[i].Size.Add((int)size);
+        float fposx = (float)((160 - (int)size / 2) / (int)size + 0.99);
+        int posx = (int)((160 - (int)size / 2) / Math.Floor(size) + 0.99);
+        fdeffect3[i].PosX.Add(posxcnt - posx);
+        int posy = (int)((128 - (int)size / 2) / Math.Floor(size) + 0.99);
+
+        fdeffect3[i].PosY.Add(posycnt - posy);
+        fdeffect3[i].PosxDet.Add((int)(size -
+                                (160 - (posx - 1) * (int)size - (int)size / 2)));
+        fdeffect3[i].PosyDet.Add((int)(size -
+                        (128 - (posy - 1) * (int)size - (int)size / 2)));
+
+        size *= (float)1.012919;
+      } 
+    }
+
+    FdEffect3 = fdeffect3;
+
+
+
+    /*string AsmData = "";
+    int fdoposx = 4;
+    int fdoposy = fdoposx + fdeffect3[0].PosX.Count * 2;
+    int fdoposxdet = fdoposy + fdeffect3[0].PosY.Count * 2;
+    int fdoposydet = fdoposxdet + fdeffect3[0].PosxDet.Count * 2;
+    int fdosize = fdoposydet + fdeffect3[0].PosyDet.Count * 2;
+    int frmsize = fdosize + fdeffect3[0].Size.Count * 2;
+    AsmData += string.Format("FDOPOSX2 equ {0}\n" +
+                             "FDOPOSY2 equ {1}\n" +
+                             "FDOPOSXDET2 equ {2}\n" +
+                             "FDOPOSYDET2 equ {3}\n" +
+                             "FDOBLSIZE2 equ {4}\n" +
+                             "FRMSIZE2 equ {5}\n\n", fdoposx, fdoposy, fdoposxdet,
+                                                 fdoposydet, fdosize, frmsize);
+
+
+
+    //Write out effect data
+    for(int i = 0; i < fdeffect3.Length; i++)
+      AsmData += fdeffect3[i].ToString(i);
+    AsmData += "\n\n";
+    AsmData += "\n\n";
+    AsmData += ColData.ToString();
+    System.IO.File.WriteAllText
+      (@"C:\Users\uersu\Documents\GitData\CbMadness\Wintel\"
+                                                     + "FrameData3.i", AsmData);*/
+
+  }
+
   // Start is called before the first frame update
   void Awake()
   {
@@ -378,7 +533,9 @@ public class GameBrain : MonoBehaviour
     //Application.targetFrameRate = 50;
     instance = this;
     CreatePatternData();
-    WriteEffect2();
+    /*WriteEffect1();
+    WriteEffect2();*/
+    WriteEffect3();
     //zMin = 10;
     //DrawCheckerboard();
     /*Effect0 = new PatternParent2D();

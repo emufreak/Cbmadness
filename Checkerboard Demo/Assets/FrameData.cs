@@ -199,3 +199,16 @@ public class FrameData {
   }
 }
 
+/*public class FrameDataBitMap {
+  public FrameData[] Items;
+
+  public ColorData GetColors() {
+
+    boolean itemsreset = new itemsreset() 
+
+    foreach(FrameData item in Items) {
+      
+    }
+  }
+}*/
+
