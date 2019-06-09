@@ -419,6 +419,10 @@ public class GameBrain : MonoBehaviour
           float[] color = new float[] { (242f * levelcol),
                                       (216f * levelcol), (197f * levelcol), 0f };
 
+          float[] color = new float[] { (242f * levelcol),
+                                      (216f * levelcol), (197f * levelcol), 0f };
+
+
           if(i == 0)
             ColData.Data.Add(new int[512]);
 
@@ -464,9 +468,20 @@ public class GameBrain : MonoBehaviour
         levelcol = size / 320;
         float[] color = new float[] { (242f * levelcol),
                                     (216f * levelcol), (197f * levelcol), 0f };
-  
-        for(int z = 0; z < Math.Pow(2, i) * 2; z += 2){
-          int index = (int)Math.Pow(2, i) * 2;
+
+        int index = (int)Math.Pow(2, i) * 2;
+        ColData.Data[j][index] = (int)(color[0] / 16) * 256
+                       + (int)(color[1] / 16) * 16 + (int)(color[2] / 16);
+
+        ColData.Data[j][index + 1] =
+                        (int)(color[0] - (int)(color[0] / 16) * 16) * 256
+                          + (int)(color[1] - (int)(color[1] / 16) * 16) * 16
+                               + (int)(color[2] - (int)(color[2] / 16) * 16);
+
+        levelcol = 1 - size / 320;
+        color = new float[] { (242f * levelcol),
+                                    (216f * levelcol), (197f * levelcol), 0f };
+        for(int z = 2; z < Math.Pow(2, i) * 2; z += 2) {
           ColData.Data[j][index + z] = (int)(color[0] / 16) * 256
                        + (int)(color[1] / 16) * 16 + (int)(color[2] / 16);
 
@@ -474,7 +489,6 @@ public class GameBrain : MonoBehaviour
                           (int)(color[0] - (int)(color[0] / 16) * 16) * 256
                             + (int)(color[1] - (int)(color[1] / 16) * 16) * 16
                                  + (int)(color[2] - (int)(color[2] / 16) * 16);
-
         }
 
         fdeffect3[i].Size.Add((int)size);
