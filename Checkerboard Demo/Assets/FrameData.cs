@@ -9,12 +9,13 @@ public class AsmMatrix<dynamic> : List<dynamic> {
     string result = "dc.w ";
     int counter = 1;
     foreach(  dynamic item in this) {
-      if( counter != 1) result += ",";
-      result += string.Format(  "{0}", item);
-      if( counter++ == 10) {
+      if( counter == 10) {
         counter = 1;
         result += "\n  dc.w ";
       }
+      if( counter != 1) result += ",";
+      result += string.Format(  "{0}", item);
+      counter++;
     }
     return result;
   }
@@ -42,7 +43,7 @@ public class ColorData {
       int itmline = 1;
       foreach(int i in item) {
         if(itmline != 1) result += ",";
-        result += string.Format("{0}", i);
+        result += string.Format("${0:X}", i);
         if(itmline++ == 10) {
           itmline = 1;
           result += "\n  dc.w ";

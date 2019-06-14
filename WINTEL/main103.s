@@ -88,6 +88,7 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect1_0
+		bra.w Effect4_1
         bra.w Effect1_1
 		bra.w Effect1_2
 		bra.w Effect1_3
@@ -95,6 +96,7 @@ jmplist:
 		bra.w Effect2_1
 		bra.w Effect3_0
 		bra.w Effect3_1
+		bra.w Effect4_1
         rts
 
 BLINCREMENT = 1
@@ -142,6 +144,10 @@ Effect0_2:
   bra.w  mlgoon
 
 .counter dc.w 256/4
+
+  IFEQ SOUND-0
+    P61_Pos: dc.w 0
+  ENDC
 
 Effect1_0:
   move.l #bitplane, draw_buffer
@@ -260,7 +266,7 @@ Effect3_0:
 Effect3_1: 
   move.w #$00, $dff180
   move.w #1, Eff2ZoomIn
-  bsr.w  Effect2_Main
+  bsr.w  Effect3_Main
   move.w #$c00, $dff106
   move.w #$000, $dff180
   cmp.w  #9, P61_Pos
@@ -271,6 +277,23 @@ Effect3_1:
   bra.w  mlgoon
 
 .counter dc.w 67  
+
+Effect4_1: 
+  ;move.w #$f, $dff180
+  move.w #1, Eff3ZoomIn
+  lea 	 blarraycont, a0
+  move.w #10, CNTHEIGHT(a0)
+  bsr.w  Effect4_Main
+  ;move.w #$c00, $dff106
+  ;move.w #$000, $dff180
+  cmp.w  #13, P61_Pos
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  move.w #1, continue
+  lea 	 blarraycont, a0
+  move.w #2, CNTHEIGHT(a0)
+  bra.w  mlgoon
 
 Eff2ZoomIn: dc.w 0
 
@@ -359,7 +382,7 @@ Effect1_Main:
 .frame: dc.l 0
 .colptr: dc.l EF1_COLOR0
 
-Effect2_Main:
+Effect3_Main:
 ;a0 = blarraydim
 ;a1 = frmdat[]
 ;a2 = laydat
@@ -384,15 +407,10 @@ Effect2_Main:
 		move.w  2(a6), DIMHEIGHT(a0)	;  blarraydim.height =	  
 										;  		    blarraycont.data.height;
         move.w   #7, .i     		    ;  for(int i=0;i<8;i++) 
-		lea      EF1_MoveX, a5
-		lea      EF1_MoveY, a6
 .lp1  									;  {
 		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
-		bsr.w   GetFrame2        		;    GetFrame(  framedate, frmnr)	
-        ;bsr.w   MoveData		
+		bsr.w   GetFrame2        		;    GetFrame(  framedate, frmnr)		
 		bsr.w   SetFrame                ;    SetFrame(  input, laydat)
-		addq.l  #2,a5
-		addq.l  #2,a6
 		sub.l   #FRMSIZE2, a1		    ;  	 frmdat++; //Next object
 		add.l   #CNTOBJSIZE, a2         ;    laydat++;
 		sub.w   #1, .i
@@ -441,6 +459,70 @@ Effect2_Main:
 .direction: dc.l 2
 .dircolor: dc.l 1024
 
+Effect4_Main:
+;a0 = blarraydim
+;a1 = frmdat[]
+;a2 = laydat
+;a3 = frame
+;a4 = reserved SetColData
+;a5 = colptr
+;a6 = *blarraycont.data (temp)
+
+        subq    #1, .counter		    ;if(counter-- == 0)
+        bne.w   .br1				    ;{
+        bsr.w   SetCopperList			;  Setcopperlist();
+        bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
+        move.w  #1, .counter            ;  counter = 1; //50 fps
+		lea     .frame, a3 
+		lea     EF3_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
+		;sub.l nam  #FRMSIZE*7, a1         ; DEBUG
+		lea	    blarraycont,a2			;  laydat = blarraycont.data
+		move.l  (a1), a6
+		sub.l   #4, a6	
+		lea     blarraydim, a0			;  blarraydim.width = 
+		move.w  (a6), DIMWIDTH(a0)	;  	        *blarraycont.data.width;
+		move.w  2(a6), DIMHEIGHT(a0)	;  blarraydim.height =	  
+										;  		    blarraycont.data.height;
+        move.w   #7, .i     		    ;  for(int i=0;i<8;i++) 
+.lp1  									;  {
+		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
+		bsr.w   GetFrame3        		;    GetFrame(  framedate, frmnr)		
+		bsr.w   SetFrame                ;    SetFrame(  input, laydat)
+		sub.l   #FRMSIZE3, a1		    ;  	 frmdat++; //Next object
+		add.l   #CNTOBJSIZE, a2         ;    laydat++;
+		sub.w   #1, .i
+		bpl.s   .lp1			        ;  } 
+        bsr.w    MoveAdjust             ;  MoveAdjust( );			
+		move.l  .colptr(pc), a5
+		bsr.w   SetColData				;  SetColData(  colptr);
+		cmp.w   #0, Eff3ZoomIn          ;  if(Eff3ZoomIn( )
+		beq.s   .br3                    ;  {
+		lea	   .colptr, a5
+		move.l .direction, d1
+	    add.l  d1, (a3)					;    frame += direction
+		move.l .dircolor, d2
+		cmp.l  #540,(a3)                 ;    if(frame > 270
+		bne.s  .br2
+		move.l 	#0,(a3)                 ;      colptr = EF1_COLOR0; 
+		bchg.b  #0, EffInvert			;      EffInvert = !EffInvert
+		move.l  #EF3_COLOR0,(a5)        ;    }
+		bra.s   .br3                    ;    else 
+.br2                                    ;    else {
+		add.l  d2, (a5)          		;      colptr++	
+.br3                                    ;    }
+		bsr.w  DrawLines                ;  DrawLines(blarraydim);	   
+.br1        							;}
+        rts
+		
+.i dc.w 7		
+.counter: dc.w 1
+.frame: dc.l 0
+.colptr: dc.l EF3_COLOR0
+.direction: dc.l 2
+.dircolor: dc.l 1024
+EffInvert: dc.w 0
+
+Eff3ZoomIn: dc.w 0	
 Break:
     rts
 
@@ -482,6 +564,25 @@ GetFrame2:
 		sub.l  (a3), a1                ;  //Get to right frame
         rts								;}
 
+GetFrame3:
+;input
+;a1 = frmdat[]
+;a3 = frame
+;output;    GetFrame(  framedate, frmnr)
+;d1 = blposx
+;d2 = blposy
+;d3 = detposx
+;d4 = drtposy
+;d5 = size 
+		add.l   (a3), a1                ;  //Get to right frame
+		move.w FDOPOSX3(a1), d1          ;  blposx = *frmdat.blposx[frame]
+		move.w FDOPOSY3(a1), d2          ;  '
+		move.w FDOPOSXDET3(a1), d3       ;  '
+		move.w FDOPOSYDET3(a1), d4       ;  '
+		move.w FDOBLSIZE3(a1), d5        ;  '
+		sub.l  (a3), a1                ;  //Get to right frame
+        rts						       ; }
+
 SetFrame:			        		    ;SetFrameDefault(  frmdat,
 ;a2 = laydat
 		move.w d1, CNTBLPOSX(a2)      ;  *frmdat.posx[frame] = *frmdat.posx
@@ -504,7 +605,35 @@ SetColData:								 ;SetColData(  colptr)
 		move.l  a4, a6                   ;  copptrlw = copptr;
 		add.l   #OFFSCLPALETTE,a4        ;  copptr += offsclpalette;
 		add.l   #OFFSCLPALETTELW, a6     ;  copptrlw += offsclpalettelw;
-br1
+		btst.b  #0, EffInvert            ;  if(EffInvert)
+		bne.s   .br1					 ;  {
+		bsr.s   SetColDataDefault        ;	  SetColDataDefault();
+		rts                              ;  } 
+.br1                                     ;  else 
+        bsr.s 	SetColDataInvert         ;    SetColDataInvert();
+		rts                              ;}
+
+SetColDataInvert:
+		move.w  #7,d2					 ;  for(	x=0;x<8;x++) 
+.lp2                                     ;  {
+		move.w  #31,d1		        	 ;  	for(	i=0;i<32;i++) {
+.lp1                                     ;        *copptr.membar[z].
+        move.w  (a5)+, d0                ;    	   .col[i] = !colptr[i] 
+		not.w   d0 				   		 ;   	   .collw[i] = !colptrlw[i];
+		move.w  d0, (a4) 
+        move.w	(a5)+, d0
+		not.w   d0
+		move.w  d0, (a6)
+    	addq.l  #4, a4                   ;  //ASM for i++ (go to n	ext coppos)
+		addq.l  #4, a6
+		dbf     d1, .lp1                 ;      }
+		addq.l   #4, a4				 ;  //ASM for x++ (go to next membar)    	
+		addq.l   #4, a6
+		dbf     d2, .lp2				 ;  }	
+		rts								 ;}
+
+
+SetColDataDefault:
 		move.w  #7,d2					 ;  for(	x=0;x<8;x++) 
 .lp2                                     ;  {
 		move.w  #31,d1		        	 ;  	for(	i=0;i<32;i++) {
@@ -1042,9 +1171,6 @@ RepeatCopper:
          dc.w 0
         
 WriteCopper:
-        ;d1  number of lines
-        ;subq     #1,d1
-        ;d6 copperpos
         move.l   copperpos(pc), a5
         move.b   #$1,d3
         move.l   currentdrawpos,d2
@@ -1657,6 +1783,6 @@ CNTOBJSIZE = 24
       INCLUDE sources:PatternData.i
       INCLUDE sources:FrameData.i	
 	  INCLUDE sources:FrameData2.i
-	
+	  INCLUDE sources:FrameData3.i
  END
 

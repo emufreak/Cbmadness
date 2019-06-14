@@ -19,6 +19,7 @@ public class CBShaderEffects : MonoBehaviour
   private int EffectNr = 6;
   private float lasttime = 0;
   private int framecounter = 0;
+  private int InvertColor = 0;
 
   private int direction = 1;
 
@@ -80,10 +81,20 @@ public class CBShaderEffects : MonoBehaviour
   private void ShowEndless() { //Effect 3
     for(int i = 0; i < GameBrain.instance.FdEffect3.Length; i++)
       GameBrain.instance.FdEffect3[i].SetShaderData(i, Frame);
-    GameBrain.instance.ColData.SetShaderData(Frame);
+
+    int[] framedata = new int[512]; 
+    int j = 0;
+
+    foreach(int rgb in GameBrain.instance.ColData.Data[Frame])
+      framedata[j++] = Math.Abs(rgb - 4095 * InvertColor);
+
+    Shader.SetGlobalFloatArray("_Color", Array.ConvertAll(framedata, x => (float)x));
 
     Frame += direction;
-    if(Frame >= 270) Frame = 0;
+    if(Frame >= 273) {
+      Frame = 0;
+      InvertColor = InvertColor == 0 ? 1 : 0;
+    }
   }
 
   private void ShowXYMoving(  ) { //Effect 1

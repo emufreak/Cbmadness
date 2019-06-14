@@ -330,6 +330,8 @@ MonoBehaviour:
   Speed: 8
   TransformCamera: {fileID: 534669905}
   Effect0: {fileID: 0}
+  pctxmvm: 
+  pctymvm: 
 --- !u!4 &613381987
 Transform:
   m_ObjectHideFlags: 0
