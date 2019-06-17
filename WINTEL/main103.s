@@ -8,16 +8,17 @@ MAXDEPTH = 8
 CHKBLLINE = 0 ;Extra bit in map for empty line for fast processing
 USEMAPHEIGHT = 1
 AGA=1
+MINLINE = 10 ;Min Number of Lines for Rotation
 
-           include      "sources:p61settings.i"
+     include      "p61settings.i"
      ifeq DEBUG-0
-	   include	"sources:startup1.s"
+	   include	"startup1.s"
 Playrtn:
         include "p6112-Play.i"
      else
            jmp          StartProg	   	 
      endc 
-           include      "sources:utils.s"
+           include      "utils.s"
 *****************************************************************************u
 
 		;5432109876543210
@@ -25,10 +26,10 @@ DMASET	=	%1001001111100000	; copper,bitplane,blitter DMA
 
 
 STARTPROG:
-    lea    $dff000, a6                  ;a6 shall point to graphics register
+    lea    $dff000,a6                  ;a6 shall point to graphics register
  
     ifeq DEBUG-0
-    move.w 	#DMASET,$96(a6)		; DMACON - abilita bitplane, copper
+    move.w 	#DMASET,$96(a6)		; DMACON - abilita bitplane,copper
     ;move.l 	view_copper,$80(a6)
 	
     ;move.w	d0,$88(a6)		; restart copperlist
@@ -53,8 +54,8 @@ MainLoop:
 .mlwaity:
     move.l 4(a6),d0	                    ; read register with 
     	                                    ; positions
-    ANDI.L D1,D0		            ; select vpos
-    CMPI.L D2,D0                            ; selected vpos reached
+    AND.L D1,D0		                    ; select vpos
+    CMP.L D2,D0                            ; selected vpos reached
     BNE.S  .mlwaity
 
     lea    continue,a0
@@ -71,7 +72,7 @@ mlgoon:
     btst.b	#10,$16(a6)	; left mouse button clicked
     bne.s	MainLoop        ; if not continue programm
     ifeq SOUND-1
-	lea	$dff000, a6
+	lea	$dff000,a6
 	exit:	
 	btst	#14,2(a6)		;Wait for blitter to finish
 	bne.b	exit
@@ -88,7 +89,6 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect1_0
-		bra.w Effect4_1
         bra.w Effect1_1
 		bra.w Effect1_2
 		bra.w Effect1_3
@@ -110,37 +110,38 @@ Eff1ZoomIn:
   dc.w 0
 
 Effect0_1:
-  move.w #$f00, $dff180
+  move.w #$f00,$dff180
   IFEQ DEBUG-0
-  move.l #COPPERLISTIMAGE, $dff080
+  move.l #COPPERLISTIMAGE,$dff080
   ENDC
-  move.w #256, ColMultiplier
-  move.l #BPLLOGO, draw_buffer
-  move.l #BPLLOGO, view_buffer
+  move.w #256,ColMultiplier
+  move.l #BPLLOGO,draw_buffer
+  move.l #BPLLOGO,view_buffer
   bsr.w  SetBitplanePointersDefault
-  lea    PalettePic, a3
-  bsr.w  CalculateFade  
-  move.w #$c00, $dff106
-  move.w #$000, $dff180
-  sub.w  #1, .counter
+  lea    PalettePic,a3
+  bsr.w  CalculateFade
+  bsr.w  DrawLines4Rotation
+  move.w #$c00,$dff106
+  move.w #$000,$dff180
+  sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
 .br1
-  move.w #1, continue
+  move.w #1,continue
   bra.w  mlgoon
   
 .counter: dc.w 1*50
 
 Effect0_2:
   bsr.w  SetBitplanePointersDefault
-  lea    PalettePic, a3
+  lea    PalettePic,a3
   bsr.w  CalculateFade
-  sub.w  #4, ColMultiplier
-  sub.w  #1, .counter
+  sub.w  #4,ColMultiplier
+  sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
 .br1
-  move.w #1, continue
+  move.w #1,continue
   bra.w  mlgoon
 
 .counter dc.w 256/4
@@ -150,8 +151,8 @@ Effect0_2:
   ENDC
 
 Effect1_0:
-  move.l #bitplane, draw_buffer
-  move.l #bitplane+40*40*8, view_buffer
+  move.l #bitplane,draw_buffer
+  move.l #bitplane+40*40*8,view_buffer
   ifeq SOUND-1
         lea Module1,a0
         sub.l 	a1,a1
@@ -159,65 +160,65 @@ Effect1_0:
         moveq 	#0,d0
   jsr	P61_Init
   endc
-  move.w #1, continue
+  move.w #1,continue
   bra.w mlgoon
 
 Effect1_1: 
-  move.w #$00, $dff180
-  move.w #0, Eff1ZoomIn
+  move.w #$00,$dff180
+  move.w #0,Eff1ZoomIn
   bsr.w  Effect1_Main
-  move.w #$c00, $dff106
-  move.w #$000, $dff180
-  cmp.w  #2, P61_Pos
+  move.w #$c00,$dff106
+  move.w #$000,$dff180
+  cmp.w  #2,P61_Pos
   beq.s  .br1
-  add.w  #1, .framecount
+  add.w  #1,.framecount
   bra.w  mlgoon
 .br1
-  move.w #1, continue
+  move.w #1,continue
   bra.w  mlgoon
 
 .framecount dc.w 0
 
 Effect1_2:
-  move.w #$00, $dff180
-  move.w #1, Eff1ZoomIn
+  move.w #$00,$dff180
+  move.w #1,Eff1ZoomIn
   bsr.w  Effect1_Main
-  move.w #$c00, $dff106
-  move.w #$000, $dff180
-  sub.w  #1, .counter
+  move.w #$c00,$dff106
+  move.w #$000,$dff180
+  sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
 .br1
-  move.w #1, continue
-  lea    EF1_PATTERNDATA7, a0
-  move.l #PTR_CHECKERBOARD_DATA, (a0) 
+  move.w #1,continue
+  lea    EF1_PATTERNDATA7,a0
+  move.l #PTR_CHECKERBOARD_DATA,(a0) 
   bra.w  mlgoon
 
 .counter dc.w 67
 
 Effect1_3:
-  move.w #$0, $dff180
-  cmp.w  #67, .framecount
+  move.w #$0,$dff180
+  cmp.w  #67,.framecount
   bne.s  .br1
-  sub.w  #1, .ptrnleft
+  sub.w  #1,.ptrnleft
   bne.s  .br2
-  move.w #1, continue
+  move.w #1,continue
   bra.w  mlgoon
 .br2  
-  move.w #0, .framecount
-  lea    EF1_MoveX, a0
+  move.w #0,.framecount
+  lea    EF1_MoveX,a0
   bsr.w  RotateMove
-  lea    EF1_MoveY, a0
+  lea    EF1_MoveY,a0
   bsr.w  RotateMove
-  move.l .ptrntohide, a0
-  move.l #PTR_EMPTY_DATA, (a0)
+  move.l .ptrntohide,a0
+  move.l #PTR_EMPTY_DATA,(a0)
   add.l  #FRMSIZE,.ptrntohide
 .br1
-  move.w #1, Eff1ZoomIn
+  move.w #1,Eff1ZoomIn
   bsr.w  Effect1_Main
-  add.w  #1, .framecount
-  move.w #$c00, $dff106
-  move.w #$000, $dff180
+  add.w  #1,.framecount
+  move.w #$c00,$dff106
+  move.w #$000,$dff180
   bra.w  mlgoon
 
 .framecount: dc.w 67
@@ -225,84 +226,84 @@ Effect1_3:
 .ptrnleft: dc.w 8
  
 Effect2_0:
-  move.w #$0, $dff180
-  cmp.w  #4, P61_Pos
+  move.w #$0,$dff180
+  cmp.w  #4,P61_Pos
   beq.s  .br2
   bra.w  mlgoon
 .br2
-  move.w #1, continue
+  move.w #1,continue
   IFEQ DEBUG-0
-  move.l #COPPERLISTIMAGE, $dff080
+  move.l #COPPERLISTIMAGE,$dff080
   ENDC
-  move.w #1, ColMultiplier
-  move.l #BPLTITLE, draw_buffer
-  move.l #BPLTITLE, view_buffer
+  move.w #1,ColMultiplier
+  move.l #BPLTITLE,draw_buffer
+  move.l #BPLTITLE,view_buffer
   bra.w  mlgoon
 
 Effect2_1: 
-  move.w #$000, $dff180
+  move.w #$000,$dff180
   bsr.w  SetBitplanePointersDefault
-  lea    PalTitle, a3
+  lea    PalTitle,a3
   bsr.w  CalculateFade  
-  move.w #$c00, $dff106
-  move.w #$000, $dff180
-  cmp.w  #256, ColMultiplier
+  move.w #$c00,$dff106
+  move.w #$000,$dff180
+  cmp.w  #256,ColMultiplier
   beq.s  .br2
-  add.w  #1, ColMultiplier
+  add.w  #1,ColMultiplier
 .br2
-  cmp.w  #5, P61_Pos
+  cmp.w  #5,P61_Pos
   bne.s  .br1
-  move.w #1, continue
+  move.w #1,continue
 .br1
   bra.w  mlgoon
   
 Effect3_0:
   bsr.w  InitScreenBuffers
-  move.l #BITPLANE, view_buffer
-  move.l #BITPLANE+BPLWIDTH*40*BPLCOUNT, draw_buffer
-  move.w #1, continue
+  move.l #BITPLANE,view_buffer
+  move.l #BITPLANE+BPLWIDTH*40*BPLCOUNT,draw_buffer
+  move.w #1,continue
   bra.w  mlgoon
 
 Effect3_1: 
-  move.w #$00, $dff180
-  move.w #1, Eff2ZoomIn
+  move.w #$00,$dff180
+  move.w #1,Eff2ZoomIn
   bsr.w  Effect3_Main
-  move.w #$c00, $dff106
-  move.w #$000, $dff180
-  cmp.w  #9, P61_Pos
+  move.w #$c00,$dff106
+  move.w #$000,$dff180
+  cmp.w  #9,P61_Pos
   beq.s  .br1
   bra.w  mlgoon
 .br1
-  move.w #1, continue
+  move.w #1,continue
   bra.w  mlgoon
 
 .counter dc.w 67  
 
 Effect4_1: 
-  ;move.w #$f, $dff180
-  move.w #1, Eff3ZoomIn
-  lea 	 blarraycont, a0
-  move.w #10, CNTHEIGHT(a0)
+  ;move.w #$f,$dff180
+  move.w #1,Eff3ZoomIn
+  lea 	 blarraycont,a0
+  move.w #10,CNTHEIGHT(a0)
   bsr.w  Effect4_Main
-  ;move.w #$c00, $dff106
-  ;move.w #$000, $dff180
-  cmp.w  #13, P61_Pos
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
+  cmp.w  #16,P61_Pos
   beq.s  .br1
   bra.w  mlgoon
 .br1
-  move.w #1, continue
-  lea 	 blarraycont, a0
-  move.w #2, CNTHEIGHT(a0)
+  move.w #1,continue
+  lea 	 blarraycont,a0
+  move.w #2,CNTHEIGHT(a0)
   bra.w  mlgoon
 
 Eff2ZoomIn: dc.w 0
 
 PalTitle:
-  INCBIN "sources:raw/titlepal.raw"
+  INCBIN "raw/titlepal.raw"
 
 RotateMove:
   ;a0 Directions
-  move.w (a0), d0
+  move.w (a0),d0
   REPT 7
   move.w 2(a0),(a0)+
   ENDR
@@ -324,50 +325,50 @@ Effect1_Main:
 ;a5 = colptr
 ;a6 = *blarraycont.data (temp)
 
-        subq    #1, .counter		    ;if(counter-- == 0)
+        subq    #1,.counter		    ;if(counter-- == 0)
         bne.w   .br1				    ;{
         bsr.w   SetCopperList			;  Setcopperlist();
         bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
-        move.w  #1, .counter            ;  counter = 1; //50 fps
-		lea     .frame, a3              ; 
+        move.w  #1,.counter            ;  counter = 1; //50 fps
+		lea     .frame,a3              ; 
 		lea     EF1_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
-		;sub.l nam  #FRMSIZE*7, a1         ; DEBUG
+		;sub.l nam  #FRMSIZE*7,a1         ; DEBUG
 		lea	    blarraycont,a2			;  laydat = blarraycont.data
-		move.l  (a1), a6
-		sub.l   #4, a6	
-		lea     blarraydim, a0			;  blarraydim.width = 
-		move.w  (a6), DIMWIDTH(a0)	;  	        *blarraycont.data.width;
-		move.w  2(a6), DIMHEIGHT(a0)	;  blarraydim.height =	  
+		move.l  (a1),a6
+		sub.l   #4,a6	
+		lea     blarraydim,a0			;  blarraydim.width = 
+		move.w  (a6),DIMWIDTH(a0)	;  	        *blarraycont.data.width;
+		move.w  2(a6),DIMHEIGHT(a0)	;  blarraydim.height =	  
 										;  		    blarraycont.data.height;
-        move.w   #7, .i     		    ;  for(int i=0;i<8;i++) 
-		lea      EF1_MoveX, a5
-		lea      EF1_MoveY, a6
+        move.w   #7,.i     		    ;  for(int i=0;i<8;i++) 
+		lea      EF1_MoveX,a5
+		lea      EF1_MoveY,a6
 .lp1  									;  {
-		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
-		bsr.w   GetFrame        		;    GetFrame(  framedate, frmnr)	
+		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
+		bsr.w   GetFrame        		;    GetFrame(  framedate,frmnr)	
         bsr.w   MoveData		
-		bsr.w   SetFrame                ;    SetFrame(  input, laydat)
+		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
 		addq.l  #2,a5
 		addq.l  #2,a6
-		sub.l   #FRMSIZE, a1		    ;  	 frmdat++; //Next object
-		add.l   #CNTOBJSIZE, a2         ;    laydat++;
-		sub.w   #1, .i
+		sub.l   #FRMSIZE,a1		    ;  	 frmdat++; //Next object
+		add.l   #CNTOBJSIZE,a2         ;    laydat++;
+		sub.w   #1,.i
 		bpl.s   .lp1			        ;  } 
 
         bsr.w    MoveAdjust             ;  MoveAdjust( );			
-		move.l  .colptr(pc), a5
+		move.l  .colptr(pc),a5
 		bsr.w   SetColData				;  SetColData(  colptr);
-		cmp.w   #0, Eff1ZoomIn          ;  if(Eff1ZoomIn( )
+		cmp.w   #0,Eff1ZoomIn          ;  if(Eff1ZoomIn( )
 		beq.s   .br3                    ;  {
-		lea	   .colptr, a5
-	    add.l  #2, (a3)				    ;    frame++
+		lea	   .colptr,a5
+	    add.l  #2,(a3)				    ;    frame++
 		cmp.l  #134,(a3)                ;    if(frame > 66) {
 		bne.s  .br2                     ;      frame = 0;
 		move.l 	#0,(a3)                 ;      colptr = EF1_COLOR0; 
 		move.l  #EF1_COLOR0,(a5)        ;    }
 		bra.s   .br3                    ;    else 
 .br2                                    ;    {
-		add.l  #1024, (a5)     	        ;      colptr++	
+		add.l  #1024,(a5)     	        ;      colptr++	
 .br3                                    ;    }
                                         ;  }
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);
@@ -391,60 +392,60 @@ Effect3_Main:
 ;a5 = colptr
 ;a6 = *blarraycont.data (temp)
 
-        subq    #1, .counter		    ;if(counter-- == 0)
+        subq    #1,.counter		    ;if(counter-- == 0)
         bne.w   .br1				    ;{
         bsr.w   SetCopperList			;  Setcopperlist();
         bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
-        move.w  #1, .counter            ;  counter = 1; //50 fps
-		lea     .frame, a3              ; 
+        move.w  #1,.counter            ;  counter = 1; //50 fps
+		lea     .frame,a3              ; 
 		lea     EF2_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
-		;sub.l nam  #FRMSIZE*7, a1         ; DEBUG
+		;sub.l nam  #FRMSIZE*7,a1         ; DEBUG
 		lea	    blarraycont,a2			;  laydat = blarraycont.data
-		move.l  (a1), a6
-		sub.l   #4, a6	
-		lea     blarraydim, a0			;  blarraydim.width = 
-		move.w  (a6), DIMWIDTH(a0)	;  	        *blarraycont.data.width;
-		move.w  2(a6), DIMHEIGHT(a0)	;  blarraydim.height =	  
+		move.l  (a1),a6
+		sub.l   #4,a6	
+		lea     blarraydim,a0			;  blarraydim.width = 
+		move.w  (a6),DIMWIDTH(a0)	;  	        *blarraycont.data.width;
+		move.w  2(a6),DIMHEIGHT(a0)	;  blarraydim.height =	  
 										;  		    blarraycont.data.height;
-        move.w   #7, .i     		    ;  for(int i=0;i<8;i++) 
+        move.w   #7,.i     		    ;  for(int i=0;i<8;i++) 
 .lp1  									;  {
-		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
-		bsr.w   GetFrame2        		;    GetFrame(  framedate, frmnr)		
-		bsr.w   SetFrame                ;    SetFrame(  input, laydat)
-		sub.l   #FRMSIZE2, a1		    ;  	 frmdat++; //Next object
-		add.l   #CNTOBJSIZE, a2         ;    laydat++;
-		sub.w   #1, .i
+		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
+		bsr.w   GetFrame2        		;    GetFrame(  framedate,frmnr)		
+		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
+		sub.l   #FRMSIZE2,a1		    ;  	 frmdat++; //Next object
+		add.l   #CNTOBJSIZE,a2         ;    laydat++;
+		sub.w   #1,.i
 		bpl.s   .lp1			        ;  } 
         bsr.w    MoveAdjust             ;  MoveAdjust( );			
-		move.l  .colptr(pc), a5
+		move.l  .colptr(pc),a5
 		bsr.w   SetColData				;  SetColData(  colptr);
-		cmp.w   #0, Eff2ZoomIn          ;  if(Eff1ZoomIn( )
+		cmp.w   #0,Eff2ZoomIn          ;  if(Eff1ZoomIn( )
 		beq.s   .br3                    ;  {
-		lea	   .colptr, a5
-		move.l .direction, d1
-	    add.l  d1, (a3)					;    frame += direction
-		move.l .dircolor, d2
+		lea	   .colptr,a5
+		move.l .direction,d1
+	    add.l  d1,(a3)					;    frame += direction
+		move.l .dircolor,d2
 		cmp.l  #90,(a3)                 ;    if(frame > 45 
 		beq.s  .br4                     ;                || frame == 0)
-		cmp.l  #0, (a3)                 ;    {
+		cmp.l  #0,(a3)                 ;    {
 		bne.s  .br2
 .br4                                    ;       
 		neg.l   d1                      ;      direction =* -1;
-		move.l  d1, .direction
+		move.l  d1,.direction
 		neg.l   d2
-		move.l  d2, .dircolor			;      dircolor =* -1;
-		add.l   d1, (a3)                ;      frame += direction;
-		lea     EF2_PATTERNDATA0, a1
-		move.w  #3, d1                  ;      for(int i=0;i<4;i++)
+		move.l  d2,.dircolor			;      dircolor =* -1;
+		add.l   d1,(a3)                ;      frame += direction;
+		lea     EF2_PATTERNDATA0,a1
+		move.w  #3,d1                  ;      for(int i=0;i<4;i++)
 .lp2									;      {
-		move.l  (a1), d3     			;        tmp = ptrndata[i*2];	
-		move.l  FRMSIZE2(a1), (a1)	    ;        ptrndata[i*2] =
-		move.l  d3, FRMSIZE2(a1)		;             ptrndata[i*2+1];
+		move.l  (a1),d3     			;        tmp = ptrndata[i*2];	
+		move.l  FRMSIZE2(a1),(a1)	    ;        ptrndata[i*2] =
+		move.l  d3,FRMSIZE2(a1)		;             ptrndata[i*2+1];
 		add.l   #FRMSIZE2*2,a1			;        ptrndata[i*2+1] = tmp;
-		dbf     d1, .lp2				;      }
+		dbf     d1,.lp2				;      }
 		bra.s   .br3                    ;    } 
 .br2                                    ;    else {
-		add.l  d2, (a5)          		;      colptr++	
+		add.l  d2,(a5)          		;      colptr++	
 .br3                                    ;    }
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);
         ;move.w #$c00,$dff106           ;  Reg_Col0 = 00;
@@ -468,47 +469,47 @@ Effect4_Main:
 ;a5 = colptr
 ;a6 = *blarraycont.data (temp)
 
-        subq    #1, .counter		    ;if(counter-- == 0)
+        subq    #1,.counter		    ;if(counter-- == 0)
         bne.w   .br1				    ;{
         bsr.w   SetCopperList			;  Setcopperlist();
         bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
-        move.w  #1, .counter            ;  counter = 1; //50 fps
-		lea     .frame, a3 
+        move.w  #1,.counter            ;  counter = 1; //50 fps
+		lea     .frame,a3 
 		lea     EF3_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
-		;sub.l nam  #FRMSIZE*7, a1         ; DEBUG
+		;sub.l nam  #FRMSIZE*7,a1         ; DEBUG
 		lea	    blarraycont,a2			;  laydat = blarraycont.data
-		move.l  (a1), a6
-		sub.l   #4, a6	
-		lea     blarraydim, a0			;  blarraydim.width = 
-		move.w  (a6), DIMWIDTH(a0)	;  	        *blarraycont.data.width;
-		move.w  2(a6), DIMHEIGHT(a0)	;  blarraydim.height =	  
+		move.l  (a1),a6
+		sub.l   #4,a6	
+		lea     blarraydim,a0			;  blarraydim.width = 
+		move.w  (a6),DIMWIDTH(a0)	;  	        *blarraycont.data.width;
+		move.w  2(a6),DIMHEIGHT(a0)	;  blarraydim.height =	  
 										;  		    blarraycont.data.height;
-        move.w   #7, .i     		    ;  for(int i=0;i<8;i++) 
+        move.w   #7,.i     		    ;  for(int i=0;i<8;i++) 
 .lp1  									;  {
-		move.l  (a1), CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
-		bsr.w   GetFrame3        		;    GetFrame(  framedate, frmnr)		
-		bsr.w   SetFrame                ;    SetFrame(  input, laydat)
-		sub.l   #FRMSIZE3, a1		    ;  	 frmdat++; //Next object
-		add.l   #CNTOBJSIZE, a2         ;    laydat++;
-		sub.w   #1, .i
+		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap							   
+		bsr.w   GetFrame3        		;    GetFrame(  framedate,frmnr)		
+		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
+		sub.l   #FRMSIZE3,a1		    ;  	 frmdat++; //Next object
+		add.l   #CNTOBJSIZE,a2         ;    laydat++;
+		sub.w   #1,.i
 		bpl.s   .lp1			        ;  } 
         bsr.w    MoveAdjust             ;  MoveAdjust( );			
-		move.l  .colptr(pc), a5
+		move.l  .colptr(pc),a5
 		bsr.w   SetColData				;  SetColData(  colptr);
-		cmp.w   #0, Eff3ZoomIn          ;  if(Eff3ZoomIn( )
+		cmp.w   #0,Eff3ZoomIn          ;  if(Eff3ZoomIn( )
 		beq.s   .br3                    ;  {
-		lea	   .colptr, a5
-		move.l .direction, d1
-	    add.l  d1, (a3)					;    frame += direction
-		move.l .dircolor, d2
+		lea	   .colptr,a5
+		move.l .direction,d1
+	    add.l  d1,(a3)					;    frame += direction
+		move.l .dircolor,d2
 		cmp.l  #540,(a3)                 ;    if(frame > 270
 		bne.s  .br2
 		move.l 	#0,(a3)                 ;      colptr = EF1_COLOR0; 
-		bchg.b  #0, EffInvert			;      EffInvert = !EffInvert
+		bchg.b  #0,EffInvert			;      EffInvert = !EffInvert
 		move.l  #EF3_COLOR0,(a5)        ;    }
 		bra.s   .br3                    ;    else 
 .br2                                    ;    else {
-		add.l  d2, (a5)          		;      colptr++	
+		add.l  d2,(a5)          		;      colptr++	
 .br3                                    ;    }
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);	   
 .br1        							;}
@@ -530,66 +531,66 @@ GetFrame:
 ;input
 ;a1 = frmdat[]
 ;a3 = frame
-;output;    GetFrame(  framedate, frmnr)
+;output;    GetFrame(  framedate,frmnr)
 ;d1 = blposx
 ;d2 = blposy
 ;d3 = detposx
 ;d4 = drtposy
 ;d5 = size 
-		add.l   (a3), a1                ;  //Get to right frame
-		move.w FDOPOSX(a1), d1          ;  blposx = *frmdat.blposx[frame]
-		move.w FDOPOSY(a1), d2          ;  '
-		move.w FDOPOSXDET(a1), d3       ;  '
-		move.w FDOPOSYDET(a1), d4       ;  '
-		move.w FDOBLSIZE(a1), d5        ;  '
-		sub.l  (a3), a1                ;  //Get to right frame
+		add.l   (a3),a1                ;  //Get to right frame
+		move.w FDOPOSX(a1),d1          ;  blposx = *frmdat.blposx[frame]
+		move.w FDOPOSY(a1),d2          ;  '
+		move.w FDOPOSXDET(a1),d3       ;  '
+		move.w FDOPOSYDET(a1),d4       ;  '
+		move.w FDOBLSIZE(a1),d5        ;  '
+		sub.l  (a3),a1                ;  //Get to right frame
         rts								;}
 
 GetFrame2:
 ;input
 ;a1 = frmdat[]
 ;a3 = frame
-;output;    GetFrame(  framedate, frmnr)
+;output;    GetFrame(  framedate,frmnr)
 ;d1 = blposx
 ;d2 = blposy
 ;d3 = detposx
 ;d4 = drtposy
 ;d5 = size 
-		add.l   (a3), a1                ;  //Get to right frame
-		move.w FDOPOSX2(a1), d1          ;  blposx = *frmdat.blposx[frame]
-		move.w FDOPOSY2(a1), d2          ;  '
-		move.w FDOPOSXDET2(a1), d3       ;  '
-		move.w FDOPOSYDET2(a1), d4       ;  '
-		move.w FDOBLSIZE2(a1), d5        ;  '
-		sub.l  (a3), a1                ;  //Get to right frame
+		add.l   (a3),a1                ;  //Get to right frame
+		move.w FDOPOSX2(a1),d1          ;  blposx = *frmdat.blposx[frame]
+		move.w FDOPOSY2(a1),d2          ;  '
+		move.w FDOPOSXDET2(a1),d3       ;  '
+		move.w FDOPOSYDET2(a1),d4       ;  '
+		move.w FDOBLSIZE2(a1),d5        ;  '
+		sub.l  (a3),a1                ;  //Get to right frame
         rts								;}
 
 GetFrame3:
 ;input
 ;a1 = frmdat[]
 ;a3 = frame
-;output;    GetFrame(  framedate, frmnr)
+;output;    GetFrame(  framedate,frmnr)
 ;d1 = blposx
 ;d2 = blposy
 ;d3 = detposx
 ;d4 = drtposy
 ;d5 = size 
-		add.l   (a3), a1                ;  //Get to right frame
-		move.w FDOPOSX3(a1), d1          ;  blposx = *frmdat.blposx[frame]
-		move.w FDOPOSY3(a1), d2          ;  '
-		move.w FDOPOSXDET3(a1), d3       ;  '
-		move.w FDOPOSYDET3(a1), d4       ;  '
-		move.w FDOBLSIZE3(a1), d5        ;  '
-		sub.l  (a3), a1                ;  //Get to right frame
+		add.l   (a3),a1                ;  //Get to right frame
+		move.w FDOPOSX3(a1),d1          ;  blposx = *frmdat.blposx[frame]
+		move.w FDOPOSY3(a1),d2          ;  '
+		move.w FDOPOSXDET3(a1),d3       ;  '
+		move.w FDOPOSYDET3(a1),d4       ;  '
+		move.w FDOBLSIZE3(a1),d5        ;  '
+		sub.l  (a3),a1                ;  //Get to right frame
         rts						       ; }
 
 SetFrame:			        		    ;SetFrameDefault(  frmdat,
 ;a2 = laydat
-		move.w d1, CNTBLPOSX(a2)      ;  *frmdat.posx[frame] = *frmdat.posx
-		move.w d2, CNTBLPOSY(a2)      ;  '
-		move.w d3, CNTPOSX(a2)        ;'
-		move.w d4, CNTPOSY(a2)        ;'
-		move.w d5, CNTBLSIZE(a2)      ;'
+		move.w d1,CNTBLPOSX(a2)      ;  *frmdat.posx[frame] = *frmdat.posx
+		move.w d2,CNTBLPOSY(a2)      ;  '
+		move.w d3,CNTPOSX(a2)        ;'
+		move.w d4,CNTPOSY(a2)        ;'
+		move.w d5,CNTBLSIZE(a2)      ;'
         rts							  ;}
 
 .ptrtomap
@@ -600,12 +601,12 @@ SetColData:								 ;SetColData(  colptr)
 ;a5 = colptr
 ;a6 = copptrlw 
                                          ;{	
-		move.l  draw_copper, a4          ;  copptr = draw_buffer;
+		move.l  draw_copper,a4          ;  copptr = draw_buffer;
 		add.l   #2,a4                    ;  copptr += 10;
-		move.l  a4, a6                   ;  copptrlw = copptr;
+		move.l  a4,a6                   ;  copptrlw = copptr;
 		add.l   #OFFSCLPALETTE,a4        ;  copptr += offsclpalette;
-		add.l   #OFFSCLPALETTELW, a6     ;  copptrlw += offsclpalettelw;
-		btst.b  #0, EffInvert            ;  if(EffInvert)
+		add.l   #OFFSCLPALETTELW,a6     ;  copptrlw += offsclpalettelw;
+		btst.b  #0,EffInvert            ;  if(EffInvert)
 		bne.s   .br1					 ;  {
 		bsr.s   SetColDataDefault        ;	  SetColDataDefault();
 		rts                              ;  } 
@@ -618,18 +619,18 @@ SetColDataInvert:
 .lp2                                     ;  {
 		move.w  #31,d1		        	 ;  	for(	i=0;i<32;i++) {
 .lp1                                     ;        *copptr.membar[z].
-        move.w  (a5)+, d0                ;    	   .col[i] = !colptr[i] 
+        move.w  (a5)+,d0                ;    	   .col[i] = !colptr[i] 
 		not.w   d0 				   		 ;   	   .collw[i] = !colptrlw[i];
-		move.w  d0, (a4) 
-        move.w	(a5)+, d0
+		move.w  d0,(a4) 
+        move.w	(a5)+,d0
 		not.w   d0
-		move.w  d0, (a6)
-    	addq.l  #4, a4                   ;  //ASM for i++ (go to n	ext coppos)
-		addq.l  #4, a6
-		dbf     d1, .lp1                 ;      }
-		addq.l   #4, a4				 ;  //ASM for x++ (go to next membar)    	
-		addq.l   #4, a6
-		dbf     d2, .lp2				 ;  }	
+		move.w  d0,(a6)
+    	addq.l  #4,a4                   ;  //ASM for i++ (go to n	ext coppos)
+		addq.l  #4,a6
+		dbf     d1,.lp1                 ;      }
+		addq.l   #4,a4				 ;  //ASM for x++ (go to next membar)    	
+		addq.l   #4,a6
+		dbf     d2,.lp2				 ;  }	
 		rts								 ;}
 
 
@@ -638,14 +639,14 @@ SetColDataDefault:
 .lp2                                     ;  {
 		move.w  #31,d1		        	 ;  	for(	i=0;i<32;i++) {
 .lp1                                     ;          *copptr.membar[z].
-		move.w  (a5)+, (a4)              ;    		  .col[i] = colptr[i] 
-		move.w  (a5)+, (a6)              ;   		  .collw[i] = colptrlw[i];
-    	addq.l  #4, a4                   ;  //ASM for i++ (go to next coppos)
-		addq.l  #4, a6
-		dbf     d1, .lp1                 ;      }
-		addq.l   #4, a4				 ;  //ASM for x++ (go to next membar)    	
-		addq.l   #4, a6
-		dbf     d2, .lp2				 ;  }	
+		move.w  (a5)+,(a4)              ;    		  .col[i] = colptr[i] 
+		move.w  (a5)+,(a6)              ;   		  .collw[i] = colptrlw[i];
+    	addq.l  #4,a4                   ;  //ASM for i++ (go to next coppos)
+		addq.l  #4,a6
+		dbf     d1,.lp1                 ;      }
+		addq.l   #4,a4				 ;  //ASM for x++ (go to next membar)    	
+		addq.l   #4,a6
+		dbf     d2,.lp2				 ;  }	
 		rts								 ;}
 
 MoveData:                               ;MoveData(	input
@@ -658,45 +659,45 @@ MoveData:                               ;MoveData(	input
 ;a5 = movex 
 ;a6 = movey
 ;process 
-  move.w  (a5), d6                      ;  if(*movex != 0) 										
+  move.w  (a5),d6                      ;  if(*movex != 0) 										
   beq.s   .br1                          ;  {
   move.w  d3,d0
-  move.w  d1, a4
-  bsr.s   MoveDataItem                  ;    MoveColDataItem( posdet, pos);
-  move.w  a4, d1
-  move.w  d0, d3
+  move.w  d1,a4
+  bsr.s   MoveDataItem                  ;    MoveColDataItem( posdet,pos);
+  move.w  a4,d1
+  move.w  d0,d3
 .br1                                    ;  }
-  move.w  (a6), d6                      ;  if(EF1_MoveY != 0) 										
+  move.w  (a6),d6                      ;  if(EF1_MoveY != 0) 										
   beq.s   .br2                          ;  {
-  move.w  d4, d0                        ;    MoveColDataItem( ); 
-  move.w  d2, a4
+  move.w  d4,d0                        ;    MoveColDataItem( ); 
+  move.w  d2,a4
   bsr.s   MoveDataItem
-  move.w  a4, d2
-  move.w  d0, d4 
+  move.w  a4,d2
+  move.w  d0,d4 
 .br2                                    ;  }									
   rts									;}   
 
-MoveDataItem:                        ;MoveDataItem(	posdet, pos)
+MoveDataItem:                        ;MoveDataItem(	posdet,pos)
 ;d6 = movedir
 ;d0 = posdet
 ;a4 = pos
-  move.w  d5, d7                        ;{
+  move.w  d5,d7                        ;{
   
-  mulu.w  percentage, d7               ;    posdet -= size * prct / 100
-  divu.w  #100, d7	                    ;                        * movedir;
-  cmp.w   #0, d6
+  mulu.w  percentage,d7               ;    posdet -= size * prct / 100
+  divu.w  #100,d7	                    ;                        * movedir;
+  cmp.w   #0,d6
   bpl.s   .br3
   neg.w   d7
 .br3
-  sub.w   d7, d0 
-  moveq.l #2, d7                        ;    for(int i=0;i < 2; i++)
+  sub.w   d7,d0 
+  moveq.l #2,d7                        ;    for(int i=0;i < 2; i++)
 .lp1 									;    {
   move.w  d0,d0							;      if(posdet < 0) 
   bpl.s   .br1                          ;      {
   beq.s   .br2
-  add.w   d5, d0                        ;	     posdet += size;
-  addq    #1, a4						;	     pos++;
-  dbf     d7, .lp1
+  add.w   d5,d0                        ;	     posdet += size;
+  addq    #1,a4						;	     pos++;
+  dbf     d7,.lp1
   bra.s   .br2
 .br1									;      } 
   cmp.w   d5,d0							;      else if(posdet >= size) 
@@ -711,15 +712,15 @@ percentage:
 	dc.w 168;
 
 MoveAdjust:
-  move.w  percentage(pc), d7           ;    if(percentage <	200)  
-  cmp.w   #200, d7                      ;    {
+  move.w  percentage(pc),d7           ;    if(percentage <	200)  
+  cmp.w   #200,d7                      ;    {
   bge.s   .br4
-  addq    #3, d7                        ;      percentage += 3;  
+  addq    #3,d7                        ;      percentage += 3;  
   bra.s   .br5                          ;    } else
 .br4                                    ;    {
   sub.w   d7,d7                         ;      percentage = 0;
 .br5								    ;    }		
-  move.w  d7, percentage	
+  move.w  d7,percentage	
   rts
 
 CalculateFade:
@@ -738,7 +739,7 @@ ConvertiPaletteBank:
 	moveq	#32-1,d6	; 32 registri colore per banco
 
 DaLongARegistri:	; loop che trasforma i colori $00RrGgBb.l nelle 2
-			; word $0RGB, $0rgb adatte ai registri copper.
+			; word $0RGB,$0rgb adatte ai registri copper.
 
 ;	CALCOLA IL ROSSO
 
@@ -781,20 +782,20 @@ DaLongARegistri:	; loop che trasforma i colori $00RrGgBb.l nelle 2
 	ANDI.B	#%00001111,(a2) ; Seleziona solo il nibble BASSO ($0r)
 	move.b	2(a0),d2	; Prendi il byte $0000Gg00 dal colore a 24bit
 	lsl.b	#4,d2		; Sposta a sinistra di 4 bit il nibble basso
-				; del GREEN, "trasformandolo" in nibble alto
+				; del GREEN,"trasformandolo" in nibble alto
 				; di del byte basso di D2 ($g0)
 	move.b	3(a0),d3	; Prendi il byte $000000Bb dal colore a 24bit
 	ANDI.B	#%00001111,d3	; Seleziona solo il nibble BASSO ($0b)
 	or.b	d2,d3		; "FONDI" i nibble bassi di green e blu...
 	move.b	d3,1(a2)	; Formando il byte basso finale $gb da mettere
-				; nel registro colore, dopo il byte $0r, per
+				; nel registro colore,dopo il byte $0r,per
 				; formare la word $0rgb dei nibble bassi
 
 ; Conversione dei nibble alti da $00RgGgBb (long) al colore aga $0RGB (word)
 
 	MOVE.B	1(A0),d0	; Byte alto del colore $00Rr0000 in d0
 	ANDI.B	#%11110000,d0	; Seleziona solo il nibble ALTO ($R0)
-	lsr.b	#4,d0		; Shifta a destra di 4 bit il nibble, in modo
+	lsr.b	#4,d0		; Shifta a destra di 4 bit il nibble,in modo
 				; che diventi il nibble basso del byte ($0R)
 	move.b	d0,(a1)		; Copia il byte alto $0R nel color register
 	move.b	2(a0),d2	; Prendi il byte $0000Gg00 dal colore a 24bit
@@ -803,9 +804,9 @@ DaLongARegistri:	; loop che trasforma i colori $00RrGgBb.l nelle 2
 	ANDI.B	#%11110000,d3	; Seleziona solo il nibble ALTO ($B0)
 	lsr.b	#4,d3		; Shiftalo di 4 bit a destra trasformandolo in
 				; nibble basso del byte basso di d3 ($0B)
-	ori.b	d2,d3		; Fondi i nibble alti di green e blu ($G0+$0B)
+	or.b	d2,d3		; Fondi i nibble alti di green e blu ($G0+$0B)
 	move.b	d3,1(a1)	; Formando il byte basso finale $GB da mettere
-				; nel registro colore, dopo il byte $0R, per
+				; nel registro colore,dopo il byte $0R,per
 				; formare la word $0RGB dei nibble alti.
 
 	addq.w	#4,a1		; Saltiamo al prossimo registro colore per i
@@ -900,6 +901,131 @@ ia
         lea      (a1,d4),a2
         rts
 
+DrawLines4Rotation:
+        lea      linebuffer,a2
+        moveq.l  #15,d0
+        moveq.l  #MINLINE,d7
+.lp1
+        move.l   d0,d3           ;fill in parameters
+        move.l   d7,d4
+        bsr.s    DrawLine4Rotation
+        dbf      d0,.lp1
+        moveq.l  #15,d0 
+        addq.w   #1,d7
+        cmp.w    #320+1,d7
+        bne.s    .lp1
+        rts
+
+DrawLine4Rotation:
+        ;input
+        ;d3 - offset
+        ;d4 - block size
+        ;a2 - write pos 
+
+        ;d1 - backup block size
+        ;d2 - recent block cache
+        ;d3 - offset left
+        ;d5 - line cache
+        ;d6 - offset right
+        
+        ;calculate map position
+        move.w   #30,.lwrdcounter            
+        
+        ;Line Calculation
+        sub.w     d6,d6 
+        sub.l     d5,d5                ;lw to write
+        sub.l     d1,d1                ;cleanup d1
+.ldrawbl2
+        move.w    d4,d1                ;backup block size
+        move.l    #-1,d2               ;startpattern whole lw line                    
+.br5           
+        sub.w     #32,d1               ;lw          
+        sub.w     d3,d1                ;+ offset
+        bpl.s     .bigblock            ;< block size?
+.br1        
+        neg.w     d1                   ;get value for lshift
+        cmp.w     #32,d1
+        bgt.s     .clearalllw          ;offset greater than lw      
+        lsl.l     d1,d2                ;cut off part not visible and too much..
+        lsr.l     d6,d2                ;.... or move to right
+.br7
+        ;prepare next block
+        neg.w     d1                   ;offset to left (neg) ...
+        add.w     #32,d1               ;....and size of lw
+        add.w     d6,d1                ;....and lsr offset = last pos block
+.br2
+        or.l      d2,d5                ;write to register
+        cmp.w     #32,d1               ;block ends in next lw?
+        ble.s     .br3                 ;if no jump
+.br6   
+        move.l    d5,(a2)+             ;write lw
+        sub.w     #1,.lwrdcounter
+        beq.s     .end
+        sub.l     d5,d5                ;delete data 
+        sub.w     #32,d1                          
+        sub.w     d4,d1                ;calc offset to left        
+        neg.w     d1
+        move.w    d1,d3   
+        sub.w     d6,d6                ;lsr = 0  
+        bra.s     .ldrawbl2
+.br3                      
+        add.w     d4,d1                ;add empty space = startpos next block
+        cmp.w     #32,d1
+        blt.s     .br4
+        move.l    d5,(a2)+             ;write to buffer
+        sub.l     d5,d5                ;reset recent buffer cache
+        sub.w     #1,.lwrdcounter
+        beq.s     .end  
+        sub.w     #32,d1
+        cmp.w     #32,d1
+        bge.s     .bigspace   
+.br4    
+        and.w     #%11111,d1           ;get offset for lsr 
+        move.w    d1,d6
+        sub.w     d3,d3                ;no loffset for block
+        bra.s     .ldrawbl2
+.end
+        rts
+
+.clearalllw:
+        sub.l     d2,d2
+        bra.s     .br7 
+
+.bigblock:
+        add.l     d6,d1                      ;offset of block to draw later
+        move.l    d2,d3                      ;d3 unused atm use this to save d2
+        lsr.l     d6,d3                      ;offset to right for first lw
+        or.l      d3,d5                      ;finish pattern this lw
+        move.l    d5,(a2)+                   ;write to screenbuffer
+        sub.w     #1,.lwrdcounter
+        beq.s     .end
+        sub.w     #32,d1
+        bmi.s     .bb1
+.bb2
+        move.l    d2,(a2)+                   ;save complete block
+        sub.w     #1,.lwrdcounter
+        beq.s     .end
+        sub.w     #32,d1
+        bpl.s     .bb2
+.bb1
+        sub.l     d5,d5
+        sub.l     d6,d6
+        sub.l     d3,d3
+        bra.w     .br1
+
+.bigspace
+        moveq.l    #0,d2
+.bs1
+        move.l     d2,(a2)+
+        sub.w      #1,.lwrdcounter
+        beq.s      .end
+        sub.w      #32,d1
+        cmp.w      #32,d1
+        bge.s      .bs1
+        bra.s      .br4
+
+.lwrdcounter: dc.w 40
+
 ;1 - depth
         ;2 - index
         ;3 - output register
@@ -908,7 +1034,7 @@ DrawBlankLine:
         IFEQ BLITTER-0
         move.l    currentdrawpos,a5
         REPT 10
-        move.l    #0, (a5)+
+        move.l    #0,(a5)+
         ENDR
         ENDC
         rts
@@ -924,14 +1050,14 @@ DrawLines:
         ;a3 - ypos
         ;a5 - bl map y
         ;a6 - bl map x
-		sub.l    d5, d5
+		sub.l    d5,d5
         move.w   DIMDEPTH(a0),d5
         subq     #1,d5 
         lea      DIMCONTENT(a0),a1           ; load start of ptr list
         move.l   a1,.contentptr              ; save ptr list pos
 .lp1
         move.l   (a1),a1                     ; load ptr to first layer
-        move.l   draw_copper, copperpos
+        move.l   draw_copper,copperpos
         add.l    #OFFSCLBLOCKDRAW,copperpos
         cmp.l    #0,d5
         beq.s    .br6
@@ -954,16 +1080,16 @@ DrawLines:
         ;calc map startpos
         sub.l    d1,d1
         move.w   (a6),d1
-        lsr.w    #5, d1               ; divide through 32
-        lsl.w    #2, d1               ; start pos for x in bytes rounded to lw        
-        move.w   d1, d6               ; save blxpos          
-        move.w   DIMWIDTH(a0), d0
+        lsr.w    #5,d1               ; divide through 32
+        lsl.w    #2,d1               ; start pos for x in bytes rounded to lw        
+        move.w   d1,d6               ; save blxpos          
+        move.w   DIMWIDTH(a0),d0
         mulu.w   (a5),d0
         add.w    d1,d0
-        move.l   CNTBLMAP(a1), blmappos
-        move.l   CNTBLLNFLAG(a1), bllnflagpos
-        add.l    d0,blmappos  
-        IFNE chkblline-0             
+        move.l   CNTBLMAP(a1),blmappos
+        move.l   CNTBLLNFLAG(a1),bllnflagpos
+        add.l    d0,blmappos
+        IFEQ CHKBLLINE-0
         move.w   (a5),d0
         lsl.w    d0                  ;word size it
         add.l    d0,bllnflagpos        
@@ -988,7 +1114,7 @@ DrawLines:
 .br7  
         movem.l  .saveregs(pc),a0-a2/d1/d3-d7      
 
-        move.w    (a5), mapypos
+        move.w    (a5),mapypos
 
         ;d0 - temp use              
         ;d1 - temp use
@@ -1004,7 +1130,7 @@ DrawLines:
         ENDC
 
         move.w   #255,d0               
-        move.b   #$2c, d6
+        move.b   #$2c,d6
         move.w   CNTBLSIZE(a1),d1
         IFEQ CHKBLLINE-1
         ;move.l   a4,.lfuncbak
@@ -1017,7 +1143,7 @@ DrawLines:
         
         IFEQ CHKBLLINE-1
         move.l   bllnflagpos(pc),a5
-        cmp.w    #0, (a5)                 ; check for line marker empty
+        cmp.w    #0,(a5)                 ; check for line marker empty
         beq.s    .br8
         ;lea        DrawBlankline,a4  
         bsr.w      DrawBlankLine  
@@ -1026,7 +1152,7 @@ DrawLines:
         ;move.l    .lfuncbak,a4
         ENDC
 
-        movem.l         a1-a3/a6/d0-d1/d4-d6, .saveregs
+        movem.l         a1-a3/a6/d0-d1/d4-d6,.saveregs
         move.w          (a6),d5                      ;load mapxpos for later
         lea             0(a2),a6
         lea             CNTPOSX(a1),a3          
@@ -1060,7 +1186,7 @@ DrawLines:
         move.w          (a2),d4
 		beq.s           .br11
 .llftspcempty
-        add.w           d4, d1             ;get pixels left to draw y for space
+        add.w           d4,d1             ;get pixels left to draw y for space
         bne.s           .next
         move.w          d1,d1
 .next
@@ -1094,7 +1220,7 @@ DrawLines:
 .br1        
         lea             .contentptr,a1         ;load ptr pos
         addq.l          #4,(a1)               ;increase ptr
-        move.l          (a1), a1              ;load content of ptr
+        move.l          (a1),a1              ;load content of ptr
                                               ;which is ptr to cont array
                   
         dbf             d5,.lp1
@@ -1115,22 +1241,22 @@ DrawLines:
          dc.l     0
 
 RepeatCopper:
-         add.l    #BPLWIDTH, currentdrawpos
+         add.l    #BPLWIDTH,currentdrawpos
          sub.l    d4,d4
          ;Revert bitplanepointer
-         move.w   CNTHEIGHT(a1), d7          ;Number of blocks
+         move.w   CNTHEIGHT(a1),d7          ;Number of blocks
          move.w   d7,d4			     ;Copy to d7 we need d7 later      
 	 lsl      d4                         ;One block line and one block gap
 	 mulu.w   #BPLWIDTH,d4               ;Get Number of Bytes	 
 
 .lp2 ;Loop for whole map
  
-         sub.l    d4, currentdrawpos         ;Revert bplpointer             
-	 subq.w   #1, d7                     ;Prepare use of d0 as loopcounter
+         sub.l    d4,currentdrawpos         ;Revert bplpointer             
+	 subq.w   #1,d7                     ;Prepare use of d0 as loopcounter
 
 .lp1 ; Loop for one lines of block
          ;Copper for Block
-         move.w   CNTBLSIZE(a1), d1
+         move.w   CNTBLSIZE(a1),d1
          subq.w   #1,d1
 	 ;Different Copperroutine for first plane                             
 	 cmp.w    #0,d5
@@ -1140,13 +1266,13 @@ RepeatCopper:
 .br1    
          bsr.w    WriteCopperPosAdd   
 .br2
-         cmp.w    #0, d0
+         cmp.w    #0,d0
          beq.s    .br3 
 
-         add.l    #BPLWIDTH, currentdrawpos
+         add.l    #BPLWIDTH,currentdrawpos
 
          ;Copper for Space
-         move.w   CNTSPSIZE(a1), d1
+         move.w   CNTSPSIZE(a1),d1
 		 beq.s    .br6
          subq.w   #1,d1
 	 ;Different Copperroutine for first plane                             
@@ -1160,7 +1286,7 @@ RepeatCopper:
          cmp.w    #0,d0
          beq.s    .br3                      ;End of screen reached
 .br6	 
-	 add.l    #BPLWIDTH, currentdrawpos	
+	 add.l    #BPLWIDTH,currentdrawpos	
 	 dbf      d7,.lp1
          move.w   CNTHEIGHT(a1),d7          ;Restore d7
 	 bra.s    .lp2 
@@ -1171,12 +1297,12 @@ RepeatCopper:
          dc.w 0
         
 WriteCopper:
-        move.l   copperpos(pc), a5
+        move.l   copperpos(pc),a5
         move.b   #$1,d3
         move.l   currentdrawpos,d2
 .lp1        
         move.b   d6,(a5)
-        addq.w   #6, a5       
+        addq.w   #6,a5       
         ;swap    d2
         ;move.w  d2,(a5)
         ;addq    #4,a5
@@ -1189,7 +1315,7 @@ WriteCopper:
 .br1
         subq     #1,d0
         beq.s    .br2
-        dbf      d1, .lp1
+        dbf      d1,.lp1
 .br2  
         move.l   a5,copperpos
         rts
@@ -1204,7 +1330,7 @@ copperpos:
 WriteCopperPosAdd:
         ;d1  number of lines
         ;d6 copperpos
-        move.l   copperpos(pc), a5
+        move.l   copperpos(pc),a5
         move.l   currentdrawpos,d2
 .lp1              
         ;swap     d2
@@ -1215,7 +1341,7 @@ WriteCopperPosAdd:
         add.l    #(BPLCOUNT)*4+4,a5 
         subq     #1,d0
         beq.s    .br2
-        dbf      d1, .lp1  
+        dbf      d1,.lp1  
 .br2               
         move.l   a5,copperpos
         rts
@@ -1240,7 +1366,7 @@ PreProcessDL:
         lsl.l           d3,d2             ;                       
         move.l          d2,d6             ;most_right_block = most_left_block;
         rol.l           d0,d6             ;most_right_block = 
-        ;get lw pos                       ; rotateleft(most_left_block, width);
+        ;get lw pos                       ; rotateleft(most_left_block,width);
         ;calculate complete block size
         move.w          d0,d7             ;//move width to d7
         add.w           d5,d0             ;widthincspace = width + space;
@@ -1442,14 +1568,14 @@ DrawLine:
 
         move.w  #32,d7
         ;calculate map position
-        move.w   #10, .lwrdcounter        
+        move.w   #10,.lwrdcounter        
 
-        IFEQ blitter-0     
+        IFEQ BLITTER-0     
         
         ;Line Calculation
         move.w   CNTBLSIZE(a1),d4      ;get width block
         move.w    (a3),d3              ;xpos (offset)
-        lea      mapypos(pc), a3
+        lea      mapypos(pc),a3
         sub.w     d6,d6 
         sub.l     d5,d5                ;lw to write
         sub.l     d1,d1                ;cleanup d1
@@ -1480,7 +1606,7 @@ DrawLine:
         ble.s     .br3                 ;if no jump
 .br6   
         move.l    d5,(a2)+             ;write lw
-        sub.w     #1, .lwrdcounter
+        sub.w     #1,.lwrdcounter
         beq.s     .end
         sub.l     d5,d5                ;delete data 
         sub.w     #32,d1                          
@@ -1491,14 +1617,14 @@ DrawLine:
         bra.s     .ldrawbl2
 .br3 
         lsl.l     d0
-        subq      #1, d7
+        subq      #1,d7
         beq.s     .mapfwd                           
         add.w     (a6),d1   ;add blspace = startpos next block
         cmp.w     #32,d1
         blt.s     .br4
         move.l    d5,(a2)+
         sub.l     d5,d5
-        sub.w     #1, .lwrdcounter
+        sub.w     #1,.lwrdcounter
         beq.s     .end  
         sub.w     #32,d1
         cmp.w     #32,d1
@@ -1529,7 +1655,7 @@ DrawLine:
         bmi.s     .bb1
 .bb2
         move.l    d2,(a2)+                   ;save complete block
-        sub.w     #1, .lwrdcounter
+        sub.w     #1,.lwrdcounter
         beq.s     .end
         sub.w     #32,d1
         bpl.s     .bb2
@@ -1548,10 +1674,10 @@ DrawLine:
         moveq.l    #0,d2
 .bs1
         move.l     d2,(a2)+
-        sub.w      #1, .lwrdcounter
+        sub.w      #1,.lwrdcounter
         beq.s      .end
-        sub.w      #32, d1
-        cmp.w      #32, d1
+        sub.w      #32,d1
+        cmp.w      #32,d1
         bge.s      .bs1
         bra.s      .br4
 
@@ -1659,8 +1785,8 @@ blarraydim:
 .blheight: dc.w 14
 .bldepth: dc.w MAXDEPTH
 .frames: dc.w 130
-.blstruct: dc.l blarraycont, blarraycont2, blarraycont3, blarraycont4
-	   dc.l blarraycont5, blarraycont6,blarraycont7, blarraycont8
+.blstruct: dc.l blarraycont,blarraycont2,blarraycont3,blarraycont4
+	   dc.l blarraycont5,blarraycont6,blarraycont7,blarraycont8
 
 blarraycont:
 .posx: dc.w 0
@@ -1778,11 +1904,11 @@ CNTBLLNFLAG = 18
 CNTHEIGHT = 22
 CNTOBJSIZE = 24
 
-      INCLUDE sources:graphics.s
+      INCLUDE graphics.s
    SECTION FRAMEDATA,DATA
-      INCLUDE sources:PatternData.i
-      INCLUDE sources:FrameData.i	
-	  INCLUDE sources:FrameData2.i
-	  INCLUDE sources:FrameData3.i
+      INCLUDE PatternData.i
+      INCLUDE FrameData.i	
+	  INCLUDE FrameData2.i
+	  INCLUDE FrameData3.i
  END
 

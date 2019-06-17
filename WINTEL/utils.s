@@ -31,7 +31,7 @@ SetBitplanePointers:
 	swap 	d1
 	move.w	d1,2(a2)
 	swap	d1
-	add.l	#bplwidth*40,d1
+	add.l	#BPLWIDTH*40,d1
 	addq	#8,a2
 	dbf	d2,.lp1
 	rts
@@ -41,31 +41,7 @@ SetCopperList:
         move.l  view_copper,draw_copper
         move.l  d0,view_copper
         IFEQ DEBUG-0
-        move.l  view_copper, $80(a6)
+		move.l  draw_copper,$80(a6)
         move.l  d1,$88(a6)
         ENDC
         rts               
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

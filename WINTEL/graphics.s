@@ -1230,13 +1230,13 @@ COLP0B:
  CNOP 0,8
 
 BPLLOGO:
-  INCBIN "sources:raw/voidlogo.raw"
+  INCBIN "raw/voidlogo.raw"
 
 BPLTITLE:
-  INCBIN "sources:raw/title.raw"
+  INCBIN "raw/title.raw"
   
 Module1:
-  incbin  sources:mod/P61.chippy524   
+  incbin  mod/P61.chippy524   
 	
     SECTION	GRAPHICS,BSS_C
 
@@ -1245,5 +1245,7 @@ tempgfx:
 
 bitplane:
         DS.B $10000+BPLWIDTH*40*BPLCOUNT*2
+linebuffer:
+        DS.B 120*320*16
   
 
