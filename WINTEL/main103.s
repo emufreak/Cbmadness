@@ -89,6 +89,8 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect1_0
+		bra.w Effect5_0
+		bra.w Effect5_1
         bra.w Effect1_1
 		bra.w Effect1_2
 		bra.w Effect1_3
@@ -117,6 +119,8 @@ Effect0_1:
   move.w #256,ColMultiplier
   move.l #BPLLOGO,draw_buffer
   move.l #BPLLOGO,view_buffer
+  move.l #IMGBPLPOINTERS,draw_cprbitmap
+  move.l #IMGBPLPOINTERS,view_cprbitmap
   bsr.w  SetBitplanePointersDefault
   lea    PalettePic,a3
   bsr.w  CalculateFade
@@ -162,6 +166,31 @@ Effect1_0:
   endc
   move.w #1,continue
   bra.w mlgoon
+
+Effect5_0:
+  move.l #BPLLOGO,draw_buffer
+  move.l #BPLLOGO,view_buffer
+  move.l #COPPERLISTROTATE,view_copper
+  move.l #COPPERLISTROTATE,draw_copper
+  move.l #COLRBITPLANEPOINTERS,view_cprbitmap
+  move.l #COLRBITPLANEPOINTERS,draw_cprbitmap
+  move.w #1,continue
+  bra.w  mlgoon  
+
+Effect5_1: 
+  move.w #$f00,$dff180
+  bsr.w  SetCopperList
+  bsr.w  SetBitplanePointersDefault
+  bsr.w  WriteCopper4Rotation 
+  move.w #$c00,$dff106
+  move.w #$000,$dff180
+  cmp.w  #12,P61_Pos
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  move.w #1,continue
+  move.w #1,continue
+  bra.w  mlgoon
 
 Effect1_1: 
   move.w #$00,$dff180
@@ -899,7 +928,67 @@ GetArrValue:
 ;a2 - value first pos pointer
 ia
         lea      (a1,d4),a2
-        rts
+        
+
+WriteCopper4Rotation:               ;WriteCopper4Rotation()
+  movem.l  empty,d0-d7/a0-a6        ;{
+  lea.l    EF4_STARTPOS1,a0
+  lea.l    EF4_POSADD1,a2
+  lea.l    COLRLINESELECT,a3   
+  moveq.l  #6-1,d3                  ;  for(x=0;x < 6;x++)
+.lp2                                ;  {    
+  move.l   a2,a6                    ;    curposadd = posadd;
+  move.l   a3,a4                    ;    curcopperpos = copperpos;
+  cmp.l    #6-1,d3                    ;    if(x > 0)
+  beq.s    .br1                     ;    {
+  clr.w    $200
+  moveq.l  #6-1,d4                  ;      tmp = (x-1)*8 + 6;   
+  sub.w    d3,d4                    ;      
+  lsl.w    #3,d4                    ;
+  addq.w   #6,d4                    ;     
+  add.l    d4,a4                    ;      curcopperpos += tmp;                                      
+.br1                                ;    } 
+  move.b   #$2c,d1                  ;    rasterlinepos = $2c;
+  move.l   (a0),d2                  ;    curstartpos = *startpos
+  add.l    #linebuffer,d2           ;    curstartpos += linebuffer;
+  move.w   #256-1,d0                ;    for(i=0;i<256,i++)
+.lp1                                ;    {
+  cmp.l    #6-1,d3                    ;    if(x > 0)
+  bne.s    .br2                     ;    {
+  bsr.s    WriteCopperLine4Rotation ;      WriteCopperLine4Rotation(
+  bra.s    .br3                     ;          linebuffer, curstartpos);
+.br2                                ;    } else {
+  bsr.s    WriteCopperLine4Rotation2;      WriteCopperLine4Rotation2(
+.br3                                ;          linebuffer, curstartpos);
+                                   ;    }
+  add.l    (a6)+,d2                 ;      curstartpos += *curposadd++;
+  add.b    #1,d1                    ;      rasterlinepos++;
+  dbf      d0,.lp1                  ;    }
+  add.l    #FRM4SIZE,a0             ;    Startpos++;
+  add.l    #FRM4SIZE,a2             ;    Posadd++
+  dbf      d3,.lp2                  ;  }
+  rts                               ;}
+
+WriteCopperLine4Rotation:           ;WriteCopperLine4Rotaotion() {
+  move.b   d1,(a4)                  ;  *curcopperpos++ = rasterlinepos; 
+  swap     d2                       ;                      
+  addq.l   #6,a4                    
+  move.w   d2,(a4)                  ;  *curcopperpos++ = *curstartpos.hw;
+  addq.l   #4,a4
+  swap     d2                       ;  *curcopperpos++ = *curstartpos.lw;
+  move.w   d2,(a4)
+  add.l    #42,a4
+  rts                               ;}
+
+WriteCopperLine4Rotation2:     ;WriteCopperLine4Rotation() {
+  swap     d2                       ;                                         
+  move.w   d2,(a4)                  ;  *curcopperpos++ = *curstartpos.hw;
+  addq.l   #4,a4
+  swap     d2                       ;  *curcopperpos++ = *curstartpos.lw;
+  move.w   d2,(a4)
+  add.l    #48,a4
+  rts 
+
 
 DrawLines4Rotation:
         lea      linebuffer,a2
@@ -910,7 +999,7 @@ DrawLines4Rotation:
         move.l   d7,d4
         bsr.s    DrawLine4Rotation
         dbf      d0,.lp1
-        moveq.l  #15,d0 
+        moveq.l  #15,d0
         addq.w   #1,d7
         cmp.w    #320+1,d7
         bne.s    .lp1
@@ -1904,11 +1993,14 @@ CNTBLLNFLAG = 18
 CNTHEIGHT = 22
 CNTOBJSIZE = 24
 
+empty: dcb.l 52,0
+  
       INCLUDE graphics.s
    SECTION FRAMEDATA,DATA
       INCLUDE PatternData.i
       INCLUDE FrameData.i	
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
+	  INCLUDE FrameData4.i
  END
 

@@ -5,8 +5,7 @@ SetBitplanePointersDefault:
 	;move.l 	#bitplane+4, d1
 	move.l  draw_buffer,d1
 	moveq	#BPLCOUNT-1,d2
-	move.l  draw_copper,a2
-	move.l  #IMGBPLPOINTERS,a2
+	move.l  draw_cprbitmap,a2
 .lp1
 	move.w 	d1,6(a2)
 	swap 	d1
@@ -37,6 +36,9 @@ SetBitplanePointers:
 	rts
 
 SetCopperList:
+        move.l  draw_cprbitmap,d0
+		move.l  view_cprbitmap,draw_cprbitmap
+		move.l  d0,view_cprbitmap
         move.l  draw_copper,d0
         move.l  view_copper,draw_copper
         move.l  d0,view_copper
