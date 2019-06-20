@@ -1857,9 +1857,8 @@ Module1:
 tempgfx:
         DS.B BPLWIDTH*BPLHEIGHT*BPLCOUNT
 
-bitplane:
-        DS.B $10000+BPLWIDTH*40*BPLCOUNT*2
 linebuffer:
-        DS.B 120*320*16
+bitplane:
+        DS.B $10000+120*320*16
   
 

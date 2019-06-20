@@ -1030,13 +1030,24 @@ DrawLines4Rotation:
         lea      linebuffer,a2
         moveq.l  #15,d0
         moveq.l  #MINLINE,d7
+		move.l   #34,a0
 .lp1
         move.l   d0,d3           ;fill in parameters
         move.l   d7,d4
         bsr.s    DrawLine4Rotation
         dbf      d0,.lp1
+		clr.w    $200
+		subq.l   #1,a0
+		move.w   a0,d0
+		bne.s    .br1
+		move.l   #34,a0
+		move.l   a2,d0
+		add.l    #$10000,d0      ;do not cross 64k border to optimize
+		clr.w    d0              ;copper
+		move.l   d0,a2
+.br1
         moveq.l  #15,d0
-        addq.w   #1,d7
+        addq.w   #1,d7           
         cmp.w    #320+1,d7
         bne.s    .lp1
         rts
