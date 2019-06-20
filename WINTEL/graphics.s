@@ -483,7 +483,7 @@ copperlist:
         dc.w    $19a,$c00    ;10001101
         dc.w    $19c,$c00    ;10001110
         dc.w    $19e,$c00    ;10001111
-	dc.w    $1a0,$c00    ;10010000
+		dc.w    $1a0,$c00    ;10010000
         dc.w    $1a2,$c00    ;10010001
         dc.w    $1a4,$c00    ;10010010
         dc.w    $1a6,$c00    ;10010011
@@ -1251,7 +1251,7 @@ COPPERLISTROTATE:
 	dc.w	$108,-8                      ; Bpl1Mod
 	dc.w	$10a,-8                      ; Bpl2Mod
 
-	dc.w	$100,$210+$8000              ; bplcon0
+	dc.w	$100,$210;+$8000              ; bplcon0
 
 COLRBITPLANEPOINTERS:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
@@ -1815,7 +1815,7 @@ COLR0B:
         dc.w    $1ba,$f20    ;11111101
         dc.w    $1bc,$f20    ;11111110
         dc.w    $1be,$f20    ;11111111
-
+		
 COLRLINESELECT:
         REPT 255
         dc.w $00d9,$fffe
@@ -1843,7 +1843,8 @@ COLRLINESELECT:
  CNOP 0,8
 
 BPLLOGO:
-  INCBIN "raw/voidlogo.raw"
+  dcb.b  80*256*8,0
+  ;INCBIN "raw/voidlogo.raw"
 
 BPLTITLE:
   INCBIN "raw/title.raw"
