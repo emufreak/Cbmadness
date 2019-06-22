@@ -179,22 +179,24 @@ Effect5_0:
   move.w #255,d0
 .lp1
   move.b d1,(a3)
-  add.l  #13*4,a3
+  add.l  #7*4,a3
   add.b  #1,d1
   dbf    d0,.lp1
   move.w #1,continue
   bra.w  mlgoon
 
 Effect5_1:
-  move.w #$f00,$dff180
-  bsr.w  SetCopperList
-  bsr.w  SetBitplanePointersDefault
-  bsr.w  WriteCopper4Rotation
-  move.w #$c00,$dff106
-  move.w #$000,$dff180
-  cmp.w  #12,P61_Pos
-  beq.s  .br1
-  bra.w  mlgoon
+  movem.l empty,a0-a5/d0-d7
+  move.w  #$f00,$dff180
+  clr.w   $200
+  bsr.w   SetCopperList
+  ;bsr.w   SetBitplanePointersDefault
+  bsr.w   WriteCopper4Rotation
+  move.w  #$c00,$dff106
+  move.w  #$000,$dff180
+  cmp.w   #12,P61_Pos
+  beq.s   .br1
+  bra.w   mlgoon
 .br1
   move.w #1,continue
   move.w #1,continue
@@ -943,64 +945,48 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   lea.l    EF4_STARTPOS1,a0
   lea.l    EF4_POSADD1,a2
   lea.l    COLRLINESELECT,a3
+  lea.l    COLRBITPLANEPOINTERS,a1
   lea.l    EF4_SIZE,a5	
   moveq.l  #6-1,d3                  ;  for(x=0;x < 6;x++)
 .lp2                                ;  {
-  move.l   (a7),d7
+  clr.w    $200
+  move.l   (a7),d7 
   move.l   a2,a6                    ;    curposadd = posadd;
+  sub.l    d0,d0
+  move.l   #linebuffer,d1           
+  clr.w    d1                       
+  add.l    #$10000,d1               ;    bufferpos = linebuffer + 
+  move.w   (a5),d0                  ;        (int)(size-MINLINE)/34 * $10000
+  sub.l    #MINLINE,d0              ;                  + remainder division;
+  divu.w   #34,d0
+  move.l   d0,d2  
+  moveq.l  #16,d4  
+  lsl.l    d4,d2
+  swap     d0
+  mulu.w   #16*120,d0
+  add.l    d0,d1
+  add.l    d2,d1
+  add.l    #120*15,d1
+  move.l   d1,d0                    ;    *copperbpl.hw = bufferpos.hw;
+  swap     d0
+  move.w   d0,2(a1)
   move.l   a3,a4                    ;    curcopperpos = copperpos;
-  cmp.l    #6-1,d3                  ;    if(x > 0)
-  beq.s    .br1                     ;    {
-  moveq.l  #6-1,d4                  ;      tmp = (x-1)*8 + 6;
+  moveq.l  #6-1,d4                  ;      tmp = (x-1)*4 + 6;
   sub.w    d3,d4                    ;
-  lsl.w    #3,d4                    ;
+  lsl.w    #2,d4                    ;
   addq.w   #6,d4                    ;
   add.l    d4,a4                    ;      curcopperpos += tmp;
-.br1                                ;    }
-  move.b   #$2c,d1                  ;    rasterlinepos = $2c;
   move.w   (a0),d2                  ;    curstartpos = *startpos
-  cmp.l    #6-1,d3                  ;    if(x > 0)
-  bne.s    .br2                     ;    {
-  bsr.s    WriteCopperLine4Rotation ;      WriteCopperLine4Rotation(
-  bra.s    .br3                     ;          linebuffer, curstartpos);
-.br2                                ;    } else {
-  bsr.s    WriteCopperLine4Rotation2;      WriteCopperLine4Rotation2(
-.br3                                ;          linebuffer, curstartpos);
-                                   ;    }
+  bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(
+                                    ;          linebuffer, cutrstartposrstartpos);
+  add.l    #FRM4SIZE,a5             ;    size++
   add.l    #FRM4SIZE,a0             ;    Startpos++;
-  add.l    #FRM4SIZE,a2             ;    Posadd++
+  add.l    #FRM4SIZE,a2             ;    Posadd++;
+  addq.l   #8,a1
   dbf      d3,.lp2                  ;  }
   rts                               ;}
 
-WriteCopperLine4Rotation:           ;WriteCopperLine4Rotaotion() {
-  move.w   #256-1,d0                ;  for(i=0;i<256,i++)
-.lp1                                ;  {
-                                    ;  //Pixelexact offset part
-  move.w   d2,d5                    ;  addroffs = curstartpos;
-  and.l    #%1111,d5                ;  addroffs = tmp %1111;
-  move.w   d5,d6                    ;  addroffs *= 120; 
-  lsl.w    #7,d5
-  lsl.w    #3,d6
-  sub.w    d6,d5                 
-  neg.l    d5                                                          ;  //byte part
-  move.w   d2,d6                    ;  tmp = curstartpos;
-  lsr.w    #3,d6                    ;  tmp >= 3;
-  add.l    d6,d5                    ;  addroffs += tmp;
-  add.l    #linebuffer+120*15,d5
-  ;move.b   d1,(a4)                  ;    *curcopperpos++ =
-  swap     d5                       ;                     rasterlinepos;
-  addq.l   #6,a4
-  move.w   d5,(a4)                  ;    *curcopperpos++ =
-  addq.l   #4,a4                    ;                   *curstartpos.hw;
-  swap     d5                       ;    *curcopperpos++ =
-  move.w   d5,(a4)                  ;                   *curstartpos.lw;
-  add.l    #42,a4
-  add.l    (a6)+,d2                 ;    curstartpos += *curposadd++;
-  ;add.b    #1,d1                    ;    rasterlinepos++;
-  dbf      d0,.lp1                  ;  }
-  rts                               ;}
-
-WriteCopperLine4Rotation2:          ;WriteCopperLine4Rotation() {
+WriteCopperLine4Rotation:          ;WriteCopperLine4Rotation() {
   move.w   #256-1,d0                ;  for(i=0;i<256,i++)
 .lp1                                   ;  //Pixelexact offset part
   move.w   d2,d5                    ;  addroffs = curstartpos;
@@ -1013,30 +999,32 @@ WriteCopperLine4Rotation2:          ;WriteCopperLine4Rotation() {
   move.w   d2,d6                    ;  tmp = curstartpos;
   lsr.w    #3,d6                    ;  tmp >= 3;
   add.l    d6,d5                    ;  addroffs += tmp;
-  add.l    #linebuffer+120*15,d5                                    ;  {
-  swap     d5                       ;
-  move.w   d5,(a4)                  ;    *curcopperpos++ = *addroffs.hw;
-  addq.l   #4,a4                    ;
-  swap     d5                       ;    *curcopperpos++ = *addroffs.lw;
+  add.l    d1,d5                    ;  addroffs += bufferpos;
+  ;swap     d5                       ;
+  ;move.w   d5,(a4)                  ;    *curcopperpos++ = *addroffs.hw;
+  ;addq.l   #4,a4                    ;
+  ;swap     d5                       ;    *curcopperpos++ = *addroffs.lw;
   move.w   d5,(a4)                  ;
-  add.l    #48,a4
+  add.l    #28,a4
   add.l    (a6)+,d2                 ;    curstartpos += *curposadd++;
-  ;add.b    #1,d1                    ;    rasterlinepos++;
-  dbf      d0,.lp1                  ;  }
+  dbf      d0,.lp1                  ;  
   rts
 
 
 DrawLines4Rotation:
         lea      linebuffer,a2
+		move.l   a2,d0
+		add.l    #$10000,d0          ;do not cross 64k border to optimize
+		clr.w    d0                  ;copper
+		move.l   d0,a2
         moveq.l  #15,d0
         moveq.l  #MINLINE,d7
 		move.l   #34,a0
 .lp1
-        move.l   d0,d3           ;fill in parameters
+        move.l   d0,d3               ;fill in parameters
         move.l   d7,d4
         bsr.s    DrawLine4Rotation
         dbf      d0,.lp1
-		clr.w    $200
 		subq.l   #1,a0
 		move.w   a0,d0
 		bne.s    .br1

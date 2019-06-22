@@ -14,7 +14,7 @@ EF4_SIZE:
  REPT 7 
   dcb.l 255, 0 
   dc.w 5
-  dc.w 5
+  dc.w 10
  ENDR
 
 EF4_STARTPOS3:

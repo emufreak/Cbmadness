@@ -1819,24 +1819,23 @@ COLR0B:
 COLRLINESELECT:
         REPT 255
         dc.w $00d9,$fffe
-        dc.w $e0,0
+        ;dc.w $e0,0
         dc.w $e2,0
-		dc.w $e4,0
+		;dc.w $e4,0
         dc.w $e6,0
-        dc.w $e8,0
+        ;dc.w $e8,0
         dc.w $ea,0
-		dc.w $ec,0
+		;dc.w $ec,0
         dc.w $ee,0
-		dc.w $f0,0
+		;dc.w $f0,0
         dc.w $f2,0
-        dc.w $f4,0
+        ;dc.w $f4,0
 		dc.w $f6,0
 		;dc.w $f8,0
         ;dc.w $fa,0
 		;cd.w $fc,0
         ;dc.w $fe,0
         ENDR		
-        dc.l $fffffffe
 
 		DC.W	$ffff,$FFFE
 
