@@ -34,7 +34,7 @@ STARTPROG:
 
     ;move.w	d0,$88(a6)		; restart copperlist
     IFEQ AGA-1
-    move.w	#$3,$1fc(a6)
+    move.w	#$0,$1fc(a6)
     move.w	#$c00,$106(a6)
     move.w	#$11,$10c(a6)
     ELSE
@@ -124,7 +124,6 @@ Effect0_1:
   bsr.w  SetBitplanePointersDefault
   lea    PalettePic,a3
   bsr.w  CalculateFade
-  bsr.w  DrawLines4Rotation
   move.w #$c00,$dff106
   move.w #$000,$dff180
   sub.w  #1,.counter
@@ -174,12 +173,13 @@ Effect5_0:
   move.l #COPPERLISTROTATE,draw_copper
   move.l #COLRBITPLANEPOINTERS,view_cprbitmap
   move.l #COLRBITPLANEPOINTERS,draw_cprbitmap
-  lea.l   COLRLINESELECT,a3
+  lea.l  COLRLINESELECT,a3
+  bsr.w  DrawLines4Rotation
   move.b #$2c,d1
   move.w #255,d0
 .lp1
   move.b d1,(a3)
-  add.l  #7*4,a3
+  add.l  #9*4,a3
   add.b  #1,d1
   dbf    d0,.lp1
   move.w #1,continue
@@ -187,10 +187,10 @@ Effect5_0:
 
 Effect5_1:
   movem.l empty,a0-a5/d0-d7
-  move.w  #$f00,$dff180
   clr.w   $200
+  move.w  #$c00,$dff106
+  move.w  #$f00,$dff180
   bsr.w   SetCopperList
-  ;bsr.w   SetBitplanePointersDefault
   bsr.w   WriteCopper4Rotation
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
@@ -946,21 +946,21 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   lea.l    EF4_POSADD1,a2
   lea.l    COLRLINESELECT,a3
   lea.l    COLRBITPLANEPOINTERS,a1
-  lea.l    EF4_SIZE,a5	
-  moveq.l  #6-1,d3                  ;  for(x=0;x < 6;x++)
+  lea.l    EF4_SIZE,a5
+  moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
 .lp2                                ;  {
-  clr.w    $200
-  move.l   (a7),d7 
+  ;move.l   (a7),d7
   move.l   a2,a6                    ;    curposadd = posadd;
   sub.l    d0,d0
-  move.l   #linebuffer,d1           
-  clr.w    d1                       
-  add.l    #$10000,d1               ;    bufferpos = linebuffer + 
-  move.w   (a5),d0                  ;        (int)(size-MINLINE)/34 * $10000
-  sub.l    #MINLINE,d0              ;                  + remainder division;
+  move.l   #linebuffer,d1
+  clr.w    d1
+  add.l    #$10000,d1               ;    bufferpos = linebuffer +
+  move.w   (a5),d0                  ;             (int)(size-MINLINE)/34 * $10000
+  move.w   d0,d7					;                       + remainder division;
+  sub.l    #MINLINE,d0
   divu.w   #34,d0
-  move.l   d0,d2  
-  moveq.l  #16,d4  
+  move.l   d0,d2
+  moveq.l  #16,d4
   lsl.l    d4,d2
   swap     d0
   mulu.w   #16*120,d0
@@ -971,11 +971,14 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   swap     d0
   move.w   d0,2(a1)
   move.l   a3,a4                    ;    curcopperpos = copperpos;
-  moveq.l  #6-1,d4                  ;      tmp = (x-1)*4 + 6;
+  moveq.l  #8-1,d4                  ;      tmp = (x-1)*4 + 6;
   sub.w    d3,d4                    ;
   lsl.w    #2,d4                    ;
   addq.w   #6,d4                    ;
   add.l    d4,a4                    ;      curcopperpos += tmp;
+  move.w   #640,d4                  ;      maxpos =
+  divu.w   d7,d4                    ;       (int)640/size * size
+  mulu.w   d7,d4
   move.w   (a0),d2                  ;    curstartpos = *startpos
   bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(
                                     ;          linebuffer, cutrstartposrstartpos);
@@ -986,29 +989,32 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   dbf      d3,.lp2                  ;  }
   rts                               ;}
 
-WriteCopperLine4Rotation:          ;WriteCopperLine4Rotation() {
+WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   move.w   #256-1,d0                ;  for(i=0;i<256,i++)
-.lp1                                   ;  //Pixelexact offset part
-  move.w   d2,d5                    ;  addroffs = curstartpos;
-  and.l    #%1111,d5                ;  addroffs = tmp %1111;
-  move.w   d5,d6                    ;  addroffs *= 120; 
+.lp1
+                    ;  {
+  cmp.w    d4,d2                    ;    if(curpos > maxpos)
+  ble.s    .br1                     ;    {
+  sub.w    d2,d4                    ;      curpos -= maxpos;
+.br1                                ;    }
+                                    ;    //Pixelexact offset part
+  move.w   d2,d5                    ;    addroffs = curstartpos;
+  and.l    #%1111,d5                ;    addroffs = tmp %1111;
+  move.w   d5,d6                    ;    addroffs *= 120;
   lsl.w    #7,d5
   lsl.w    #3,d6
-  sub.w    d6,d5 
+  sub.w    d6,d5
   neg.l    d5                                                           ;  //byte part
-  move.w   d2,d6                    ;  tmp = curstartpos;
-  lsr.w    #3,d6                    ;  tmp >= 3;
-  add.l    d6,d5                    ;  addroffs += tmp;
-  add.l    d1,d5                    ;  addroffs += bufferpos;
-  ;swap     d5                       ;
-  ;move.w   d5,(a4)                  ;    *curcopperpos++ = *addroffs.hw;
-  ;addq.l   #4,a4                    ;
-  ;swap     d5                       ;    *curcopperpos++ = *addroffs.lw;
+  move.w   d2,d6                    ;    tmp = curstartpos;
+  lsr.w    #3,d6                    ;    tmp >= 3 & $fffe;
+  bclr.l   #0,d6
+  add.l    d6,d5                    ;    addroffs += tmp;
+  add.l    d1,d5                    ;    addroffs += bufferpos;
   move.w   d5,(a4)                  ;
-  add.l    #28,a4
+  add.l    #36,a4
   add.l    (a6)+,d2                 ;    curstartpos += *curposadd++;
-  dbf      d0,.lp1                  ;  
-  rts
+  dbf      d0,.lp1                  ;  }
+  rts                               ;}
 
 
 DrawLines4Rotation:
@@ -1035,7 +1041,7 @@ DrawLines4Rotation:
 		move.l   d0,a2
 .br1
         moveq.l  #15,d0
-        addq.w   #1,d7           
+        addq.w   #1,d7
         cmp.w    #320+1,d7
         bne.s    .lp1
         rts
@@ -2031,11 +2037,6 @@ CNTOBJSIZE = 24
 empty: dcb.l 52,0
 
       INCLUDE graphics.s
-   SECTION FRAMEDATA,DATA
-      INCLUDE PatternData.i
-      INCLUDE FrameData.i
-	  INCLUDE FrameData2.i
-	  INCLUDE FrameData3.i
-	  INCLUDE FrameData4.i
+      
  END
 
