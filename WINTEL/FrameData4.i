@@ -9,12 +9,12 @@ EF4_STARTPOS1:
   dc.w 5
 
 EF4_SIZE:
-  dc.w 10
+  dc.w 20
   
  REPT 7 
   dcb.l 255, 1
   dc.w 5
-  dc.w 10
+  dc.w 20
  ENDR
 
 EF4_STARTPOS3:

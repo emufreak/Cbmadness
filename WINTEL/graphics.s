@@ -29,6 +29,7 @@ OFFSCLBLOCKDRAW  equ  OFFSBPLPOINTERS+32*2
 OFFSNEXTCOPPER  equ  OFFSCLBLOCKDRAW+4*255+4*BPLCOUNT*255+4
 OFFSCLPALETTELW  equ  OFFSCLPALETTE+(SIZEPALETTE+1)*4*8
 
+  	  INCLUDE FrameData4.i
   CNOP 0,8
 COPPERLISTROTATE:
 
@@ -42,7 +43,8 @@ COPPERLISTROTATE:
 
 	dc.w	$8E,$2c81	                 ; DiwStrt
 	dc.w	$90,$2cc1	                 ; DiwStop
-	dc.w	$92,$38		                 ; DdfStart
+	dc.w	$92,$38		                 ; DdfStarte
+
 	dc.w	$94,$d0		                 ; DdfStop
 	dc.w	$102,0		                 ; BplCon1
 	dc.w	$104,$20	                 ; BplCon2
@@ -1855,7 +1857,7 @@ BPLTITLE:
       INCLUDE FrameData.i
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
-	  INCLUDE FrameData4.i
+	  DCB.B 400000,0
 	  
 Module1:
   incbin  mod/P61.chippy524   
