@@ -29,8 +29,12 @@ OFFSCLBLOCKDRAW  equ  OFFSBPLPOINTERS+32*2
 OFFSNEXTCOPPER  equ  OFFSCLBLOCKDRAW+4*255+4*BPLCOUNT*255+4
 OFFSCLPALETTELW  equ  OFFSCLPALETTE+(SIZEPALETTE+1)*4*8
 
+Module1:
+  incbin  mod/P61.chippy524   
+  
   	  INCLUDE FrameData4.i
   CNOP 0,8
+  
 COPPERLISTROTATE:
 
     ;Sprpointers
@@ -49,7 +53,7 @@ COPPERLISTROTATE:
 	dc.w	$102,0		                 ; BplCon1
 	dc.w	$104,$20	                 ; BplCon2
 	dc.w	$108,0                       ; Bpl1Mod
-	dc.w	$10a,0                       ; Bpl2Mod
+	dc.w	$10a,0                    e   ; Bpl2Mod
 
 	dc.w	$100,$210;+$8000              ; bplcon0
 
@@ -638,7 +642,6 @@ COLRLINESELECT:
         ENDR		
 
 		DC.W	$ffff,$FFFE
-
 linebuffer:
 copperlist:
 
@@ -1857,14 +1860,12 @@ BPLTITLE:
       INCLUDE FrameData.i
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
-	  DCB.B 400000,0
-	  
-Module1:
-  incbin  mod/P61.chippy524   
+
+	  DCB.B 600000,0
 	
-    SECTION	GRAPHICS,BSS_C
+    ;SECTION	GRAPHICS,BSS_C
 
 bitplane:
-        DS.B $10000+120*320*16
+        ;DS.B $10000+120*310*16
   
 

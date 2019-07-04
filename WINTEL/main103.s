@@ -21,7 +21,7 @@ Playrtn:
            include      "utils.s"
 *****************************************************************************u
 
-		;5432109876543210
+		    ;5432109876543210
 DMASET	=	%1001001111100000	; copper,bitplane,blitter DMA
 
 
@@ -188,7 +188,7 @@ Effect5_0:
 Effect5_1:
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
-  move.w  #$f00,$dff180
+  move.w  #$000,$dff180
   bsr.w   SetCopperList
   bsr.w   WriteCopper4Rotation
   move.w  #$c00,$dff106
@@ -948,37 +948,46 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
 .lp2                                ;  {
   move.l   a2,a6                    ;    curposadd = posadd;
-  sub.l    d0,d0
-  move.l   #linebuffer,d1
-  clr.w    d1
-  add.l    #$10000,d1               ;    bufferpos = linebuffer +
-  move.w   (a5),d0                  ;             (int)(size-MINLINE)/17 * $10000
-  move.w   d0,d7					;                       + remainder division;
-  sub.l    #MINLINE,d0
-  divu.w   #17,d0
-  move.l   d0,d2
-  moveq.l  #16,d4
-  lsl.l    d4,d2
-  swap     d0
-  mulu.w   #32*120,d0
-  add.l    d0,d1
-  add.l    d2,d1
-  ;add.l    #120*31,d1
-  move.l   d1,d0                    ;    *copperbpl.hw = bufferpos.hw;
-  swap     d0
-  move.w   d0,2(a1)
+  sub.l    d0,d0                    ;
+  move.l   #linebuffer,d0           ;    64kalign(linebuffer)
+  add.l    #$10000,d0               ;   
+  clr.w    d0
+  sub.l    d1,d1
+  move.w   (a5),d1   
+  cmp.w    #320,d1                  ;    if(size > 320) sizepos = 320;             
+  ble.s    .br1                     ;    else sizepos = size;
+  move.w   #320,d1
+.br1  
+  sub.l    #MINLINE,d1
+  moveq.l  #12,d2                   ;    bufferpos = 32*120*sizepos+linebuffer;
+  lsl.l    d2,d1 
+  add.l    d0,d1  
+  swap     d1
+  move.w   d1,2(a1)
+  swap     d1
   move.l   a3,a4                    ;    curcopperpos = copperpos;
   moveq.l  #8-1,d4                  ;      tmp = (x-1)*4 + 6;
   sub.w    d3,d4                    ;
   lsl.w    #2,d4                    ;
   addq.w   #6,d4                    ;
   add.l    d4,a4                    ;      curcopperpos += tmp;
-  move.w   #640,d4                  ;      maxpos =
-  divu.w   d7,d4                    ;       (int)640/size * size
+  move.w   (a5),d7
+  add.w    d7,d7                    
+  move.w   #640,d4                  ;     maxpos = 640; 
+  cmp.w    d4,d7                    ;     if(size*2 < 640) {
+  bge.s    .br3                     ;       maxpos =
+  divu.w   d7,d4                    ;       (int)640/(size*2) *size*2;   
   mulu.w   d7,d4
-  move.w   (a0),d2                  ;    curstartpos = *startpos
-  bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(
-                                    ;          linebuffer, cutrstartposrstartpos);
+  bra.s    .br2                     ;     }
+.br3                                ;     else {
+  move.w   d7,d4                    ;     maxpos = size * 2;
+.br2                                ;     }
+  move.w   (a0),d2                  ;     curstartpos = *startpos
+  move.w   (a5),d7 
+  move.w   d3,.save 
+  bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(linebuffer,
+                                    ;          cutrstartposrstartpos, linesize);
+  move.w   .save(pc),d3
   add.l    #FRM4SIZE,a5             ;    size++
   add.l    #FRM4SIZE,a0             ;    Startpos++;
   add.l    #FRM4SIZE,a2             ;    Posadd++;
@@ -986,21 +995,45 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   dbf      d3,.lp2                  ;  }
   rts                               ;}
 
+.save
+  dc.w 0
+  
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
-  move.w   #256-1,d0                ;  for(i=0;i<256,i++)
-.lp1                                ;  {
-  cmp.w    d4,d2                    ;    if(curpos > maxpos)
+  move.w   #256-1,d0                ;  for(i=0;i<256,i++) {
+  move.l   d2,d3                    ;    effpos = curpos
+.lp1 
+  tst.l    d3                       ;    if(effpos < 0)
+  bge.s    .br2      t               ;    { 
+  add.l    d4,d3                    ;      effpos += maxpos;
+  bra.s    .br1
+.br2                                ;    }
+  cmp.w    d4,d3                    ;    else if(effpos > maxpos)
   ble.s    .br1                     ;    {
-  sub.w    d2,d4                    ;      curpos -= maxpos;
+  sub.w    d4,d3                    ;      effpos -= maxpos;
 .br1                                ;    }
-                                    ;    //Pixelexact offset part
-  move.w   d2,d5                    ;    addroffs = curstartpos;
+  move.w   d3,d2                    ;    curpos = effpos
+  move.l   #320,d5                  ;    
+  cmp.w    d5,d7                    ;    if(320 < linesize)
+  ble.s    .br3                     ;    {
+  sub.w    d7,d2                    ;      curpos -= linesize;
+  bpl.s    .br4                     ;      if(curpos < 0) {
+  add.w      d5,d2                  ;        curpos += 320
+  bpl.s      .br3                   ;        if(curpos < 0)
+  sub.l      d2,d2                  ;          curpos = 0;
+  bra.s    .br3                     ;      }
+.br4                                ;      else {
+  sub.w    d7,d2                    ;        curpos -= linesize + 640
+  add.w    #640,d2 
+  cmp.w    d5,d2                    ;        if(curpos < 320)
+  bge.s    .br3                     ;        {
+  move.w   d5,d2                    ;         curpos = 320; }      
+                                    ;      }
+                                    ;    }
+.br3                                ;    //Pixelexact offset part
+  move.w   d2,d5                    ;    addroffs = curpos;
   and.l    #%11111,d5               ;    addroffs = tmp %11111;
-  move.w   d5,d6                    ;    addroffs *= 120
+  move.w   d5,d6                    ;    addroffs *= 128
   lsl.w    #7,d5
-  lsl.w    #3,d6
-  sub.w    d6,d5
-  ;neg.l    d5                      ;  //byte part
   move.w   d2,d6                    ;    tmp = curstartpos;
   lsr.w    #3,d6                    ;    tmp >= 3 & $fffc;
   and.w    #$fffc,d6
@@ -1008,227 +1041,56 @@ WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   add.l    d1,d5                    ;    addroffs += bufferpos;
   move.w   d5,(a4)                  ;
   add.l    #36,a4
-  add.l    (a6)+,d2                 ;    curstartpos += *curposadd++;
+  add.l    (a6)+,d3                 ;    effpos += *curposadd++;
   dbf      d0,.lp1                  ;  }
   rts                               ;}
 
 
 DrawLines4Rotation: 
-        clr.w    $200
         lea      linebuffer,a2
 		move.l   a2,d0 
 		add.l    #$10000,d0          ;do not cross 64k border to optimize
 		clr.w    d0                  ;copper
         moveq.l  #MINLINE,d7
 .lp1
-        move.l   d0,a0               ;fill in parameters
+        sub.l    d3,d3               ;fill in parameters
 		move.l   d7,d4
-		bsr.s    PrepareLine4Rotation
+		move.l   d0,a2
+		bsr.w    DrawLine4Rotation
         move.l   d0,a0               ;fill in parameters
         move.l   d0,d4
-		add.l    #122,d4
+		add.l    #126,d4
         bsr.s    DrawLineSize4Rotation  
-		add.l    #124*16,d0
-		cmp.w    #$ffff-124*16,d0
-		bge.s    .br1
-		add.l    #$10000,d0      ;do not cross 64k border to optimize
-		clr.w    d0              ;copper
+		add.l    #128*32,d0
 .br1
 		addq.w   #1,d7
         cmp.w    #320+1,d7
-        bne.s    .lp1        
+        bne.s    .lp1 	
         rts
 
-
-PrepareLine4Rotation:             ;Prepareline4Rotation(LineSize,destptr) {
-  ;d4 linesize                    ;{
-  ;a0 destptr
-  move.w d0,.regsave              ;  for(x = 0;x < 320;X+=LineSize)
-  sub.l  d6,d6                    ;  {
-.lp1		
-  move.w d6,d0						  
-  move.w d6,d2				      ;  	Blitline(x,y,x+LineSize,y,destptr);	
-  add.w  d4,d2
-  sub.l  d1,d1                      
-  sub.l  d3,d3  
-  bsr.s  Blitline
-  add.w  d4,d6
-  cmp.w  #320,d6               
-  blt.s  .lp1                     ;  }
-  move.w .regsave(pc),d0								   
-  rts							  ;}
-
 .regsave dc.w 0								  
-                                    
+                                  
 
 DrawLineSize4Rotation:            ;DrawLine4Rotation(writeptr, readptr) 
 								  ;{
   move.w  #15*4096,d1             ;  bltconx = 15 >> 12
 .wblit:                           ;  wblit();
-  btst    #6,2(a6)
+  btst    #6,$2(a6)
   bne.s   .wblit 
-  move.w  d1,42(a6)   			  ;  set_register_bltcon1(bltconx)  
+  move.w  d1,$42(a6)   			  ;  set_register_bltcon1(bltconx)  
   or.w    #$9f0,d1                ;  bltconx.w |= 0x9f0
-  move.w  d1,40(a6)               ;  set_register_bltcon0(bltconx);
-  move.l  #$0000fffe,44(a6)       ;  set_register_bltafwm(#$0000fffe)
-  move.w  #-2,64(a6)			  ;  set_register_bltamod(-2);
-  move.w  #-2,66(a6)			  ;  set_register_bltdmod(-2);                                ;  set_register_bltdmod(-2);
-  move.l  a0,50(a6)				  ;  set_register_bltapt(readptr);
-  subq.l  #2,d4                   ;  writeptr -= 2
-  move.l  d4,54(a6)               ;  set_register_bltdpt(writeptr);
-  move.w  #31*66+63,58(a6)		  ;  bltsize = 31*64+63; 
+  move.w  d1,$40(a6)               ;  set_register_bltcon0(bltconx);
+  move.l  #$ffffffff,$44(a6)       ;  set_register_bltafwm(#$0000fffe)
+  move.w  #2,$64(a6)			  ;  set_register_bltamod(-2);
+  move.w  #2,$66(a6)			  ;  set_register_bltdmod(-2);                                ;  set_register_bltdmod(-2);
+  move.l  a0,$50(a6)				  ;  set_register_bltapt(readptr);
+  ;subq.l  #2,d4                   ;  writeptr -= 2
+  move.l  d4,$54(a6)               ;  set_register_bltdpt(writeptr);
+  move.w  #31*64+63,$58(a6)		  ;  bltsize = 31*64+63; 
   rts                             ;}
-
-
-;******************************************************************************
-; Questa routine effettua il disegno della linea. prende come parametri gli
-; estremi della linea P1 e P2, e l'indirizzo del bitplane su cui disegnarla.
-; D0 - X1 (coord. X di P1)
-; D1 - Y1 (coord. Y di P1)
-; D2 - X2 (coord. X di P2)
-; D3 - Y2 (coord. Y di P2)
-; A0 - indirizzo bitplane
-;******************************************************************************                               ;}								  
-Blitline: 
-
-* scelta ottante 
-
-	sub.w	d0,d2		; D2=X2-X1
-	bmi.s	DRAW4		; se negativo salta, altrimenti D2=DiffX
-	sub.w	d1,d3		; D3=Y2-Y1
-	bmi.s	DRAW2		; se negativo salta, altrimenti D3=DiffY
-	cmp.w	d3,d2		; confronta DiffX e DiffY
-	bmi.s	DRAW1		; se D2<D3 salta..
-				        ; .. altrimenti D3=DY e D2=DX
-	moveq	#$10,d5		; codice ottante
-	bra.s	DRAWL
-DRAW1:
-	exg.l	d2,d3		; scambia D2 e D3, in modo che D3=DY e D2=DX
-	moveq	#0,d5		; codice ottante
-	bra.s	DRAWL
-DRAW2:
-	neg.w	d3		; rende D3 positivo
-	cmp.w	d3,d2		; confronta DiffX e DiffY
-	bmi.s	DRAW3		; se D2<D3 salta..
-				; .. altrimenti D3=DY e D2=DX
-	moveq	#$18,d5		; codice ottante
-	bra.s	DRAWL
-DRAW3:
-	exg.l	d2,d3		; scambia D2 e D3, in modo che D3=DY e D2=DX
-	moveq	#$04,d5		; codice ottante
-	bra.s	DRAWL
-DRAW4:
-	neg.w	d2		; rende D2 positivo
-	sub.w	d1,d3		; D3=Y2-Y1
-	bmi.s	DRAW6		; se negativo salta, altrimenti D3=DiffY
-	cmp.w	d3,d2		; confronta DiffX e DiffY
-	bmi.s	DRAW5		; se D2<D3 salta..
-				; .. altrimenti D3=DY e D2=DX
-	moveq	#$14,d5		; codice ottante
-	bra.s	DRAWL
-DRAW5:
-	exg.l	d2,d3		; scambia D2 e D3, in modo che D3=DY e D2=DX
-	moveq	#$08,d5		; codice ottante
-	bra.s	DRAWL
-DRAW6:
-	neg.w	d3		; rende D3 positivo
-	cmp.w	d3,d2		; confronta DiffX e DiffY
-	bmi.s	DRAW7		; se D2<D3 salta..
-				; .. altrimenti D3=DY e D2=DX
-	moveq	#$1c,d5		; codice ottante
-	bra.s	DRAWL
-DRAW7:
-	exg.l	d2,d3		; scambia D2 e D3, in modo che D3=DY e D2=DX
-	moveq	#$0c,d5		; codice ottante
-
-; Quando l'esecuzione raggiunge questo punto, abbiamo:
-; D2 = DX
-; D3 = DY
-; D5 = codice ottante
-
-DRAWL:
-	mulu.w	#40,d1		; offset Y
-	add.l	d1,a0		; aggiunge l'offset Y all'indirizzo
-
-	move.w	d0,d1		; copia la coordinata X
-	and.w	#$000F,d0	; seleziona i 4 bit piu` bassi della X..
-	ror.w	#4,d0		; .. e li sposta nei bit da 12 a 15
-	or.w	#$0B4A,d0	; con un OR ottengo il valore da scrivere
-				; in BLTCON0. Con questo valore di LF ($4A)
-				; si disegnano linee in EOR con lo sfondo.
-
-	lsr.w	#4,d1		; cancella i 4 bit bassi della X
-	add.w	d1,d1		; ottiene l'offset X in bytes
-	add.w	d1,a0		; aggiunge l'offset X all'indirizzo
-
-	move.w	d2,d1		; copia DX in D1
-	addq.w	#1,d1		; D1=DX+1
-	lsl.w	#$06,d1		; calcola in D1 il valore da mettere in BLTSIZE
-	addq.w	#$0002,d1	; aggiunge la larghezza, pari a 2 words
-
-	lsl.w	#$02,d3		; D3=4*DY
-	add.w	d2,d2		; D2=2*DX
-
-	btst	#6,2(a5)
-WaitLine:
-	btst	#6,2(a5)	; aspetta blitter fermo
-	bne	WaitLine
-
-	move.w	d3,$62(a5)	; BLTBMOD=4*DY
-	sub.w	d2,d3		; D3=4*DY-2*DX
-	move.w	d3,$52(a5)	; BLTAPTL=4*DY-2*DX
-
-				; prepara valore da scrivere in BLTCON1
-	or.w	#$0001,d5	; setta bit 0 (attiva line-mode)
-	tst.w	d3
-	bpl.s	OK1		; se 4*DY-2*DX>0 salta..
-	or.w	#$0040,d5	; altrimenti setta il bit SIGN
-OK1:
-	move.w	d0,$40(a5)	; BLTCON0
-	move.w	d5,$42(a5)	; BLTCON1
-	sub.w	d2,d3		; D3=4*DY-4*DX
-	move.w	d3,$64(a5)	; BLTAMOD=4*DY-4*DX
-	move.l	a0,$48(a5)	; BLTCPT - indirizzo schermo
-	move.l	a0,$54(a5)	; BLTDPT - indirizzo schermo
-	move.w	d1,$58(a5)	; BLTSIZE
-	rts
-	
-
-;******************************************************************************
-; Questa routine setta i registri del blitter che non devono essere
-; cambiati tra una line e l'altra
-;******************************************************************************
-
-InitLine
-	btst	#6,2(a5) ; dmaconr
-WBlit_Init:
-	btst	#6,2(a5) ; dmaconr - attendi che il blitter abbia finito
-	bne.s	Wblit_Init
-
-	moveq.l	#-1,d5
-	move.l	d5,$44(a5)		; BLTAFWM/BLTALWM = $FFFF
-	move.w	#$8000,$74(a5)		; BLTADAT = $8000
-	move.w	#40,$60(a5)		; BLTCMOD = 40
-	move.w	#40,$66(a5)		; BLTDMOD = 40
-	rts
-
-;******************************************************************************
-; Questa routine definisce il pattern che deve essere usato per disegnare
-; le linee. In pratica si limita a settare il registro BLTBDAT.
-; D0 - contiene il pattern della linea 
-;******************************************************************************
-
-SetPattern:
-	btst	#6,2(a5) ; dmaconr
-WBlit_Set:
-	btst	#6,2(a5) ; dmaconr - attendi che il blitter abbia finito
-	bne.s	Wblit_Set
-
-	move.w	d0,$72(a5)	; BLTBDAT = pattern della linea!
-	rts
 	
 DrawLine4Rotation:
-        ;in#put
+        ;input
         ;d3 - offset
         ;d4 - block size
         ;a2 - write pos
@@ -1240,7 +1102,7 @@ DrawLine4Rotation:
         ;d6 - offset right
 
         ;calculate map position
-        move.w   #30,.lwrdcounter
+        move.w   #31,.lwrdcounter
 
         ;Line Calculation
         sub.w     d6,d6
