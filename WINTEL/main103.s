@@ -188,7 +188,7 @@ Effect5_0:
 Effect5_1:
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
-  move.w  #$000,$dff180
+  move.w  #$0f0,$dff180
   bsr.w   SetCopperList
   bsr.w   WriteCopper4Rotation
   move.w  #$c00,$dff106
@@ -937,14 +937,28 @@ GetArrValue:
 ia
         lea      (a1,d4),a2
 
+;input 
+;d0: sizecol
+;d1: invsin
+;d2: slope
+CalcRotation:                       ;CalcRotation(sizecol, 
+                                    ;      slope, invsin) { 
+  mulu.l  d1,d0                     ;  sizelinehor = sizecol*invsin
+  move.l  d0,d3                     ;  startpos = sizelinehor / 2
+  lsr.l   d3
+  lsr.l   #8,d0                     ;  sizelinehor =>> 8;  
+  bsr.s   WriteCopper4Rotation      ;  WriteCopper4Rotation(sizelinehor
+									;                         , slope);								
+                                    ;}
 
-WriteCopper4Rotation:               ;WriteCopper4Rotation()
+WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
+                                    ;                           slope);
   movem.l  empty,d0-d7/a0-a6        ;{
   lea.l    EF4_STARTPOS1,a0
   lea.l    EF4_POSADD1,a2
   lea.l    COLRLINESELECT,a3
   lea.l    COLRBITPLANEPOINTERS,a1
-  lea.l    EF4_SIZE,a5
+  lea.l    SIZETST,a5
   moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
 .lp2                                ;  {
   move.l   a2,a6                    ;    curposadd = posadd;
@@ -953,10 +967,10 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   add.l    #$10000,d0               ;   
   clr.w    d0
   sub.l    d1,d1
-  move.w   (a5),d1   
-  cmp.w    #320,d1                  ;    if(size > 320) sizepos = 320;             
+  move.l   (a5),d1   
+  cmp.l    #320,d1                  ;    if(size > 320) sizepos = 320;             
   ble.s    .br1                     ;    else sizepos = size;
-  move.w   #320,d1
+  move.l   #320,d1
 .br1  
   sub.l    #MINLINE,d1
   moveq.l  #12,d2                   ;    bufferpos = 32*120*sizepos+linebuffer;
@@ -967,28 +981,31 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   swap     d1
   move.l   a3,a4                    ;    curcopperpos = copperpos;
   moveq.l  #8-1,d4                  ;      tmp = (x-1)*4 + 6;
-  sub.w    d3,d4                    ;
-  lsl.w    #2,d4                    ;
-  addq.w   #6,d4                    ;
+  sub.l    d3,d4                    ;
+  lsl.l    #2,d4                    ;
+  addq.l   #6,d4                    ;
   add.l    d4,a4                    ;      curcopperpos += tmp;
-  move.w   (a5),d7
-  add.w    d7,d7                    
-  move.w   #640,d4                  ;     maxpos = 640; 
-  cmp.w    d4,d7                    ;     if(size*2 < 640) {
+  sub.l    d7,d7
+  move.l   (a5),d7
+  add.l    d7,d7                    
+  move.l   #640,d4                  ;     maxpos = 640; 
+  cmp.l    d4,d7                    ;     if(size*2 < 640) {
   bge.s    .br3                     ;       maxpos =
-  divu.w   d7,d4                    ;       (int)640/(size*2) *size*2;   
-  mulu.w   d7,d4
+  divu.l   d7,d4                    ;       (int)640/(size*2) *size*2;   
+  mulu.l   d7,d4
   bra.s    .br2                     ;     }
 .br3                                ;     else {
-  move.w   d7,d4                    ;     maxpos = size * 2;
+  move.l   d7,d4                    ;     maxpos = size * 2;
 .br2                                ;     }
+  sub.l    d2,d2
   move.w   (a0),d2                  ;     curstartpos = *startpos
-  move.w   (a5),d7 
-  move.w   d3,.save 
+  sub.l    d7,d7
+  move.l   (a5),d7 
+  move.l   d3,.save
   bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(linebuffer,
                                     ;          cutrstartposrstartpos, linesize);
-  move.w   .save(pc),d3
-  add.l    #FRM4SIZE,a5             ;    size++
+  move.l   .save(pc),d3
+  ;add.l    #FRM4SIZE,a5             ;    size++
   add.l    #FRM4SIZE,a0             ;    Startpos++;
   add.l    #FRM4SIZE,a2             ;    Posadd++;
   addq.l   #8,a1
@@ -996,47 +1013,50 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation()
   rts                               ;}
 
 .save
-  dc.w 0
+  dc.l 0
   
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
+  clr.w    $200
   move.w   #256-1,d0                ;  for(i=0;i<256,i++) {
+  lsl.l    #8,d4
   move.l   d2,d3                    ;    effpos = curpos
 .lp1 
   tst.l    d3                       ;    if(effpos < 0)
-  bge.s    .br2      t               ;    { 
+  bge.s    .br2                     ;    { 
   add.l    d4,d3                    ;      effpos += maxpos;
   bra.s    .br1
 .br2                                ;    }
-  cmp.w    d4,d3                    ;    else if(effpos > maxpos)
+  cmp.l    d4,d3                    ;    else if(effpos > maxpos)
   ble.s    .br1                     ;    {
-  sub.w    d4,d3                    ;      effpos -= maxpos;
+  sub.l    d4,d3                    ;      effpos -= maxpos;
 .br1                                ;    }
-  move.w   d3,d2                    ;    curpos = effpos
+  move.l   d3,d2                    ;    curpos = effpos
+  lsr.l    #8,d2
   move.l   #320,d5                  ;    
-  cmp.w    d5,d7                    ;    if(320 < linesize)
+  cmp.l    d5,d7                    ;    if(320 < linesize)
   ble.s    .br3                     ;    {
-  sub.w    d7,d2                    ;      curpos -= linesize;
+  sub.l    d7,d2                    ;      curpos -= linesize;
   bpl.s    .br4                     ;      if(curpos < 0) {
-  add.w      d5,d2                  ;        curpos += 320
+  add.l      d5,d2                  ;        curpos += 320
   bpl.s      .br3                   ;        if(curpos < 0)
-  sub.l      d2,d2                  ;          curpos = 0;
+  sub.l     d2,d2                  ;          curpos = 0;
   bra.s    .br3                     ;      }
 .br4                                ;      else {
-  sub.w    d7,d2                    ;        curpos -= linesize + 640
-  add.w    #640,d2 
-  cmp.w    d5,d2                    ;        if(curpos < 320)
+  sub.l    d7,d2                    ;        curpos -= linesize + 640
+  add.l    #640,d2 
+  cmp.l   d5,d2                    ;        if(curpos < 320)
   bge.s    .br3                     ;        {
-  move.w   d5,d2                    ;         curpos = 320; }      
+  move.l   d5,d2                    ;         curpos = 320; }      
                                     ;      }
                                     ;    }
 .br3                                ;    //Pixelexact offset part
-  move.w   d2,d5                    ;    addroffs = curpos;
+  move.l   d2,d5                    ;    addroffs = curpos;
   and.l    #%11111,d5               ;    addroffs = tmp %11111;
-  move.w   d5,d6                    ;    addroffs *= 128
-  lsl.w    #7,d5
-  move.w   d2,d6                    ;    tmp = curstartpos;
-  lsr.w    #3,d6                    ;    tmp >= 3 & $fffc;
-  and.w    #$fffc,d6
+  move.l   d5,d6                    ;    addroffs *= 128
+  lsl.l    #7,d5
+  move.l   d2,d6                    ;    tmp = curstartpos;
+  lsr.l    #3,d6                    ;    tmp >= 3 & $fffc;
+  and.l    #$fffc,d6
   add.l    d6,d5                    ;    addroffs += tmp;
   add.l    d1,d5                    ;    addroffs += bufferpos;
   move.w   d5,(a4)                  ;

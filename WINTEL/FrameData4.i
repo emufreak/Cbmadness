@@ -1,24 +1,26 @@
 FRM4SIZE=256*4
 
  CNOP 0,4
+ 
+SIZETST: dc.l 50000
 
-EF4_POSADD1:
-  dcb.l 255,64
+EF4_POSADD1
+  dcb.l 255,640*256
 
 EF4_STARTPOS1:
   dc.w 5
 
 EF4_SIZE:
-  dc.w 15000
+  dc.w 163
   
  REPT 7 
-  dcb.l 255,64
+  dcb.l 255,640*256
   dc.w 5
-  dc.w 15000
+  dc.w 64
  ENDR
 
 EF4_STARTPOS3:
-  dc.l 5
+  dc.l 6400
 
 EF4_POSADD3:
   dcb.l 255, 0
