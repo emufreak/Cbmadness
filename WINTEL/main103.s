@@ -190,6 +190,7 @@ Effect5_1:
   move.w  #$c00,$dff106
   move.w  #$0f0,$dff180
   bsr.w   SetCopperList
+  lea.l   EF5FRM0SIZE,a5
   bsr.w   WriteCopper4Rotation
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
@@ -943,31 +944,43 @@ ia
 ;d2: slope
 CalcRotation:                       ;CalcRotation(sizecol, 
                                     ;      slope, invsin) { 
-  mulu.l  d1,d0                     ;  sizelinehor = sizecol*invsin
-  move.l  d0,d3                     ;  startpos = sizelinehor / 2
-  lsr.l   d3
+  move.l  d0,d3                     ;  startpos = sizelinehor / 2;
+ ;lsr.l   #9,d3                     ;  startpos =>> 8;
+                                    ;  // /2 and to word = rshift 9
+  move.l  d2,d4                     ;  tmp = 128*slope;
+  lsr.l   d4                        ;  //*128 and to word = rshift 1
+  sub.w   d4,d3                     ;  startpos -= tmp;
+  move.l  d2,d4                     ;  
+  add.l   d4,d4
+  divu.w  d3,d4                     ;   
   lsr.l   #8,d0                     ;  sizelinehor =>> 8;  
-  bsr.s   WriteCopper4Rotation      ;  WriteCopper4Rotation(sizelinehor
-									;                         , slope);								
+  bsr.s  WriteCopper4Rotation       ;  WriteCopper4Rotation(sizelinehor
+  rts								;                         , slope);								
                                     ;}
 
 WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
-                                    ;                           slope);
-  movem.l  empty,d0-d7/a0-a6        ;{
+                                    ;                  slope,startpos);
+  movem.l  empty,d0-d7/a0-a4        ;{
   lea.l    EF4_STARTPOS1,a0
-  lea.l    EF4_POSADD1,a2
+  lea.l    EF4_POSADD1,a2 
   lea.l    COLRLINESELECT,a3
   lea.l    COLRBITPLANEPOINTERS,a1
-  lea.l    SIZETST,a5
+  ;lea.l    EF5_SIZEOFF(a5),a5
   moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
-.lp2                                ;  {
+.lp2
+  ;Calculate size horizontal line   ;  {
+  move.l   EF5_SIZEOFF(a5),d1
+  move.l   EF5_SINMULOFF(a5),d0
+  addq.l   #4,a5
+  mulu.l   d0,d1                    ;    sizelinehor = sizecol*invsin
+  move.l   d1,d7
   move.l   a2,a6                    ;    curposadd = posadd;
   sub.l    d0,d0                    ;
   move.l   #linebuffer,d0           ;    64kalign(linebuffer)
   add.l    #$10000,d0               ;   
   clr.w    d0
-  sub.l    d1,d1
-  move.l   (a5),d1   
+  ;sub.l    d1,d1
+  ;move.l   (a5),d1   
   cmp.l    #320,d1                  ;    if(size > 320) sizepos = 320;             
   ble.s    .br1                     ;    else sizepos = size;
   move.l   #320,d1
@@ -985,8 +998,7 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   lsl.l    #2,d4                    ;
   addq.l   #6,d4                    ;
   add.l    d4,a4                    ;      curcopperpos += tmp;
-  sub.l    d7,d7
-  move.l   (a5),d7
+  move.l   d7,d2
   add.l    d7,d7                    
   move.l   #640,d4                  ;     maxpos = 640; 
   cmp.l    d4,d7                    ;     if(size*2 < 640) {
@@ -997,10 +1009,9 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
 .br3                                ;     else {
   move.l   d7,d4                    ;     maxpos = size * 2;
 .br2                                ;     }
+  move.l   d2,d7
   sub.l    d2,d2
-  move.w   (a0),d2                  ;     curstartpos = *startpos
-  sub.l    d7,d7
-  move.l   (a5),d7 
+  move.w   (a0),d2                  ;     curstartpos = *startpos 
   move.l   d3,.save
   bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(linebuffer,
                                     ;          cutrstartposrstartpos, linesize);
