@@ -962,7 +962,6 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
                                     ;                  slope,startpos);
   movem.l  empty,d0-d7/a0-a4        ;{
   lea.l    EF4_STARTPOS1,a0
-  ;lea.l    EF4_POSADD1,a2 
   lea.l    COLRLINESELECT,a3
   lea.l    COLRBITPLANEPOINTERS,a1
   moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
@@ -972,7 +971,6 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   move.l   EF5_SINMULOFF(a5),d0     ;    invsin = frame.invsin[x];
   mulu.l   d0,d1                    ;    sizelinehor = sizecol*invsin
   move.l   d1,d7
-  ;move.l   a2,a6                    ;    curposadd = posadd;
   sub.l    d0,d0                    ;
   move.l   #linebuffer,d0           ;    64kalign(linebuffer)
   add.l    #$10000,d0               ;   
@@ -993,9 +991,9 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   sub.l    d3,d4                    ;
   lsl.l    #2,d4                    ;
   addq.l   #6,d4                    ;
-  add.l    d4,a4                    ;      curcopperpos += tmp;
+  add.l    d4,a4                    ;    curcopperpos += tmp;
   move.l   d7,d2
-  add.l    d7,d7                    
+  add.l    d7,d7    
   move.l   #640,d4                  ;     maxpos = 640; 
   cmp.l    d4,d7                    ;     if(size*2 < 640) {
   bge.s    .br3                     ;       maxpos =
@@ -1003,21 +1001,47 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   mulu.l   d7,d4
   bra.s    .br2                     ;     }
 .br3                                ;     else {
-  move.l   d7,d4                    ;     maxpos = size * 2;
-.br2                                ;     }
+  move.l   d7,d4                    ;       maxpos = size * 2;
+.br2      
+  clr.w    $200                     ;     } 
+  move.l   EF5_LINESHFTOFFS(a5),a6  ;   curlineshift = frame.lshift[x];
   move.l   d2,d7
-  sub.l    d2,d2
-  move.w   (a0),d2                  ;     curstartpos = *startpos 
+  move.l   #160,d2                  ;   startpos = 160-(size*1.5);
+  move.l   d7,d0                    ;      
+  lsr.l    d0  
+  add.l    d7,d0
+  sub.w    d0,d2                                    
+  bpl.s    .br4                     ;     if(startpos < 0) {        
+  neg.w    d2                       ,       startpos = !startpos;
+  bra.s    .br5                     ;     }
+.br4                                ;     else {
+  move.w   d7,d0                    ;       startpos -= size*2;
+  add.w    d0,d0
+  sub.w    d0,d2
+  bpl.s    .br6                     ;     if(startpos < 0) {
+  neg.w    d2                       ;       startpos = ! startpos;
+  bra.s    .br5                     ;     } else {
+.br6
+  move.l   d7,d0                    ;       startpos r= size*2;
+  add.l    d0,d0
+  divu.w   d0,d2
+  clr.w    d2
+  swap     d2
+  sub.w    d0,d2                    ;       startpos -= size*2;
+  neg.w    d2  
+.br5                                ;     }
+  move.l   a6,d0
+  lsr.l    d0                       ;     tmp = (word) lineshift * 128;
+  sub.w    d0,d2                    ;     
+  divu.w   d4,d2                    ;     startpos = maxpos r startpos;
+  clr.w    d2
+  swap     d2
   move.l   d3,.save
-  move.l   EF5_LINESHFTOFFS(a5),a6  ;   curlineshift = 
-                                    ;                 frame.lshift[x];
   bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(linebuffer,
-                                    ;          cutrstartposrstartpos, linesize);
+                                    ;         cutrstartposrstartpos, linesize);
   move.l   .save(pc),d3
   addq.l   #4,a5                    ;frame++
-  ;add.l    #FRM4SIZE,a5             ;    size++
   add.l    #FRM4SIZE,a0             ;    Startpos++;
-  ;add.l    #FRM4SIZE,a2             ;    Posadd++;
   addq.l   #8,a1
   dbf      d3,.lp2                  ;  }
   rts                               ;}
@@ -1026,9 +1050,9 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   dc.l 0
   
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
-  clr.w    $200
   move.w   #256-1,d0                ;  for(i=0;i<256,i++) {
   lsl.l    #8,d4
+  lsl.l    #8,d2
   move.l   d2,d3                    ;    effpos = curpos
 .lp1 
   tst.l    d3                       ;    if(effpos < 0)
@@ -1047,9 +1071,9 @@ WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   ble.s    .br3                     ;    {
   sub.l    d7,d2                    ;      curpos -= linesize;
   bpl.s    .br4                     ;      if(curpos < 0) {
-  add.l    d5,d2                  ;        curpos += 320
-  bpl.s    .br3                   ;        if(curpos < 0)
-  sub.l    d2,d2                  ;          curpos = 0;
+  add.l    d5,d2                    ;        curpos += 320
+  bpl.s    .br3                     ;        if(curpos < 0)
+  sub.l    d2,d2                    ;          curpos = 0;
   bra.s    .br3                     ;      }
 .br4                                ;      else {
   sub.l    d7,d2                    ;        curpos -= linesize + 640
