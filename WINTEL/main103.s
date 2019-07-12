@@ -169,19 +169,30 @@ Effect1_0:
 Effect5_0:
   move.l #BPLLOGO,draw_buffer
   move.l #BPLLOGO,view_buffer
-  move.l #COPPERLISTROTATE,view_copper
-  move.l #COPPERLISTROTATE,draw_copper
-  move.l #COLRBITPLANEPOINTERS,view_cprbitmap
-  move.l #COLRBITPLANEPOINTERS,draw_cprbitmap
-  lea.l  COLRLINESELECT,a3
+  move.l #COPPERLISTROTATE1,view_copper
+  move.l #COPPERLISTROTATE2,draw_copper
+  move.l #COLRBITPLANEPOINTERS1,view_cprbitmap
+  move.l #COLRBITPLANEPOINTERS2,draw_cprbitmap
+  move.l #COLRLINESELECT1,view_cprlnsel
+  move.l #COLRLINESELECT2,draw_cprlnsel
   bsr.w  DrawLines4Rotation
   move.b #$2c,d1
   move.w #255,d0
+  move.l view_cprlnsel,a3
 .lp1
   move.b d1,(a3)
   add.l  #9*4,a3
   add.b  #1,d1
   dbf    d0,.lp1
+  move.b #$2c,d1
+  move.w #255,d0
+  move.l draw_cprlnsel,a3
+.lp2
+  move.b d1,(a3)
+  add.l  #9*4,a3
+  add.b  #1,d1
+  dbf    d0,.lp2
+  
   move.w #1,continue
   bra.w  mlgoon
 
@@ -189,9 +200,15 @@ Effect5_1:
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
   move.w  #$0f0,$dff180
-  bsr.w   SetCopperList
-  lea.l   EF5FRM0SIZE,a5
+  bsr.w   SetCopperList4Rotation
+  move.l  .frmpos,a5                
   bsr.w   WriteCopper4Rotation
+  addq.l  #4,a5
+  cmp.l   #$0fffffff,(a5)          
+  bne.s   .br2
+  lea.l   LINEMULTIPLIERS,a5
+.br2
+  move.l  a5,.frmpos
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
   cmp.w   #12,P61_Pos
@@ -201,6 +218,8 @@ Effect5_1:
   move.w #1,continue
   move.w #1,continue
   bra.w  mlgoon
+  
+.frmpos: dc.l LINEMULTIPLIERS
 
 Effect1_1:
   move.w #$00,$dff180
@@ -959,17 +978,18 @@ CalcRotation:                       ;CalcRotation(sizecol,
                                     ;}
 
 WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
-                                    ;                  slope,startpos);
+                                    ;                  slope,startpos);							
   movem.l  empty,d0-d7/a0-a4        ;{
   lea.l    EF4_STARTPOS1,a0
-  lea.l    COLRLINESELECT,a3
-  lea.l    COLRBITPLANEPOINTERS,a1
+  move.l   view_cprlnsel,a3
+  move.l   view_cprbitmap,a1
   moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
 .lp2
   ;Calculate size horizontal line   ;  {
-  move.l   EF5_SIZEOFF(a5),d1       ;    sizecol = frame.sizecol[x];
-  move.l   EF5_SINMULOFF(a5),d0     ;    invsin = frame.invsin[x];
+  move.l   #10,d1                   ;    sizecol = frame.sizecol[x];
+  move.l   EF5_LINEMULT(a5),d0      ;    invsin = frame.invsin[x];
   mulu.l   d0,d1                    ;    sizelinehor = sizecol*invsin
+  lsr.l    #8,d1
   move.l   d1,d7
   sub.l    d0,d0                    ;
   move.l   #linebuffer,d0           ;    64kalign(linebuffer)
@@ -1002,15 +1022,14 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   bra.s    .br2                     ;     }
 .br3                                ;     else {
   move.l   d7,d4                    ;       maxpos = size * 2;
-.br2      
-  clr.w    $200                     ;     } 
-  move.l   EF5_LINESHFTOFFS(a5),a6  ;   curlineshift = frame.lshift[x];
+.br2                                ;     } 
+  move.l   EF5_LINESHIFTS(a5),a6  ;   curlineshift = frame.lshift[x];
   move.l   d2,d7
   move.l   #160,d2                  ;   startpos = 160-(size*1.5);
   move.l   d7,d0                    ;      
   lsr.l    d0  
   add.l    d7,d0
-  sub.w    d0,d2                                    
+  sub.w    d0,d2   
   bpl.s    .br4                     ;     if(startpos < 0) {        
   neg.w    d2                       ,       startpos = !startpos;
   bra.s    .br5                     ;     }
@@ -1040,7 +1059,7 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(linebuffer,
                                     ;         cutrstartposrstartpos, linesize);
   move.l   .save(pc),d3
-  addq.l   #4,a5                    ;frame++
+  ;addq.l   #4,a5                    ;frame++
   add.l    #FRM4SIZE,a0             ;    Startpos++;
   addq.l   #8,a1
   dbf      d3,.lp2                  ;  }
@@ -1048,7 +1067,7 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
 
 .save
   dc.l 0
-  
+ 
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   move.w   #256-1,d0                ;  for(i=0;i<256,i++) {
   lsl.l    #8,d4
@@ -1095,9 +1114,10 @@ WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   add.l    d1,d5                    ;    addroffs += bufferpos;
   move.w   d5,(a4)                  ;
   add.l    #36,a4
-  add.l    a6,d3                 ;    effpos += *curposadd++;
+  add.l    a6,d3                    ;    effpos += *curposadd++;
   dbf      d0,.lp1                  ;  }
   rts                               ;}
+
 
 
 DrawLines4Rotation: 
