@@ -201,14 +201,22 @@ Effect5_1:
   move.w  #$c00,$dff106
   move.w  #$0f0,$dff180
   bsr.w   SetCopperList4Rotation
-  move.l  .frmpos,a5                
+  clr.w   $200
+  move.l  .frmpos,a5      
+  move.l  .linesizepos,a2   
   bsr.w   WriteCopper4Rotation
   addq.l  #4,a5
   cmp.l   #$0fffffff,(a5)          
-  bne.s   .br2
+  bne.s   .br3
   lea.l   LINEMULTIPLIERS,a5
+.br3
+  addq.l  #4,a2
+  cmp.l   #$0fffffff,(a2)          
+  bne.s   .br2
+  lea.l   LINESIZE,a2
 .br2
   move.l  a5,.frmpos
+  move.l  a2,.linesizepos
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
   cmp.w   #12,P61_Pos
@@ -220,6 +228,7 @@ Effect5_1:
   bra.w  mlgoon
   
 .frmpos: dc.l LINEMULTIPLIERS
+.linesizepos: dc.l LINESIZE
 
 Effect1_1:
   move.w #$00,$dff180
@@ -979,14 +988,14 @@ CalcRotation:                       ;CalcRotation(sizecol,
 
 WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
                                     ;                  slope,startpos);							
-  movem.l  empty,d0-d7/a0-a4        ;{
+  movem.l  empty,d0-d7              ;{
   lea.l    EF4_STARTPOS1,a0
   move.l   view_cprlnsel,a3
   move.l   view_cprbitmap,a1
   moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
 .lp2
   ;Calculate size horizontal line   ;  {
-  move.l   #10,d1                   ;    sizecol = frame.sizecol[x];
+  move.l   (a2),d1                  ;    sizecol = frame.sizecol[x];
   move.l   EF5_LINEMULT(a5),d0      ;    invsin = frame.invsin[x];
   mulu.l   d0,d1                    ;    sizelinehor = sizecol*invsin
   lsr.l    #8,d1
@@ -1023,43 +1032,20 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
 .br3                                ;     else {
   move.l   d7,d4                    ;       maxpos = size * 2;
 .br2                                ;     } 
-  move.l   EF5_LINESHIFTS(a5),a6  ;   curlineshift = frame.lshift[x];
+  move.l   EF5_LINESHIFTS(a5),a6    ;   curlineshift = frame.lshift[x];
   move.l   d2,d7
-  move.l   #160,d2                  ;   startpos = 160-(size*1.5);
-  move.l   d7,d0                    ;      
+  move.l   d7,d0                    ;   startpos = (size * 1.5) - 160;    
   lsr.l    d0  
   add.l    d7,d0
-  sub.w    d0,d2   
-  bpl.s    .br4                     ;     if(startpos < 0) {        
-  neg.w    d2                       ,       startpos = !startpos;
-  bra.s    .br5                     ;     }
-.br4                                ;     else {
-  move.w   d7,d0                    ;       startpos -= size*2;
-  add.w    d0,d0
-  sub.w    d0,d2
-  bpl.s    .br6                     ;     if(startpos < 0) {
-  neg.w    d2                       ;       startpos = ! startpos;
-  bra.s    .br5                     ;     } else {
-.br6
-  move.l   d7,d0                    ;       startpos r= size*2;
-  add.l    d0,d0
-  divu.w   d0,d2
-  clr.w    d2
-  swap     d2
-  sub.w    d0,d2                    ;       startpos -= size*2;
-  neg.w    d2  
-.br5                                ;     }
+  sub.l    #160,d0
+  move.l   d0,d2
   move.l   a6,d0
-  lsr.l    d0                       ;     tmp = (word) lineshift * 128;
-  sub.w    d0,d2                    ;     
-  divu.w   d4,d2                    ;     startpos = maxpos r startpos;
-  clr.w    d2
-  swap     d2
+  divs.l   #2,d0                    ;     tmp = (word) lineshift * 128;
+  sub.l    d0,d2                    ;     startpos -= tmp;
   move.l   d3,.save
   bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(linebuffer,
                                     ;         cutrstartposrstartpos, linesize);
   move.l   .save(pc),d3
-  ;addq.l   #4,a5                    ;frame++
   add.l    #FRM4SIZE,a0             ;    Startpos++;
   addq.l   #8,a1
   dbf      d3,.lp2                  ;  }
@@ -1071,7 +1057,7 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   move.w   #256-1,d0                ;  for(i=0;i<256,i++) {
   lsl.l    #8,d4
-  lsl.l    #8,d2
+  mulu.l    #256,d2
   move.l   d2,d3                    ;    effpos = curpos
 .lp1 
   tst.l    d3                       ;    if(effpos < 0)

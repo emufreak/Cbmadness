@@ -3,6 +3,7 @@
 ?>
 EF5_LINEMULT = 0
 EF5_LINESHIFTS = <?php echo( $linecount*4+4 . "\n"); ?>
+EF5_LINESIZE = <?php echo( ($linecount*4+4)*2 . "\n"); ?>
 
 LINEMULTIPLIERS:
 <?php 
@@ -39,6 +40,31 @@ LINESHIFTS:
 	  if($y > 100) break 2;
 	  if($i < 9) echo(", ");
 
+	}
+    echo("\n");	
+  } while(1)
+?>,$fffffff
+
+LINESIZE:
+<?php 
+  $multfactor = 1.01781797;
+  $startsize = 10;
+  $y = 0;
+  do {
+	echo( "  dc.l ");
+    for($i = 0; $i < 10; $i++) {  
+	  
+	  echo( floor( $size));
+	  $angle += $anglechange;
+
+	  if($y < 50)
+		$size *= $multfactor;
+	  else 
+		$size /= $multfactor;
+	
+  	  $y ++;
+	  if($y > 100) break 2;
+	  if($i < 9) echo(", ");
 	}
     echo("\n");	
   } while(1)
