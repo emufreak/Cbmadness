@@ -58,6 +58,12 @@ SetCopperList4Rotation:
         move.l  draw_copper,d0
         move.l  view_copper,draw_copper
         move.l  d0,view_copper
+		move.l  draw_cprpalh,d0
+		move.l  view_cprpalh,draw_cprpalh
+		move.l  d0,view_cprpalh
+		move.l  draw_cprpall,d0
+		move.l  view_cprpall,draw_cprpall
+		move.l  d0,view_cprpall
         IFEQ DEBUG-0
 		move.l  draw_copper,$80(a6)
         move.l  d1,$88(a6)

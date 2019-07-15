@@ -1,5 +1,6 @@
 <?php
   $linecount = 101;
+  $startsize = 10;
 ?>
 EF5_LINEMULT = 0
 EF5_LINESHIFTS = <?php echo( $linecount*4+4 . "\n"); ?>
@@ -39,16 +40,15 @@ LINESHIFTS:
 	  $y += 1;
 	  if($y > 100) break 2;
 	  if($i < 9) echo(", ");
-
+      
 	}
     echo("\n");	
-  } while(1)
+  } while(1);
 ?>,$fffffff
 
 LINESIZE:
 <?php 
-  $multfactor = 1.01781797;
-  $startsize = 10;
+  $multfactor = 1.021;
   $y = 0;
   do {
 	echo( "  dc.l ");
@@ -57,18 +57,54 @@ LINESIZE:
 	  echo( floor( $size));
 	  $angle += $anglechange;
 
-	  if($y < 50)
+	  if($y < 150)
 		$size *= $multfactor;
 	  else 
 		$size /= $multfactor;
 	
   	  $y ++;
-	  if($y > 100) break 2;
+	  if($y > 300) break 2;
 	  if($i < 9) echo(", ");
 	}
     echo("\n");	
   } while(1)
 ?>,$fffffff
+
+<?php
+  $lwcount = 1;
+  $size = $startsize;
+  for($i=1;$i<=301;$i++) {
+?>
+COLORS<?php echo( $i); ?>:
+<?php
+    for($y=1;$y<=8;$y++) {
+      for($z=1;$z<=pow( 2,$y-1);$z++) {
+	    if($lwcount == 1) 
+		  echo("  dc.w ");
+	    if($y==1)
+		  echo( "0,0,");
+	    $color = floor( $size / 320 * 255);
+		$colorlw = ($color & 0b1111);
+		$colorhw = ($color >> 4);
+	    $colorhw = $colorhw + ($colorhw << 4) + ($colorhw << 8);
+	    $colorlw = $colorlw + ($colorlw << 4) + ($colorlw << 8);
+		echo($colorhw . "," . $colorlw);
+		if($lwcount < 10 && $z < pow( 2,$y-1)) {
+		  $lwcount++;
+		  echo(",");
+		} else {
+		  echo("\n");
+		  $lwcount = 1;
+		}     
+      }	  
+	}
+    if($i < 150)
+      $size *= $multfactor;
+	else 
+	  $size /= $multfactor;
+  }
+?>
+  dc.l $fffffff
 
 EF5FRM0SIZE:
   dcb.l 8,10

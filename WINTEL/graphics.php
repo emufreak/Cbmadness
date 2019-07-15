@@ -23,6 +23,16 @@ view_cprlnsel:
 		
 draw_cprlnsel:
         dc.l    COLRLINESELECT2
+		
+view_cprpalh:
+       dc.l COLCOLORSHIGH1+2
+draw_cprpalh:
+       dc.l COLCOLORSHIGH2+2
+
+view_cprpall:
+       dc.l COLCOLORSLOW1+2
+draw_cprpall:
+       dc.l COLCOLORSLOW2+2
 
 	SECTION COPPER,DATA_C
 
@@ -77,6 +87,7 @@ COLRBITPLANEPOINTERS<?php echo($i); ?>:
 
 	dc.w	$106, $0c00
 
+COLCOLORSHIGH<?php echo($i); ?>:
 	dc.w	$182,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
@@ -349,7 +360,7 @@ COLRBITPLANEPOINTERS<?php echo($i); ?>:
         dc.w    $1be,$f20    ;11111111
 
 	dc.w	$106, $0e00
-
+COLCOLORSLOW<?php echo($i); ?>:
 	dc.w	$182,$fd3    ;Dummy operation as placeholder	
 	dc.w    $182,$fd3    ;00001
         dc.w    $184,$f82    ;00010

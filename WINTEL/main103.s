@@ -197,15 +197,31 @@ Effect5_0:
   bra.w  mlgoon
 
 Effect5_1:
+
+;a4 = copptr
+;a5 = colptrhw
+;a6 = copptrlw   
+
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
   move.w  #$0f0,$dff180
-  bsr.w   SetCopperList4Rotation
-  clr.w   $200
+  bsr.w   SetCopperList4Rotation  
+  move.l  .colptr(pc),a5
+  move.l  draw_cprpalh,a4
+  move.l  draw_cprpall,a6 
+  bsr.w   SetColDataDefault 
+  move.l  .colptr(pc),a5
+  add.l   #1024,a5
+  cmp.l   #$0fffffff,(a5)   
+  bne.s   .br5
+  lea.l   COLORS1,a5
+.br5  
+  move.l  a5,.colptr 
   move.l  .frmpos,a5      
-  move.l  .linesizepos,a2   
+  move.l  .linesizepos,a2  
   bsr.w   WriteCopper4Rotation
   addq.l  #4,a5
+  
   cmp.l   #$0fffffff,(a5)          
   bne.s   .br3
   lea.l   LINEMULTIPLIERS,a5
@@ -229,6 +245,7 @@ Effect5_1:
   
 .frmpos: dc.l LINEMULTIPLIERS
 .linesizepos: dc.l LINESIZE
+.colptr dc.l COLORS1
 
 Effect1_1:
   move.w #$00,$dff180
@@ -486,7 +503,7 @@ Effect3_Main:
         bsr.w    MoveAdjust             ;  MoveAdjust( );
 		move.l  .colptr(pc),a5
 		bsr.w   SetColData				;  SetColData(  colptr);
-		cmp.w   #0,Eff2ZoomIn          ;  if(Eff1ZoomIn( )
+		cmp.w   #0,Eff2ZoomIn           ;  if(Eff1ZoomIn( )
 		beq.s   .br3                    ;  {
 		lea	   .colptr,a5
 		move.l .direction,d1
