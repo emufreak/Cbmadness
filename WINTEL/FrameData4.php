@@ -6,7 +6,7 @@ EF5_LINEMULT = 0
 EF5_LINESHIFTS = <?php echo( $linecount*4+4 . "\n"); ?>
 EF5_LINESIZE = <?php echo( ($linecount*4+4)*2 . "\n"); ?>
 
-LINEMULTIPLIERS:
+EF51_LINEMULTIPLIERS:
 <?php 
   $anglechange = 360 / 101;
   $angle = 0;
@@ -26,7 +26,7 @@ LINEMULTIPLIERS:
   } while(1)
 ?>,$fffffff
 
-LINESHIFTS:
+EF51_LINESHIFTS:
 <?php 
   $angle = 0;
   $size = 10;
@@ -46,7 +46,7 @@ LINESHIFTS:
   } while(1);
 ?>,$fffffff
 
-LINESIZE:
+EF51_LINESIZE:
 <?php 
   $multfactor = 1.021;
   $y = 0;
@@ -75,7 +75,7 @@ LINESIZE:
   $size = $startsize;
   for($i=1;$i<=301;$i++) {
 ?>
-COLORS<?php echo( $i); ?>:
+EF51_COLORS<?php echo( $i); ?>:
 <?php
     for($y=1;$y<=8;$y++) {
       for($z=1;$z<=pow( 2,$y-1);$z++) {

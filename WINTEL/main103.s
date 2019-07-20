@@ -89,8 +89,6 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect1_0
-		bra.w Effect5_0
-		bra.w Effect5_1
         bra.w Effect1_1
 		bra.w Effect1_2
 		bra.w Effect1_3
@@ -99,6 +97,8 @@ jmplist:
 		bra.w Effect3_0
 		bra.w Effect3_1
 		bra.w Effect4_1
+		bra.w Effect5_0
+		bra.w Effect5_1
         rts
 
 BLINCREMENT = 1
@@ -214,7 +214,7 @@ Effect5_1:
   add.l   #1024,a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
-  lea.l   COLORS1,a5
+  lea.l   EF51_COLORS1,a5
 .br5  
   move.l  a5,.colptr 
   move.l  .frmpos,a5      
@@ -224,12 +224,12 @@ Effect5_1:
   
   cmp.l   #$0fffffff,(a5)          
   bne.s   .br3
-  lea.l   LINEMULTIPLIERS,a5
+  lea.l   EF51_LINEMULTIPLIERS,a5
 .br3
   addq.l  #4,a2
   cmp.l   #$0fffffff,(a2)          
   bne.s   .br2
-  lea.l   LINESIZE,a2
+  lea.l   EF51_LINESIZE,a2
 .br2
   move.l  a5,.frmpos
   move.l  a2,.linesizepos
@@ -243,9 +243,61 @@ Effect5_1:
   move.w #1,continue
   bra.w  mlgoon
   
-.frmpos: dc.l LINEMULTIPLIERS
-.linesizepos: dc.l LINESIZE
-.colptr dc.l COLORS1
+.frmpos: dc.l EF51_LINEMULTIPLIERS
+.linesizepos: dc.l EF51_LINESIZE
+.colptr dc.l EF51_COLORS1
+
+
+Effect5_2:
+
+;a4 = copptr
+;a5 = colptrhw
+;a6 = copptrlw   
+
+  movem.l empty,a0-a5/d0-d7
+  move.w  #$c00,$dff106
+  move.w  #$0f0,$dff180
+  bsr.w   SetCopperList4Rotation  
+  move.l  .colptr(pc),a5
+  move.l  draw_cprpalh,a4
+  move.l  draw_cprpall,a6 
+  bsr.w   SetColDataDefault 
+  move.l  .colptr(pc),a5
+  ;add.l   #1024,a5
+  cmp.l   #$0fffffff,(a5)   
+  bne.s   .br5
+  lea.l   EF51_COLORS1,a5
+.br5  
+  move.l  a5,.colptr 
+  move.l  .frmpos,a5      
+  move.l  .linesizepos,a2  
+  bsr.w   WriteCopper4Rotation
+  addq.l  #4,a5
+  
+  cmp.l   #$0fffffff,(a5)          
+  bne.s   .br3
+  lea.l   EF51_LINEMULTIPLIERS,a5
+.br3
+  ;addq.l  #4,a2
+  cmp.l   #$0fffffff,(a2)          
+  bne.s   .br2
+  lea.l   EF51_LINESIZE,a2
+.br2
+  move.l  a5,.frmpos
+  move.l  a2,.linesizepos
+  move.w  #$c00,$dff106
+  move.w  #$000,$dff180
+  cmp.w   #12,P61_Pos
+  beq.s   .br1
+  bra.w   mlgoon
+.br1
+  move.w #1,continue
+  move.w #1,continue
+  bra.w  mlgoon
+  
+.frmpos: dc.l EF51_LINEMULTIPLIERS
+.linesizepos: dc.l EF51_LINESIZE
+.colptr dc.l EF51_COLORS1
 
 Effect1_1:
   move.w #$00,$dff180
