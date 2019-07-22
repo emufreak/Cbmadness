@@ -37,10 +37,10 @@ draw_cprpall:
 	SECTION COPPER,DATA_C
 
 SIZEPALETTE  equ  32
-OFFSCLPALETTE  equ  52*2+4
+OFFSCLPALETTE  equ  52*2+4+4
 ;Palettes + Bankchanges / First palette only size 15 (no background)
 ;OFFSBPLPOINTERS  equ  OFFSCLPALETTE+SIZEPALETTE*7*4*2+2*7*4+(SIZEPALETTE-1)*4*2+1*4  
-OFFSBPLPOINTERS equ  OFFSCLPALETTE+SIZEPALETTE*8*4*2+2*7*4+1*4  
+OFFSBPLPOINTERS equ  OFFSCLPALETTE+SIZEPALETTE*8*4*2+2*7*4+1*4 
 OFFSCLBLOCKDRAW  equ  OFFSBPLPOINTERS+32*2
 OFFSNEXTCOPPER  equ  OFFSCLBLOCKDRAW+4*255+4*BPLCOUNT*255+4
 OFFSCLPALETTELW  equ  OFFSCLPALETTE+(SIZEPALETTE+1)*4*8
@@ -68,9 +68,9 @@ COPPERLISTROTATE1:
 	dc.w	$102,0		                 ; BplCon1
 	dc.w	$104,$20	                 ; BplCon2
 	dc.w	$108,0                       ; Bpl1Mod
-	dc.w	$10a,0                    e   ; Bpl2Mod
+	dc.w	$10a,0                       ; Bpl2Mod
 
-	dc.w	$100,$210;+$8000              ; bplcon0
+	dc.w	$100,$210;                   ; bplcon0
 
 COLRBITPLANEPOINTERS1:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
@@ -675,9 +675,9 @@ COPPERLISTROTATE2:
 	dc.w	$102,0		                 ; BplCon1
 	dc.w	$104,$20	                 ; BplCon2
 	dc.w	$108,0                       ; Bpl1Mod
-	dc.w	$10a,0                    e   ; Bpl2Mod
+	dc.w	$10a,0                       ; Bpl2Mod
 
-	dc.w	$100,$210;+$8000              ; bplcon0
+	dc.w	$100,$210;                   ; bplcon0
 
 COLRBITPLANEPOINTERS2:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
@@ -1277,6 +1277,7 @@ copperlist:
 
 	dc.w	$96, $8020
 
+    dc.w    $1fc,$3
 	dc.w	$8E,$2c81	                 ; DiwStrt
 	dc.w	$90,$2cc1	                 ; DiwStop
 	dc.w	$92,$38		                 ; DdfStart
@@ -1293,7 +1294,7 @@ copperlist:
 	ENDC
 
         dc.w    $106,$c00    
-	dc.w	$180,$000    ;Dummy operation as placeholder
+	dc.w	$182,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -1892,16 +1893,17 @@ COPPERLISTIMAGE:
     dc.w    $12c,0,$12e,0,$130,0,$132,0,$134,0,$136,0
     dc.w    $138,0,$13a,0,$13c,0,$13e,0
 
+    dc.w    $1fc,$3
 	dc.w	$96, $8020
 
 	dc.w	$8E,$2c81	                 ; DiwStrt
 	dc.w	$90,$2cc1	                 ; DiwStop
 	dc.w	$92,$38		                 ; DdfStart
-	dc.w	$94,$d0		                 ; DdfStop
+	dc.w	$94,$c8		                 ; DdfStop
 	dc.w	$102,0		                 ; BplCon1
 	dc.w	$104,$20	                 ; BplCon2
-	dc.w	$108,-8                      ; Bpl1Mod
-	dc.w	$10a,-8                      ; Bpl2Mod
+	dc.w	$108,0                       ; Bpl1Mod
+	dc.w	$10a,0                       ; Bpl2Mod
 
 	dc.w	$100,$210+$8000              ; bplcon0
 
@@ -2473,6 +2475,7 @@ COLP0B:
 
  CNOP 0,8
 
+bitplane:
 BPLLOGO:
   INCBIN "raw/voidlogo.raw"
 
@@ -2488,7 +2491,7 @@ BPLTITLE:
 	
     ;SECTION	GRAPHICS,BSS_C
 
-bitplane:
+ ;bitplane:
         ;DS.B $10000+120*310*16
   
 

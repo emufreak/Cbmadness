@@ -34,7 +34,7 @@ STARTPROG:
 
     ;move.w	d0,$88(a6)		; restart copperlist
     IFEQ AGA-1
-    move.w	#$0,$1fc(a6)
+    move.w	#$1,$1fc(a6)
     move.w	#$c00,$106(a6)
     move.w	#$11,$10c(a6)
     ELSE
@@ -139,7 +139,7 @@ Effect0_2:
   bsr.w  SetBitplanePointersDefault
   lea    PalettePic,a3
   bsr.w  CalculateFade
-  sub.w  #4,ColMultiplier
+  ;sub.w  #4,ColMultiplier
   sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
@@ -154,8 +154,14 @@ Effect0_2:
   ENDC
 
 Effect1_0:
-  move.l #bitplane,draw_buffer
-  move.l #bitplane+40*40*8,view_buffer
+  move.l #bitplane,d0
+  move.l #16,d1
+  lsr.l  d1,d0
+  addq.l #1,d0
+  lsl.l  d1,d0
+  move.l d0,draw_buffer
+  add.l  #40*40*8,d0
+  move.l d0,view_buffer
   ifeq SOUND-1
         lea Module1,a0
         sub.l 	a1,a1
