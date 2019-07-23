@@ -48,6 +48,7 @@ OFFSCLPALETTELW  equ  OFFSCLPALETTE+(SIZEPALETTE+1)*4*8
 Module1:
   incbin  mod/P61.chippy524   
   
+  	  INCLUDE FrameData.i
   	  INCLUDE FrameData4.i
   CNOP 0,8
 COPPERLISTROTATE1:
@@ -1294,7 +1295,7 @@ copperlist:
 	ENDC
 
         dc.w    $106,$c00    
-	dc.w	$182,$000    ;Dummy operation as placeholder
+	dc.w	$180,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -2483,11 +2484,10 @@ BPLTITLE:
   INCBIN "raw/title.raw"
 
       INCLUDE PatternData.i
-      INCLUDE FrameData.i
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
 
-	  DCB.B 600000,0
+	  DCB.B 700000,0
 	
     ;SECTION	GRAPHICS,BSS_C
 

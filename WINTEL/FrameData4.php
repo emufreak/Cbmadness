@@ -104,7 +104,77 @@ EF51_COLORS<?php echo( $i); ?>:
 	  $size /= $multfactor;
   }
 ?>
-  dc.l $fffffff
+ dc.l $fffffff
+
+EF52_LINEMULTIPLIERS:
+<?php 
+  $anglechange = 360 / 536;
+  $angle = 0;
+  $size = 10;
+  $y = 0;
+  do {
+	echo( "  dc.l ");
+    for($i = 0; $i < 10; $i++) {
+	   if(  (  $angle > 89.9989 && $angle < 90.0011)
+	      || (  $angle > 269.9989 && $angle < 270.0011))
+        $angleuse = 90.0011;
+	  else
+	    $angleuse = $angle;
+      $linemultiplier = abs( floor( ( 1 / cos( deg2rad( $angleuse)) * 256)));	  
+	  echo( $linemultiplier);
+	  $angle += $anglechange;
+	  $y += 1;
+	  if($y > 535) break 2;
+	  if($i < 9) echo(", ");
+	}
+    echo("\n");	
+  } while(1)
+?>,$fffffff
+
+EF52_LINESHIFTS:
+<?php 
+  $angle = 0;
+  $size = 10;
+  $y = 0;
+  do {
+	echo( "  dc.l ");
+    for($i = 0; $i < 10; $i++) {
+	  if(  (  $angle > 89.9989 && $angle < 90.0011)
+	      || (  $angle > 269.9989 && $angle < 270.0011))
+        $angleuse = 90.0011;
+	  else
+	    $angleuse = $angle;
+      $lineshift = floor( tan( deg2rad( $angleuse)) * 256);
+	  echo( $lineshift);
+	  $angle += $anglechange;
+	  $y += 1;
+	  if($y > 535) break 2;
+	  if($i < 9) echo(", ");
+      
+	}
+    echo("\n");	
+  } while(1);
+?>,$fffffff
+
+EF52_LINESIZE_0:
+<?php
+  $multfactor = 1.006486;
+  $y = 0;
+  do {
+	echo( "  dc.l ");
+    for($i = 0; $i < 10; $i++) {  
+	  
+	  echo( floor( $size));
+	  $angle += $anglechange;
+      $size *= $multfactor;
+	
+  	  $y ++;
+	  if($y > 67) break 2;
+	  if($i < 9) echo(", ");
+	}
+    echo("\n");	
+  } while(1)
+?>,$fffffff
 
 EF5FRM0SIZE:
   dcb.l 8,10

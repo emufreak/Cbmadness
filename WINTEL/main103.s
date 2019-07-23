@@ -87,6 +87,9 @@ jmplistpos:
         dc.l  jmplist
 jmplist:
         bra.w Effect0_1
+		bra.w Effect5_0
+		bra.w Effect5_2
+		;bra.w Effect5_2
 		bra.w Effect0_2
 		bra.w Effect1_0
         bra.w Effect1_1
@@ -99,7 +102,9 @@ jmplist:
 		bra.w Effect4_1
 		bra.w Effect5_0
 		bra.w Effect5_1
+		bra.w Effect5_2
         rts
+		
 
 BLINCREMENT = 1
 SPINCREMENT = 2
@@ -210,7 +215,7 @@ Effect5_1:
 
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
-  move.w  #$0f0,$dff180
+  move.w  #$0,$dff180
   bsr.w   SetCopperList4Rotation  
   move.l  .colptr(pc),a5
   move.l  draw_cprpalh,a4
@@ -223,14 +228,17 @@ Effect5_1:
   lea.l   EF51_COLORS1,a5
 .br5  
   move.l  a5,.colptr 
-  move.l  .frmpos,a5      
+  move.l  .frmpos,a5  
+  move.l  .lineshiftpos,a6 
   move.l  .linesizepos,a2  
   bsr.w   WriteCopper4Rotation
   addq.l  #4,a5
+  addq.l  #4,a6
   
   cmp.l   #$0fffffff,(a5)          
   bne.s   .br3
   lea.l   EF51_LINEMULTIPLIERS,a5
+  lea.l   EF51_LINESHIFTS,a6
 .br3
   addq.l  #4,a2
   cmp.l   #$0fffffff,(a2)          
@@ -238,6 +246,7 @@ Effect5_1:
   lea.l   EF51_LINESIZE,a2
 .br2
   move.l  a5,.frmpos
+  move.l  a6,.lineshiftpos
   move.l  a2,.linesizepos
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
@@ -249,10 +258,13 @@ Effect5_1:
   move.w #1,continue
   bra.w  mlgoon
   
-.frmpos: dc.l EF51_LINEMULTIPLIERS
+.frmpos: 
+  REPT 8
+  dc.l EF51_LINEMULTIPLIERS
+  ENDR
+.lineshiftpos: dc.l EF51_LINESHIFTS
 .linesizepos: dc.l EF51_LINESIZE
 .colptr dc.l EF51_COLORS1
-
 
 Effect5_2:
 
@@ -262,7 +274,7 @@ Effect5_2:
 
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
-  move.w  #$0f0,$dff180
+  move.w  #$0,$dff180
   bsr.w   SetCopperList4Rotation  
   move.l  .colptr(pc),a5
   move.l  draw_cprpalh,a4
@@ -275,21 +287,25 @@ Effect5_2:
   lea.l   EF51_COLORS1,a5
 .br5  
   move.l  a5,.colptr 
-  move.l  .frmpos,a5      
+  move.l  .frmpos,a5  
+  move.l  .lineshiftpos,a6 
   move.l  .linesizepos,a2  
   bsr.w   WriteCopper4Rotation
   addq.l  #4,a5
+  addq.l  #4,a6
   
   cmp.l   #$0fffffff,(a5)          
   bne.s   .br3
-  lea.l   EF51_LINEMULTIPLIERS,a5
+  lea.l   EF52_LINEMULTIPLIERS,a5
+  lea.l   EF52_LINESHIFTS,a6
 .br3
   ;addq.l  #4,a2
   cmp.l   #$0fffffff,(a2)          
   bne.s   .br2
-  lea.l   EF51_LINESIZE,a2
+  lea.l   EF52_LINESIZE_0,a2
 .br2
   move.l  a5,.frmpos
+  move.l  a6,.lineshiftpos
   move.l  a2,.linesizepos
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
@@ -301,8 +317,9 @@ Effect5_2:
   move.w #1,continue
   bra.w  mlgoon
   
-.frmpos: dc.l EF51_LINEMULTIPLIERS
-.linesizepos: dc.l EF51_LINESIZE
+.frmpos: dc.l EF52_LINEMULTIPLIERS
+.lineshiftpos: dc.l EF52_LINESHIFTS
+.linesizepos: dc.l EF52_LINESIZE_0
 .colptr dc.l EF51_COLORS1
 
 Effect1_1:
@@ -320,7 +337,6 @@ Effect1_1:
   bra.w  mlgoon
 
 .framecount dc.w 0
-
 Effect1_2:
   move.w #$00,$dff180
   move.w #1,Eff1ZoomIn
@@ -1071,7 +1087,7 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
 .lp2
   ;Calculate size horizontal line   ;  {
   move.l   (a2),d1                  ;    sizecol = frame.sizecol[x];
-  move.l   EF5_LINEMULT(a5),d0      ;    invsin = frame.invsin[x];
+  move.l   (a5),d0                  ;    invsin = frame.invsin[x];
   mulu.l   d0,d1                    ;    sizelinehor = sizecol*invsin
   lsr.l    #8,d1
   move.l   d1,d7
@@ -1087,7 +1103,7 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   moveq.l  #12,d2                   ;    bufferpos = 32*120*sizepos+linebuffer;
   lsl.l    d2,d1 
   add.l    d0,d1  
-  swap     d1
+  swap     d1  
   move.w   d1,2(a1)
   swap     d1
   move.l   a3,a4                    ;    curcopperpos = copperpos;
@@ -1107,26 +1123,30 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
 .br3                                ;     else {
   move.l   d7,d4                    ;       maxpos = size * 2;
 .br2                                ;     } 
-  move.l   EF5_LINESHIFTS(a5),a6    ;   curlineshift = frame.lshift[x];
   move.l   d2,d7
   move.l   d7,d0                    ;   startpos = (size * 1.5) - 160;    
   lsr.l    d0  
   add.l    d7,d0
   sub.l    #160,d0
   move.l   d0,d2
-  move.l   a6,d0
+  move.l   (a6),d0                  ;   curlineshift = frame.lshift[x];
   divs.l   #2,d0                    ;     tmp = (word) lineshift * 128;
   sub.l    d0,d2                    ;     startpos -= tmp;
   move.l   d3,.save
+  move.l   a6,.save2
+  move.l   (a6),a6
   bsr.s    WriteCopperLine4Rotation ;    WriteCopperLine4Rotation2(linebuffer,
                                     ;         cutrstartposrstartpos, linesize);
   move.l   .save(pc),d3
+  move.l   .save2(pc),a6
   add.l    #FRM4SIZE,a0             ;    Startpos++;
   addq.l   #8,a1
   dbf      d3,.lp2                  ;  }
   rts                               ;}
 
 .save
+  dc.l 0
+.save2
   dc.l 0
  
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
