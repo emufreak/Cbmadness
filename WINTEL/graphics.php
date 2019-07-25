@@ -47,8 +47,6 @@ OFFSCLPALETTELW  equ  OFFSCLPALETTE+(SIZEPALETTE+1)*4*8
 
 Module1:
   incbin  mod/P61.chippy524   
-  
-  	  INCLUDE FrameData.i
   	  INCLUDE FrameData4.i
   CNOP 0,8
 <?php  
@@ -1883,10 +1881,11 @@ BPLTITLE:
   INCBIN "raw/title.raw"
 
       INCLUDE PatternData.i
+	  INCLUDE FrameData.i
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
 
-	  DCB.B 700000,0
+	  DCB.B 600000,0
 	
     ;SECTION	GRAPHICS,BSS_C
 

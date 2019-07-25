@@ -88,7 +88,7 @@ jmplistpos:
 jmplist:
         bra.w Effect0_1
 		bra.w Effect5_0
-		bra.w Effect5_2
+		bra.w Effect5_3
 		;bra.w Effect5_2
 		bra.w Effect0_2
 		bra.w Effect1_0
@@ -176,151 +176,8 @@ Effect1_0:
   endc
   move.w #1,continue
   bra.w mlgoon
-
-Effect5_0:
-  move.l #BPLLOGO,draw_buffer
-  move.l #BPLLOGO,view_buffer
-  move.l #COPPERLISTROTATE1,view_copper
-  move.l #COPPERLISTROTATE2,draw_copper
-  move.l #COLRBITPLANEPOINTERS1,view_cprbitmap
-  move.l #COLRBITPLANEPOINTERS2,draw_cprbitmap
-  move.l #COLRLINESELECT1,view_cprlnsel
-  move.l #COLRLINESELECT2,draw_cprlnsel
-  bsr.w  DrawLines4Rotation
-  move.b #$2c,d1
-  move.w #255,d0
-  move.l view_cprlnsel,a3
-.lp1
-  move.b d1,(a3)
-  add.l  #9*4,a3
-  add.b  #1,d1
-  dbf    d0,.lp1
-  move.b #$2c,d1
-  move.w #255,d0
-  move.l draw_cprlnsel,a3
-.lp2
-  move.b d1,(a3)
-  add.l  #9*4,a3
-  add.b  #1,d1
-  dbf    d0,.lp2
   
-  move.w #1,continue
-  bra.w  mlgoon
-
-Effect5_1:
-
-;a4 = copptr
-;a5 = colptrhw
-;a6 = copptrlw   
-
-  movem.l empty,a0-a5/d0-d7
-  move.w  #$c00,$dff106
-  move.w  #$0,$dff180
-  bsr.w   SetCopperList4Rotation  
-  move.l  .colptr(pc),a5
-  move.l  draw_cprpalh,a4
-  move.l  draw_cprpall,a6 
-  bsr.w   SetColDataDefault 
-  move.l  .colptr(pc),a5
-  add.l   #1024,a5
-  cmp.l   #$0fffffff,(a5)   
-  bne.s   .br5
-  lea.l   EF51_COLORS1,a5
-.br5  
-  move.l  a5,.colptr 
-  move.l  .frmpos,a5  
-  move.l  .lineshiftpos,a6 
-  move.l  .linesizepos,a2  
-  bsr.w   WriteCopper4Rotation
-  addq.l  #4,a5
-  addq.l  #4,a6
-  
-  cmp.l   #$0fffffff,(a5)          
-  bne.s   .br3
-  lea.l   EF51_LINEMULTIPLIERS,a5
-  lea.l   EF51_LINESHIFTS,a6
-.br3
-  addq.l  #4,a2
-  cmp.l   #$0fffffff,(a2)          
-  bne.s   .br2
-  lea.l   EF51_LINESIZE,a2
-.br2
-  move.l  a5,.frmpos
-  move.l  a6,.lineshiftpos
-  move.l  a2,.linesizepos
-  move.w  #$c00,$dff106
-  move.w  #$000,$dff180
-  cmp.w   #12,P61_Pos
-  beq.s   .br1
-  bra.w   mlgoon
-.br1
-  move.w #1,continue
-  move.w #1,continue
-  bra.w  mlgoon
-  
-.frmpos: 
-  REPT 8
-  dc.l EF51_LINEMULTIPLIERS
-  ENDR
-.lineshiftpos: dc.l EF51_LINESHIFTS
-.linesizepos: dc.l EF51_LINESIZE
-.colptr dc.l EF51_COLORS1
-
-Effect5_2:
-
-;a4 = copptr
-;a5 = colptrhw
-;a6 = copptrlw   
-
-  movem.l empty,a0-a5/d0-d7
-  move.w  #$c00,$dff106
-  move.w  #$0,$dff180
-  bsr.w   SetCopperList4Rotation  
-  move.l  .colptr(pc),a5
-  move.l  draw_cprpalh,a4
-  move.l  draw_cprpall,a6 
-  bsr.w   SetColDataDefault 
-  move.l  .colptr(pc),a5
-  ;add.l   #1024,a5
-  cmp.l   #$0fffffff,(a5)   
-  bne.s   .br5
-  lea.l   EF51_COLORS1,a5
-.br5  
-  move.l  a5,.colptr 
-  move.l  .frmpos,a5  
-  move.l  .lineshiftpos,a6 
-  move.l  .linesizepos,a2  
-  bsr.w   WriteCopper4Rotation
-  addq.l  #4,a5
-  addq.l  #4,a6
-  
-  cmp.l   #$0fffffff,(a5)          
-  bne.s   .br3
-  lea.l   EF52_LINEMULTIPLIERS,a5
-  lea.l   EF52_LINESHIFTS,a6
-.br3
-  ;addq.l  #4,a2
-  cmp.l   #$0fffffff,(a2)          
-  bne.s   .br2
-  lea.l   EF52_LINESIZE_0,a2
-.br2
-  move.l  a5,.frmpos
-  move.l  a6,.lineshiftpos
-  move.l  a2,.linesizepos
-  move.w  #$c00,$dff106
-  move.w  #$000,$dff180
-  cmp.w   #12,P61_Pos
-  beq.s   .br1
-  bra.w   mlgoon
-.br1
-  move.w #1,continue
-  move.w #1,continue
-  bra.w  mlgoon
-  
-.frmpos: dc.l EF52_LINEMULTIPLIERS
-.lineshiftpos: dc.l EF52_LINESHIFTS
-.linesizepos: dc.l EF52_LINESIZE_0
-.colptr dc.l EF51_COLORS1
+ include "effect5.s"
 
 Effect1_1:
   move.w #$00,$dff180
@@ -1077,14 +934,9 @@ CalcRotation:                       ;CalcRotation(sizecol,
   rts								;                         , slope);								
                                     ;}
 
+
 WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
                                     ;                  slope,startpos);							
-  movem.l  empty,d0-d7              ;{
-  lea.l    EF4_STARTPOS1,a0
-  move.l   view_cprlnsel,a3
-  move.l   view_cprbitmap,a1
-  moveq.l  #8-1,d3                  ;  for(x=0;x < 6;x++)
-.lp2
   ;Calculate size horizontal line   ;  {
   move.l   (a2),d1                  ;    sizecol = frame.sizecol[x];
   move.l   (a5),d0                  ;    invsin = frame.invsin[x];
@@ -1141,13 +993,13 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   move.l   .save2(pc),a6
   add.l    #FRM4SIZE,a0             ;    Startpos++;
   addq.l   #8,a1
-  dbf      d3,.lp2                  ;  }
   rts                               ;}
 
 .save
   dc.l 0
 .save2
   dc.l 0
+
  
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   move.w   #256-1,d0                ;  for(i=0;i<256,i++) {

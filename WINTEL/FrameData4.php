@@ -129,6 +129,7 @@ EF52_LINEMULTIPLIERS:
 	}
     echo("\n");	
   } while(1)
+	  
 ?>,$fffffff
 
 EF52_LINESHIFTS:
@@ -156,25 +157,88 @@ EF52_LINESHIFTS:
   } while(1);
 ?>,$fffffff
 
-EF52_LINESIZE_0:
-<?php
-  $multfactor = 1.006486;
+EF52_LINESHIFTSCCW:
+<?php 
+  $angle = 360;
   $y = 0;
   do {
 	echo( "  dc.l ");
-    for($i = 0; $i < 10; $i++) {  
-	  
-	  echo( floor( $size));
-	  $angle += $anglechange;
-      $size *= $multfactor;
-	
-  	  $y ++;
-	  if($y > 67) break 2;
+    for($i = 0; $i < 10; $i++) {
+	  if(  (  $angle > 89.9989 && $angle < 90.0011)
+	      || (  $angle > 269.9989 && $angle < 270.0011))
+        $angleuse = 90.0011;
+	  else
+	    $angleuse = $angle;
+      $lineshift = floor( tan( deg2rad( $angleuse)) * 256);
+	  echo( $lineshift);
+	  $angle -= $anglechange;
+	  $y += 1;
+	  if($y > 535) break 2;
 	  if($i < 9) echo(", ");
+      
 	}
     echo("\n");	
-  } while(1)
+  } while(1);
 ?>,$fffffff
+
+<?php
+  $size = 10;
+  for($x=0;$x<8;$x++) { ?>
+EF52_LINESIZE_<?php echo($x); ?>:
+<?php
+    $multfactor = 1.006486;
+    $y = 0;
+    do {
+      echo( "  dc.l ");
+      for($i = 0; $i < 10; $i++) {  
+        echo( floor( $size));
+        $angle += $anglechange;
+        $size *= $multfactor;
+        $y ++;
+        if($y > 66) break 2;
+        if($i < 9) echo(", ");
+      }
+     echo("\n");	
+    } while(1)
+?>,$fffffff
+<?php
+  }
+?>
+
+<?php
+  $layfactor = pow($multfactor,67);
+  $lwcount = 1;
+  $size = $startsize;
+  for($i=1;$i<=67;$i++) {
+    $sizeuse = $size;
+?>
+EF52_COLORS<?php echo( $i); ?>:
+<?php
+    for($y=1;$y<=8;$y++) {
+      for($z=1;$z<=pow( 2,$y-1);$z++) {
+	    if($lwcount == 1) 
+		  echo("  dc.w ");
+	    if($y==1)
+		  echo( "0,0,");
+	    $color = floor( $sizeuse / 320 * 255);
+		$colorlw = ($color & 0b1111);
+		$colorhw = ($color >> 4);
+	    $colorhw = $colorhw + ($colorhw << 4) + ($colorhw << 8);
+	    $colorlw = $colorlw + ($colorlw << 4) + ($colorlw << 8);
+		echo($colorhw . "," . $colorlw);
+		if($lwcount < 10 && $z < pow( 2,$y-1)) {
+		  $lwcount++;
+		  echo(",");
+		} else {
+		  echo("\n");
+		  $lwcount = 1;
+		}     
+      }	 
+      $sizeuse *= $layfactor;	  
+	}
+    $size *= $multfactor;
+  }
+?>
 
 EF5FRM0SIZE:
   dcb.l 8,10
