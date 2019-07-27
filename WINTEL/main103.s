@@ -88,7 +88,11 @@ jmplistpos:
 jmplist:
         bra.w Effect0_1
 		bra.w Effect6_0
-		bra.w Effect6_1
+		bra.w Effect6_11
+		bra.w Effect6_12
+		bra.w Effect6_13
+		bra.w Effect6_14
+		bra.w Effect6_2
 		;bra.w Effect5_3
 		;bra.w Effect5_2
 		bra.w Effect0_2
