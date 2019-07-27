@@ -87,8 +87,9 @@ jmplistpos:
         dc.l  jmplist
 jmplist:
         bra.w Effect0_1
-		bra.w Effect5_0
-		bra.w Effect5_3
+		bra.w Effect6_0
+		bra.w Effect6_1
+		;bra.w Effect5_3
 		;bra.w Effect5_2
 		bra.w Effect0_2
 		bra.w Effect1_0
@@ -100,9 +101,9 @@ jmplist:
 		bra.w Effect3_0
 		bra.w Effect3_1
 		bra.w Effect4_1
-		bra.w Effect5_0
-		bra.w Effect5_1
-		bra.w Effect5_2
+		;bra.w Effect5_0
+		;bra.w Effect5_1
+		;bra.w Effect5_2
         rts
 		
 
@@ -177,7 +178,8 @@ Effect1_0:
   move.w #1,continue
   bra.w mlgoon
   
- include "effect5.s"
+ ;include "effect5.s"
+ include "effect6.s"
 
 Effect1_1:
   move.w #$00,$dff180

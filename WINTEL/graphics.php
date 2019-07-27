@@ -47,7 +47,8 @@ OFFSCLPALETTELW  equ  OFFSCLPALETTE+(SIZEPALETTE+1)*4*8
 
 Module1:
   incbin  mod/P61.chippy524   
-  	  INCLUDE FrameData4.i
+  	  ;INCLUDE FrameData4.i
+	  INCLUDE FrameData5.i
   CNOP 0,8
 <?php  
   for($i=1;$i<=2;$i++) {
@@ -68,11 +69,12 @@ COPPERLISTROTATE<?php echo($i); ?>:
 
 	dc.w	$94,$d0		                 ; DdfStop
 	dc.w	$102,0		                 ; BplCon1
-	dc.w	$104,$20	                 ; BplCon2
+	dc.w	$104,$200	                 ; BplCon2
 	dc.w	$108,0                       ; Bpl1Mod
 	dc.w	$10a,0                       ; Bpl2Mod
 
-	dc.w	$100,$210;                   ; bplcon0
+COLRBPLCON0_<?php echo($i); ?>
+	dc.w	$100,$7200;                   ; bplcon0
 
 COLRBITPLANEPOINTERS<?php echo($i); ?>:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
