@@ -65,7 +65,7 @@ SetCopperList4Rotation:
 		move.l  view_cprpall,draw_cprpall
 		move.l  d0,view_cprpall
         IFEQ DEBUG-0
-		move.l  draw_copper,$80(a6)
+		move.l  view_copper,$80(a6)
         move.l  d1,$88(a6)
         ENDC
         rts 
