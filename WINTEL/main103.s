@@ -87,12 +87,6 @@ jmplistpos:
         dc.l  jmplist
 jmplist:
         bra.w Effect0_1
-		bra.w Effect6_0
-        bra.w Effect6_11
-		bra.w Effect6_12
-		bra.w Effect6_13
-		bra.w Effect6_14
-        bra.w Effect6_2
 		bra.w Effect0_2
 		bra.w Effect1_0
         bra.w Effect1_1
@@ -109,6 +103,8 @@ jmplist:
 		bra.w Effect6_13
 		bra.w Effect6_14
         bra.w Effect6_2
+		bra.w Effect6_4
+		bra.w Effect6_5
 		;bra.w Effect5_0
 		;bra.w Effect5_1
 		;bra.w Effect5_2		
