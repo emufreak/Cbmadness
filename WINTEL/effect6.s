@@ -200,6 +200,11 @@ Effect6_2:
 ;a5 = colptrhw
 ;a6 = copptrlw   
 
+  lea.l  COLRBPLCON0_1,a0
+  move.w #$210,2(a0)
+  lea.l  COLRBPLCON0_2,a0
+  move.w #$210,2(a0)
+
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
@@ -336,7 +341,7 @@ Effect6_3:
   add.l   #1024,a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
-  lea.l   EF64_COLORS1,a5
+  lea.l   EF61_COLORS1,a5
 .br5  
   move.l   a5,.colptr  
   ;move.l  .linesizepos,a2  
@@ -432,7 +437,7 @@ Effect6_3:
   dc.l EF61_LINESIZE_3
   dc.l EF61_LINESIZE_3
   
-.colptr dc.l EF64_COLORS1
+.colptr dc.l EF61_COLORS1
 .curfrmpos: dc.l 0
 .curlshiftpos: dc.l 0
 .curlsizepos: dc.l 0
