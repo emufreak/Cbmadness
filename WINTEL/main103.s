@@ -385,8 +385,8 @@ Effect1_Main:
 	    add.l  #2,(a3)				    ;    frame++
 		cmp.l  #134,(a3)                ;    if(frame > 66) {
 		bne.s  .br2                     ;      frame = 0;
-		move.l 	#0,(a3)                 ;      colptr = EF1_COLOR0;
-		move.l  #EF1_COLOR0,(a5)        ;    }
+		move.l 	#0,(a3)                 ;      colptr = EF1_COLORS0;
+		move.l  #EF1_COLORS1,(a5)        ;    }
 		bra.s   .br3                    ;    else
 .br2                                    ;    {
 		add.l  #1024,(a5)     	        ;      colptr++
@@ -402,7 +402,7 @@ Effect1_Main:
 .i dc.w 7
 .counter: dc.w 1
 .frame: dc.l 0
-.colptr: dc.l EF1_COLOR0
+.colptr: dc.l EF1_COLORS1
 
 Effect3_Main:
 ;a0 = blarraydim
@@ -525,7 +525,7 @@ Effect4_Main:
 		move.l .dircolor,d2
 		cmp.l  #540,(a3)                 ;    if(frame > 270
 		bne.s  .br2
-		move.l 	#0,(a3)                 ;      colptr = EF1_COLOR0;
+		move.l 	#0,(a3)                 ;      colptr = EF1_COLORS1;
 		bchg.b  #0,EffInvert			;      EffInvert = !EffInvert
 		move.l  #EF3_COLOR0,(a5)        ;    }
 		bra.s   .br3                    ;    else

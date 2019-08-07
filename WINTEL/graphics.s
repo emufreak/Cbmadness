@@ -2484,6 +2484,7 @@ BPLTITLE:
 
       INCLUDE PatternData.i
 	  INCLUDE FrameData.i
+	  INCLUDE FrameData_Color.i
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
 
