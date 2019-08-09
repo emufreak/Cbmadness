@@ -669,6 +669,66 @@ SetColDataDefault:
 		dbf     d2,.lp2				 ;  }
 		rts								 ;}
 
+SetColDataRepeat:
+  ;d4 - minsize
+  ;a5 - colorpct
+  ;a4 - copperpos highwordcol
+  ;a6 - copperpos lowword pos
+  sub.l   d5,d5
+  sub.l   d6,d6
+  moveq.l #7,d2					 ;  for(	x=0;x<8;x++)
+  move.l  #0,(a4)+               ;  //move color 0
+  move.l  #0,(a6)+               ;  //move color 0
+  moveq.l #30,d1                 ;  // skip color 0 in loop                           
+.lp1
+                                 ;// red color
+  move.b  (a5)+,d6               ;bluepart = *colorpct++;
+                                 ;00bb
+  mulu.w  d4,d6                  ;bluepart *= minsize;
+                                 ;bbbb
+  lsr.l   #8,d6                  ;bluepart /= 256
+                                 ;00bb
+  move.l  d6,d7                  ;colorhw = bluepart >> 4;
+  lsr.l   #4,d7                  ;000b
+  and.w   #$f,d6                 ;colorlw = bluepart & $f                              
+                                 ;000b
+  move.b  (a5)+,d5               ;greenpart = *colorpct++ 
+                                 ;00gg  
+  mulu.w  d4,d5                  ;greenpart *= minsize;
+                                 ;gggg
+  lsr.l   #8,d5                  ;greenpart /= 256; 
+                                 ;00gg  
+  move.l  d5,d3                  ;colorhw += greenpart & $f0 
+  and.w   #$f0,d3                ;00g0         
+  add.w   d3,d7                  ;00gb
+  lsl.w   #4,d5                  ;colorlw +=  (greenpart << 4) & $f0
+                                 ;gg0
+  and.w   #$f0,d5                ;00g0              
+  add.w   d5,d6                  ;00gb
+					
+  move.b  (a5)+,d5               ;bluepart = *colorpct++
+                                 ;00rr  
+  mulu.w  d4,d5                  ;bluepart *= minsize; 
+                                 ;rrrr
+  move.l  d5,d3                  ;colorlw = bluepart & $f00  
+  and.w   #$f00,d3               ;0r00               
+  add.w   d3,d6                  ;0rgb
+  lsr.w   #4,d5                  ;colorhw +=  (redpart >> 4) & $f0
+                                 ;0rrr
+  and.w   #$f00,d5               ;0r00
+  add.w   d5,d7                  ;0rgb
+  move.w  d6,(a6)+
+  move.w  d7,(a4)+
+  
+  addq.l  #4,a4                
+  addq.l  #4,a6
+  dbf     d1,.lp1                
+  move.w  #31,d1
+  addq.l  #4,a4		            
+  addq.l  #4,a6
+  dbf     d2,.lp1 
+  rts
+
 MoveData:                               ;MoveData(	input
 ;input                                  ;{
 ;d1 = blposx
