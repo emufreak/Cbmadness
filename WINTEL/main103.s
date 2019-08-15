@@ -186,7 +186,7 @@ Effect1_0:
  include "effect6.s"
 
 Effect1_1:
-  move.w #$00,$dff180
+  move.w #$f00,$dff180
   move.w #0,Eff1ZoomIn
   bsr.w  Effect1_Main
   move.w #$c00,$dff106
@@ -365,31 +365,50 @@ Effect1_Main:
 		lea      EF1_MoveX,a5
 		lea      EF1_MoveY,a6
 .lp1  									;  {
-		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap
+		move.l  (a1),CNTBLMAP(a2)       ;    *frmdat.blmap = *laydat.blmap
 		bsr.w   GetFrame        		;    GetFrame(  framedate,frmnr)
         bsr.w   MoveData
 		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
 		addq.l  #2,a5
 		addq.l  #2,a6
-		sub.l   #FRMSIZE,a1		    ;  	 frmdat++; //Next object
-		add.l   #CNTOBJSIZE,a2         ;    laydat++;
+		sub.l   #FRMSIZE,a1		        ;  	 frmdat++; //Next object
+		add.l   #CNTOBJSIZE,a2          ;    laydat++;
 		sub.w   #1,.i
 		bpl.s   .lp1			        ;  }
 
-        bsr.w    MoveAdjust             ;  MoveAdjust( );
+        bsr.w   MoveAdjust              ;  MoveAdjust( );
 		move.l  .colptr(pc),a5
-		bsr.w   SetColData				;  SetColData(  colptr);
-		cmp.w   #0,Eff1ZoomIn          ;  if(Eff1ZoomIn( )
-		beq.s   .br3                    ;  {
-		lea	   .colptr,a5
-	    add.l  #2,(a3)				    ;    frame++
-		cmp.l  #134,(a3)                ;    if(frame > 66) {
-		bne.s  .br2                     ;      frame = 0;
+		
+		movem.l d0-d7/a0-a6,.save
+
+		move.l  #165,d4
+		move.l  draw_copper,a4          ;  copptr = draw_buffer;
+		add.l   #2,a4                   ;  copptr += 10;
+		move.l  a4,a6                   ;  copptrlw = copptr;
+		add.l   #OFFSCLPALETTE,a4       ;  copptr += offsclpalette;
+		add.l   #OFFSCLPALETTELW,a6     ;  copptrlw += offsclpalettelw;
+	    clr.w   $200
+		lea.l   blarraycont,a0
+		sub.l   d5,d5
+		move.w  CNTBLSIZE(a0),d5
+		lsl.l   #8,d5                   ;  intensity = frmdat[7].size*256/320
+		divu.l  #320,d5
+		and.l   #$ffff,d5
+		bsr.w   SetColDataFade		    ;  SetColDataFade(intensity);
+    	movem.l .save,d0-d7/a0-a6
+		
+		cmp.w   #0,Eff1ZoomIn           ;  if(Eff1ZoomIn( )	
+		beq.s   .br3                    ;  {		
+		lea	    .colptr,a5
+	    add.l   #2,(a3)				    ;    frame++
+		cmp.l   #134,(a3)               ;    if(frame > 66) {
+		bne.s   .br3                    ;      frame = 0;
 		move.l 	#0,(a3)                 ;      colptr = EF1_COLORS0;
-		move.l  #EF1_COLORS1,(a5)        ;    }
-		bra.s   .br3                    ;    else
-.br2                                    ;    {
-		add.l  #1024,(a5)     	        ;      colptr++
+		move.l  .colptr2,d0             ;      reverse(colptr, colptr2);
+		move.l  .colptr,.colptr2 
+		move.l  d0,.colptr
+		;move.l  #EF1_COLORS1,(a5)        ;    }
+		
 .br3                                    ;    }
                                         ;  }
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);
@@ -398,11 +417,13 @@ Effect1_Main:
 
 .br1        							;}
         rts
-
+		
+.save dcb.l 15,0
 .i dc.w 7
 .counter: dc.w 1
 .frame: dc.l 0
 .colptr: dc.l EF1_COLORS1
+.colptr2: dc.l EF1_COLORS2
 
 Effect3_Main:
 ;a0 = blarraydim
@@ -617,6 +638,8 @@ SetFrame:			        		    ;SetFrameDefault(  frmdat,
 .ptrtomap
 	dc.l blarraycont+CNTBLMAP
 
+
+
 SetColData:								 ;SetColData(  colptr)
 ;a4 = copptr
 ;a5 = colptr
@@ -669,58 +692,58 @@ SetColDataDefault:
 		dbf     d2,.lp2				 ;  }
 		rts								 ;}
 
-SetColDataRepeat:
-  ;d4 - minsize
-  ;a5 - colorpct
+SetColDataFade:
+  ;d5 - intensity
+  ;a5 - colors
   ;a4 - copperpos highwordcol
   ;a6 - copperpos lowword pos
-  sub.l   d5,d5
-  sub.l   d6,d6
   moveq.l #7,d2					 ;  for(	x=0;x<8;x++)
-  move.l  #0,(a4)+               ;  //move color 0
-  move.l  #0,(a6)+               ;  //move color 0
-  moveq.l #30,d1                 ;  // skip color 0 in loop                           
+  moveq.l #31,d1                 ;  // skip color 0 in loop                           
 .lp1
                                  ;// red color
-  move.b  (a5)+,d6               ;bluepart = *colorpct++;
-                                 ;00bb
-  mulu.w  d4,d6                  ;bluepart *= minsize;
+  move.l  (a5)+,d0               ;curcolor = *color++
+  move.l  d0,d6                  ;bluepart = curcolor & $ff		
+  and.l   #$ff,d6                ;00bb
+  mulu.w  d5,d6                  ;bluepart *= intensity;
                                  ;bbbb
   lsr.l   #8,d6                  ;bluepart /= 256
-                                 ;00bb
+                                 ;00bbt
   move.l  d6,d7                  ;colorhw = bluepart >> 4;
   lsr.l   #4,d7                  ;000b
   and.w   #$f,d6                 ;colorlw = bluepart & $f                              
                                  ;000b
-  move.b  (a5)+,d5               ;greenpart = *colorpct++ 
-                                 ;00gg  
-  mulu.w  d4,d5                  ;greenpart *= minsize;
-                                 ;gggg
-  lsr.l   #8,d5                  ;greenpart /= 256; 
-                                 ;00gg  
-  move.l  d5,d3                  ;colorhw += greenpart & $f0 
+  move.l  d0,d4                  ;greenpart = curcolor & $ff00 
+  and.w   #$ff00,d4              ;gg00								 
+  mulu.w  d5,d4                  ;greenpart *= intensity;
+                                 ;gggg00
+  lsr.l   #8,d4                  ;greenpart /= 256; 
+  lsr.l   #4,d4                  ;gggg
+                                 ;0ggg 
+  move.l  d4,d3                  ;colorhw += greenpart & $f0 
   and.w   #$f0,d3                ;00g0         
-  add.w   d3,d7                  ;00gb
-  lsl.w   #4,d5                  ;colorlw +=  (greenpart << 4) & $f0
+  add.w   d3,d6                  ;00gb
+  lsr.w   #4,d4                  ;colorlw +=  (greenpart << 4) & $f0
                                  ;gg0
-  and.w   #$f0,d5                ;00g0              
-  add.w   d5,d6                  ;00gb
+  and.w   #$f0,d4                ;00g0              
+  add.w   d4,d7                  ;00gb
 					
-  move.b  (a5)+,d5               ;bluepart = *colorpct++
-                                 ;00rr  
-  mulu.w  d4,d5                  ;bluepart *= minsize; 
-                                 ;rrrr
-  move.l  d5,d3                  ;colorlw = bluepart & $f00  
+  move.l  d0,d4                  ;redpart = (curcolor & $$ff0000) >> 8
+                                 ;rr0000  
+  lsr.l	  #8,d4                  ;rrgg
+  and.l   #$ff00,d4              ;rr00  
+  mulu.w  d5,d4                  ;redpart *= intensity >> 8; 
+                                 ;rrrr00
+  lsr.l   #8,d4                  ;rrrr
+  move.l  d4,d3                  ;colorlw = redpart & $f00  
   and.w   #$f00,d3               ;0r00               
   add.w   d3,d6                  ;0rgb
-  lsr.w   #4,d5                  ;colorhw +=  (redpart >> 4) & $f0
+  lsr.w   #4,d4                  ;colorhw +=  (redpart >> 4) & $f0
                                  ;0rrr
-  and.w   #$f00,d5               ;0r00
-  add.w   d5,d7                  ;0rgb
-  move.w  d6,(a6)+
-  move.w  d7,(a4)+
-  
-  addq.l  #4,a4                
+  and.w   #$f00,d4               ;0r00
+  add.w   d4,d7                  ;0rgb
+  move.w  d6,(a6)
+  move.w  d7,(a4)
+  addq.l  #4,a4		            
   addq.l  #4,a6
   dbf     d1,.lp1                
   move.w  #31,d1
@@ -813,7 +836,7 @@ CalculateFade:
 
 	MOVEQ	#8-1,d7			; 8 banchi da 32 registri ciascuno
 ConvertiPaletteBank:
-	moveq	#0,d0
+	moveq	#0,d0           
 	moveq	#0,d2
 	moveq	#0,d3
 	moveq	#32-1,d6	; 32 registri colore per banco

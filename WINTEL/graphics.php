@@ -694,7 +694,7 @@ copperlist:
 	ENDC
 
         dc.w    $106,$c00    
-	dc.w	$180,$000    ;Dummy operation as placeholder
+	dc.w	$182,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -966,7 +966,7 @@ copperlist:
         dc.w    $1be,$f20    ;11111111
 
 	dc.w	$106,$e00	
-	dc.w	$180,$fd3    ;Dummy operation as placeholder	
+	dc.w	$182,$fd3    ;Dummy operation as placeholder	
 	dc.w    $182,$fd3    ;00001
         dc.w    $184,$f82    ;00010
         dc.w    $186,$fe6    ;00011
