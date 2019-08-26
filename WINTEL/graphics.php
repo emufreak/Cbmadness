@@ -692,6 +692,7 @@ copperlist:
 	ELSE
 	dc.w	$100,BPLCOUNT*$1000+$200	 ; bplcon0
 	ENDC
+	;dc.w $100,$1200
 
         dc.w    $106,$c00    
 	dc.w	$182,$000    ;Dummy operation as placeholder
@@ -1319,7 +1320,7 @@ IMGBPLPOINTERS:
 
 	dc.w	$106, $0c00
 COLP0:  
-	dc.w	$182,$000    ;Dummy operation as placeholder
+	dc.w	$180,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -1594,7 +1595,7 @@ COLP0:
 COLP0B:
 	
 
-	dc.w	$182,$fd3    ;Dummy operation as placeholder	
+	dc.w	$180,$fd3    ;Dummy operation as placeholder	
 	dc.w    $182,$fd3    ;00001
         dc.w    $184,$f82    ;00010
         dc.w    $186,$fe6    ;00011
@@ -1887,6 +1888,7 @@ BPLTITLE:
 	  INCLUDE FrameData_Color.i
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
+	  INCLUDE FrameData3_Color.i
 
 	  DCB.B 600000,0
 	

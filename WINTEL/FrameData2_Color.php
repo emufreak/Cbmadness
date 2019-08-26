@@ -4,13 +4,14 @@
   $layfactor = pow($multfactor,67);
   $lwcount = 1;
   $size = 20;
-  $colors = array( array( "blue" => 0x00, "green" => 0x6b, "red" => 0xff),
-		               array( "blue" => 0xff, "green" => 0x53, "red" => 0x2a));
+  $colors = array( array( "blue" => 0x2a, "green" => 0x53, "red" => 0xff),
+		               array( "blue" => 0xff, "green" => 0x6b, "red" => 0x00));
   for($i=1;$i<=2;$i++) {
     $sizeuse = $size;
 	
 ?>
-EF1_COLORS<?php echo( $i); ?>:
+
+EF3_COLORS<?php echo( $i); ?>:
 <?php    
     $index = 0;
     for($y=1;$y<=8;$y++) {
@@ -45,7 +46,7 @@ EF1_COLORS<?php echo( $i); ?>:
 	    $colorr = floor( $colorr);
 		$colorg = floor( $colorg);
 		$colorb = floor( $colorb);
-		$color = ($colorr << 16) + ($colorg << 8) + $colorb;	
+		$color = ($colorr << 16) + ($colorg << 8) + $colorb;
 		
 		echo("$" . dechex($color));
 		if($lwcount < 10 && $z < pow( 2,$y-1)) {
