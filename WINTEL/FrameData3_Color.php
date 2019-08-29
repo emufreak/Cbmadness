@@ -23,13 +23,9 @@
   
   $colors2 = array_reverse($colors);
   
-  for($i=1;$i<=16;$i++) {
+  for($i=1;$i<=14;$i++) {
     $sizeuse = $size;
-	if($i == 9) {
-      $tmp = $colors2;
-	  $colors2 = $colors;
-	  $colors = $tmp;
-	}
+	
 ?>
 
 EF3_COLORS<?php echo( $i); ?>:
@@ -51,16 +47,13 @@ EF3_COLORS<?php echo( $i); ?>:
 		$colorg = 0;
 		$colorb = 0;
 		
-		if( ( $index & 128) != 0) {	
+		if( (( $index & 128) != 0 && $i <= 7) ||
+        	(($index & 128) == 0 && $i >= 8)) {	
           $colorr = 255;
 		  $colorg = 255;
 		  $colorb = 255;		
 		  for( $x=0;$x<=6;$x++)
 		    if( ( $index & pow(2, $x)) != 0)  { 
-              //$colorb = ( ~$colors[6-$x]["blue"] & 0xff * pow($layfactor, $x)) / 19.52 * 0.8;
-		      //$colorr = (~$colors[6-$x]["red"] & 0xff) * pow($layfactor, $x) / 19.52;
-			  //$colorg =  (~$colors[6-$x]["green"] & 0xff)  * pow($layfactor, $x) / 19.52;
-			  //$colorb =   (~$colors[6-$x]["blue"] & 0xff)  * pow($layfactor, $x) / 19.52;
               $colorr = $colorr * 0.2 + ( ~$colors[6-$x]["red"] & 0xff) * pow($layfactor, $x)
 				/ 19.52 * 0.8 + ( 1 - floor( pow( $layfactor, $x) * 100) / 100 / 19.52)*0xff*0.8;
 		      $colorg = $colorg * 0.2 + ( ~$colors[6-$x]["green"] & 0xff) * pow($layfactor, $x) 

@@ -509,7 +509,7 @@ Effect4_Main:
 ;a4 = reserved SetColData
 ;a5 = colptr
 ;a6 = *blarraycont.data (temp)
-
+  
         subq    #1,.counter		        ;if(counter-- == 0)
         bne.w   .br1				    ;{
         bsr.w   SetCopperList			;  Setcopperlist();
@@ -552,7 +552,7 @@ Effect4_Main:
 		divu.l  #320,d5
 		and.l   #$ffff,d5
 		
-		cmp.w   #1,.white1
+		cmp.b   #1,.inverted
 		beq.s   .br4
 		moveq.l #3,d2                   ;  repeats = 3
 		bsr.w   SetColDataFade		    ;  SetColDataFade(intensity, repeats,colptr);
@@ -565,13 +565,25 @@ Effect4_Main:
 		moveq.l #3,d2                   ;  repeats = 3
         bsr.w   SetColDataFadeWhite
 .br5
-        cmp.w   #1,.white2
-		beq.s   .br6
+        cmp.b   #0,.inverted             
+		beq.s   .br6 
+        sub.l   d2,d2                   
+		move.b  d5,d2                   ;  
+		not.b   d2                      ;  blackinnerlayer = 255 - intensity		
+		lea.l   blarraycont,a1          ;     
+		move.w  CNTBLSIZE(a1),d3
+		mulu.w  d3,d5                   ;  intensity *= sizebglayer / 320;
+		divu.l  #320,d5
+        mulu.w  d3,d2                   ;  blackinnerlayer *= sizebglayer / 320;
+		divu.l  #320,d2
+		add.l   d5,d2                   ;  intensitywhite = 255 - 
+		not.b   d2                      ;  (blackinnerlayer + intensity)
+		move.l  d2,a0
 		moveq.l #3,d2                   ;  repeats = 3
-		bsr.w   SetColDataFade		    ;  SetColDataFade(intensity, repeats,colptr);
+		bsr.w   SetColDataFadeWhite		;  SetColDataFade(intensity);
         bra.s   .br7
 .br6
-		sub.l   d2,d2                   ;  intensitywhite = 255 - intensity 
+		sub.l   d2,d2                   ;  intensitywhite = (255 - intensity)
 		move.b  d5,d2
 		not.b   d2
 		lea.l   blarraycont,a1         
@@ -604,6 +616,7 @@ Effect4_Main:
         cmp.l  #546,(a3)                ;    if(frame > 270)
 		bne.s  .br2
 		move.l #0,(a3)
+		bchg.b #0,.inverted
 .br2
         add.w  #1,.counter2
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);
@@ -620,8 +633,7 @@ Effect4_Main:
 .colptr: dc.l EF3_COLORS1
 .direction: dc.l 2
 .dircolor: dc.l 1024
-.white1 dc.w 0
-.white2 dc.w 1
+.inverted dc.b 0,0
 
 EffInvert: dc.w 0
 
