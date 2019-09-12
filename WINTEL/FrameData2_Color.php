@@ -1,18 +1,20 @@
 <?php
   $multfactor = 1.006486;
-  $multfactor = 1.005186;
-  $layfactor = pow($multfactor,67);
-  $lwcount = 1;
-  $size = 20;
-  $colors = array( array( "blue" => 0x2a, "green" => 0x53, "red" => 0xff),
-		               array( "blue" => 0xff, "green" => 0x6b, "red" => 0x00));
-  for($i=1;$i<=2;$i++) {
+  $multfactor = 1.009673;
+  
+  $lwcount = 1; 
+  $size = 20;   
+  $colors = array( array( "blue" => 0xff, "green" => 0x8a, "red" => 0xf6),
+		               array( "blue" => 0x14, "green" => 0xff, "red" => 0x16));
+  $direction = array( 1,-1,1,-1,1,-1,1,-1);
+  $counter = 1; 
+  for($i=1;$i<=90;$i++) {
     $sizeuse = $size;
 	
 ?>
 
-EF3_COLORS<?php echo( $i); ?>:
-<?php    
+EF2_COLORS<?php echo( $i); ?>:
+<?php   
     $index = 0;
     for($y=1;$y<=8;$y++) {
       for($z=1;$z<=pow( 2,$y-1);$z++) {
@@ -27,22 +29,25 @@ EF3_COLORS<?php echo( $i); ?>:
 		$colorb = 0;
 		
 		$coloridx = 0;
-		for( $x=0;$x<=7;$x++) {		  
+		for( $x=0;$x<=7;$x++) {	
+          if($direction[$x] == -1) {
+			 $powerof = 45*($x+1) - $counter; 
+          }	else {
+			 $powerof = 45*$x + $counter;
+          }
+		  
 		  if( ( $index & pow(2, $x)) != 0)  {
-            $colorr = $colorr * 0.2 + $colors[$coloridx]["red"] * pow($layfactor, $x) 
-															    / 11.313 * 0.8;
-		    $colorg = $colorg * 0.2 + $colors[$coloridx]["green"]  * pow($layfactor, $x) 
-		                                                        / 11.313 * 0.8;
-		    $colorb = $colorb * 0.2 + $colors[$coloridx]["blue"]  * pow($layfactor, $x) 
-		                                                        / 11.313 * 0.8;
+		
+            $colorr = $colorr * 0.2 + $colors[$coloridx]["red"] 
+			                            * pow($multfactor, $powerof)/ 32 * 0.8;
+		    $colorg = $colorg * 0.2 + $colors[$coloridx]["green"]  
+			                            * pow($multfactor, $powerof)/ 32 * 0.8;
+		    $colorb = $colorb * 0.2 + $colors[$coloridx]["blue"]   
+		                                * pow($multfactor, $powerof)/ 32 * 0.8;
 		  }
 		  $coloridx = abs($coloridx -1);
 		}
 		
-		
-		
-		//165.6
-        //e76100  ff6b00
 	    $colorr = floor( $colorr);
 		$colorg = floor( $colorg);
 		$colorb = floor( $colorb);
@@ -58,8 +63,19 @@ EF3_COLORS<?php echo( $i); ?>:
 		}     
       }	 	  
 	}
-    $size *= $multfactor;
-	$colors = array_reverse( $colors);
+    if($i<45) {
+	  $size *= $multfactor;
+	  $counter++;
+	} elseif($i==45) {
+        $counter = 1;
+        $colors = array_reverse( $colors);
+	    for($i2 = 0;$i2<4;$i2++) {
+          [$direction[$i2*2],$direction[$i2*2+1]] = [$direction[$i2*2+1],$direction[$i2*2]];
+		}
+	} else {
+      $counter++;
+	  $size /= $multfactor;
+    }
   }
 ?>
-  dc.l $fffffff
+  dc.l $ffffffff

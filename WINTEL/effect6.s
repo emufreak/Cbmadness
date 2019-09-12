@@ -107,8 +107,7 @@ Effect6_1x:
   bne.s   .br5
   lea.l   EF61_COLORS1,a5
 .br5  
-  move.l   a5,.colptr  
-  ;move.l  .linesizepos,a2  
+  move.l   a5,.colptr    
   movem.l  empty,d0-d7              
   lea.l    EF4_STARTPOS1,a0
   move.l   draw_cprlnsel,a3
@@ -148,13 +147,7 @@ Effect6_1x:
   add.l    #4,.curlshiftpos
   add.l    #4,.curlsizepos
   dbf      d3,.lp2
-  
-  ;cmp.l   #$0fffffff,(a2)          
-  ;bne.s   .br2
-  ;lea.l   EF61_LINESIZE_0,a2
 .br2
-  ;move.l  a6,.lineshiftpos
-  ;move.l  a2,.linesizepos
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
   rts
@@ -343,8 +336,7 @@ Effect6_3:
   bne.s   .br5
   lea.l   EF61_COLORS1,a5
 .br5  
-  move.l   a5,.colptr  
-  ;move.l  .linesizepos,a2  
+  move.l   a5,.colptr    
   movem.l  empty,d0-d7              
   lea.l    EF4_STARTPOS1,a0
   move.l   draw_cprlnsel,a3

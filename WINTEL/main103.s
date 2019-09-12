@@ -87,18 +87,18 @@ jmplistpos:
         dc.l  jmplist
 jmplist:
         bra.w Effect0_1
-		bra.w Effect0_2
-		bra.w Effect1_0		
-		bra.w Effect4_1	  
-        bra.w Effect1_1
+		bra.w Effect0_2		
+		bra.w Effect1_0	 		
+        bra.w Effect1_1 	
 		bra.w Effect1_2
-		bra.w Effect1_3
+		bra.w Effect1_3	
 		bra.w Effect2_0
 		bra.w Effect2_1
 		bra.w Effect3_0
 		bra.w Effect3_1
-		bra.w Effect6_0
-        bra.w Effect6_11
+		bra.w Effect4_1
+        bra.w Effect6_0		
+		bra.w Effect6_11
 		bra.w Effect6_12
 		bra.w Effect6_13
 		bra.w Effect6_14
@@ -186,11 +186,11 @@ Effect1_0:
  include "effect6.s"
 
 Effect1_1:
-  move.w #$f00,$dff180
+  ;move.w #$f00,$dff180
   move.w #0,Eff1ZoomIn
   bsr.w  Effect1_Main
-  move.w #$c00,$dff106
-  move.w #$000,$dff180
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
   cmp.w  #2,P61_Pos
   beq.s  .br1
   add.w  #1,.framecount
@@ -201,11 +201,11 @@ Effect1_1:
 
 .framecount dc.w 0
 Effect1_2:
-  move.w #$00,$dff180
+  ;move.w #$00,$dff180
   move.w #1,Eff1ZoomIn
   bsr.w  Effect1_Main
-  move.w #$c00,$dff106
-  move.w #$000,$dff180
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
   sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
@@ -218,7 +218,7 @@ Effect1_2:
 .counter dc.w 67
 
 Effect1_3:
-  move.w #$0,$dff180
+  ;move.w #$0,$dff180
   cmp.w  #67,.framecount
   bne.s  .br1
   sub.w  #1,.ptrnleft
@@ -238,8 +238,8 @@ Effect1_3:
   move.w #1,Eff1ZoomIn
   bsr.w  Effect1_Main
   add.w  #1,.framecount
-  move.w #$c00,$dff106
-  move.w #$000,$dff180
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
   bra.w  mlgoon
 
 .framecount: dc.w 67
@@ -247,7 +247,7 @@ Effect1_3:
 .ptrnleft: dc.w 8
 
 Effect2_0:
-  move.w #$0,$dff180
+  ;move.w #$0,$dff180
   cmp.w  #4,P61_Pos
   beq.s  .br2
   bra.w  mlgoon
@@ -262,7 +262,7 @@ Effect2_0:
   bra.w  mlgoon
 
 Effect2_1:
-  move.w #$000,$dff180
+  ;move.w #$000,$dff180
   bsr.w  SetBitplanePointersDefault
   lea    PalTitle,a3
   bsr.w  CalculateFade
@@ -286,11 +286,11 @@ Effect3_0:
   bra.w  mlgoon
 
 Effect3_1:
-  move.w #$00,$dff180
+  ;move.w #$00,$dff180
   move.w #1,Eff2ZoomIn
   bsr.w  Effect3_Main
-  move.w #$c00,$dff106
-  move.w #$000,$dff180
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
   cmp.w  #9,P61_Pos
   beq.s  .br1
   bra.w  mlgoon
@@ -301,13 +301,13 @@ Effect3_1:
 .counter dc.w 67
 
 Effect4_1:
-  move.w #$f,$dff180
+  ;move.w #$f,$dff180
   move.w #1,Eff3ZoomIn
   lea 	 blarraycont,a0
   move.w #10,CNTHEIGHT(a0)
   bsr.w  Effect4_Main
-  move.w #$c00,$dff106
-  move.w #$000,$dff180
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
   cmp.w  #16,P61_Pos
   beq.s  .br1
   bra.w  mlgoon
@@ -393,6 +393,7 @@ Effect1_Main:
 		lsl.l   #8,d5                   ;  intensity = frmdat[7].size*256/320
 		divu.l  #320,d5
 		and.l   #$ffff,d5
+		move.w  #7,d2
 		bsr.w   SetColDataFade		    ;  SetColDataFade(intensity);
     	movem.l .save,d0-d7/a0-a6
 		
@@ -459,45 +460,55 @@ Effect3_Main:
 		bpl.s   .lp1			        ;  }
         bsr.w    MoveAdjust             ;  MoveAdjust( );
 		move.l  .colptr(pc),a5
-		bsr.w   SetColData				;  SetColData(  colptr);
+		movem.l d0-d7/a0-a6,.save
+		move.l  draw_copper,a4          ;  copptr = draw_buffer;
+		add.l   #2,a4                   ;  copptr += 10;
+		move.l  a4,a6                   ;  copptrlw = copptr;
+		add.l   #OFFSCLPALETTE,a4       ;  copptr += offsclpalette;
+		add.l   #OFFSCLPALETTELW,a6     ;  copptrlw += offsclpalettelw;
+        move.l  #255,d5
+		move.l  #7,d2		
+		bsr.w   SetColDataFade		    ;  SetColData(  colptr);
+		movem.l .save,d0-d7/a0-a6
 		cmp.w   #0,Eff2ZoomIn           ;  if(Eff1ZoomIn( )
 		beq.s   .br3                    ;  {
 		lea	   .colptr,a5
 		move.l .direction,d1
 	    add.l  d1,(a3)					;    frame += direction
-		move.l .dircolor,d2
 		cmp.l  #90,(a3)                 ;    if(frame > 45
 		beq.s  .br4                     ;                || frame == 0)
-		cmp.l  #0,(a3)                 ;    {
+		cmp.l  #-2,(a3)                  ;    {
 		bne.s  .br2
-.br4                                    ;
+.br4          
 		neg.l   d1                      ;      direction =* -1;
 		move.l  d1,.direction
-		neg.l   d2
-		move.l  d2,.dircolor			;      dircolor =* -1;
-		add.l   d1,(a3)                ;      frame += direction;
+		add.l   d1,(a3)                 ;      frame += direction;
 		lea     EF2_PATTERNDATA0,a1
-		move.w  #3,d1                  ;      for(int i=0;i<4;i++)
+		move.w  #3,d1                   ;      for(int i=0;i<4;i++)
 .lp2									;      {
 		move.l  (a1),d3     			;        tmp = ptrndata[i*2];
 		move.l  FRMSIZE2(a1),(a1)	    ;        ptrndata[i*2] =
-		move.l  d3,FRMSIZE2(a1)		;             ptrndata[i*2+1];
+		move.l  d3,FRMSIZE2(a1)		    ;             ptrndata[i*2+1];
 		add.l   #FRMSIZE2*2,a1			;        ptrndata[i*2+1] = tmp;
-		dbf     d1,.lp2				;      }
-		bra.s   .br3                    ;    }
-.br2                                    ;    else {
-		add.l  d2,(a5)          		;      colptr++
-.br3                                    ;    }
+		dbf     d1,.lp2				    ;      }   
+.br2                                    
+		add.l  #1024,(a5)          		;    colptr++
+		move.l (a5),a1
+		cmp.l  #$ffffffff,(a1)
+		bne.s  .br3
+		move.l #EF2_COLORS1,(a5) 
+.br3                                    ;  }
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);
         ;move.w #$c00,$dff106           ;  Reg_Col0 = 00;
 	    ;move.w #$0,$dff180
 .br1        							;}
         rts
 
+.save dcb.l 15,0
 .i dc.w 7
 .counter: dc.w 1
 .frame: dc.l 0
-.colptr: dc.l EF2_COLOR0
+.colptr: dc.l EF2_COLORS1
 .direction: dc.l 2
 .dircolor: dc.l 1024
 
@@ -551,7 +562,11 @@ Effect4_Main:
 		lsl.l   #8,d5                   ;  intensity = frmdat[7].size*256/320
 		divu.l  #320,d5
 		and.l   #$ffff,d5
-		
+		move.l  draw_copper,a4          ;  copptr = draw_buffer;
+		add.l   #2,a4                   ;  copptr += 10;
+		move.l  a4,a6                   ;  copptrlw = copptr;
+		add.l   #OFFSCLPALETTE,a4       ;  copptr += offsclpalette;
+		add.l   #OFFSCLPALETTELW,a6     ;  copptrlw += offsclpalettelw;
 		cmp.b   #1,.inverted
 		beq.s   .br4
 		moveq.l #3,d2                   ;  repeats = 3
@@ -1299,7 +1314,8 @@ DrawLines4Rotation:
 .br1
 		addq.w   #1,d7
         cmp.w    #320+1,d7
-        bne.s    .lp1 	
+        bne.s    .lp1 
+        clr.w    $200		
         rts
 
 .regsave dc.w 0								  
@@ -1311,6 +1327,7 @@ DrawLineSize4Rotation:            ;DrawLine4Rotation(writeptr, readptr)
 .wblit:                           ;  wblit();
   btst    #6,$2(a6)
   bne.s   .wblit 
+  clr.w   $200
   move.w  d1,$42(a6)   			  ;  set_register_bltcon1(bltconx)  
   or.w    #$9f0,d1                ;  bltconx.w |= 0x9f0
   move.w  d1,$40(a6)               ;  set_register_bltcon0(bltconx);
@@ -1661,8 +1678,8 @@ RepeatCopper:
          add.l    #BPLWIDTH,currentdrawpos
          sub.l    d4,d4
          ;Revert bitplanepointer
-         move.w   CNTHEIGHT(a1),d7          ;Number of blocks
-         move.w   d7,d4			     ;Copy to d7 we need d7 later
+         move.w   CNTHEIGHT(a1),d7       ;Number of blocks
+         move.w   d7,d4			         ;Copy to d7 we need d7 later
 	 lsl      d4                         ;One block line and one block gap
 	 mulu.w   #BPLWIDTH,d4               ;Get Number of Bytes
 

@@ -1,10 +1,10 @@
 <?php
  
   $colstart = array( "blue" => 0x00, "green" => 0x6b, "red" => 0xff);
-  //$colend =  array( "blue" => 0xff, "green" => 0x53, "red" => 0x2a);
-  $colend = $colstart;
+  $colend =  array( "blue" => 0xff, "green" => 0x53, "red" => 0x2a);
+  //$colend = $colstart;
  for($i=0;$i<2;$i++) {
-	$numcolors = 4; 
+	$numcolors = 7; 
 	$col = $colstart;
     for($i2=0;$i2<$numcolors;$i2++) {
       $colors[$i2+$i*$numcolors] = $col;
@@ -40,8 +40,13 @@ EF3_COLORS<?php echo( $i); ?>:
         $index++;		
 	    if($lwcount == 1) 
 		  echo("  dc.l ");
-	    if($y==1)
-		  echo( "0,");
+	    if($y==1) {
+	      if($i <= 7) {
+		    echo( "0,");
+		  } else {
+		    ?> $ffffff, <?php
+		  }
+		}
 	    		
 		$colorr = 0;
 		$colorg = 0;

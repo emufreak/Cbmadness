@@ -85,7 +85,7 @@ COLRBITPLANEPOINTERS1:
 	dc.w	$106, $0c00
 
 COLCOLORSHIGH1:
-	dc.w	$182,$000    ;Dummy operation as placeholder
+	dc.w	$180,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -358,7 +358,7 @@ COLCOLORSHIGH1:
 
 	dc.w	$106, $0e00
 COLCOLORSLOW1:
-	dc.w	$182,$fd3    ;Dummy operation as placeholder	
+	dc.w	$180,$fd3    ;Dummy operation as placeholder	
 	dc.w    $182,$fd3    ;00001
         dc.w    $184,$f82    ;00010
         dc.w    $186,$fe6    ;00011
@@ -692,7 +692,7 @@ COLRBITPLANEPOINTERS2:
 	dc.w	$106, $0c00
 
 COLCOLORSHIGH2:
-	dc.w	$182,$000    ;Dummy operation as placeholder
+	dc.w	$180,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -965,7 +965,7 @@ COLCOLORSHIGH2:
 
 	dc.w	$106, $0e00
 COLCOLORSLOW2:
-	dc.w	$182,$fd3    ;Dummy operation as placeholder	
+	dc.w	$180,$fd3    ;Dummy operation as placeholder	
 	dc.w    $182,$fd3    ;00001
         dc.w    $184,$f82    ;00010
         dc.w    $186,$fe6    ;00011
@@ -1295,7 +1295,7 @@ copperlist:
 	;dc.w $100,$1200
 
         dc.w    $106,$c00    
-	dc.w	$182,$000    ;Dummy operation as placeholder
+	dc.w	$180,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -1567,7 +1567,7 @@ copperlist:
         dc.w    $1be,$f20    ;11111111
 
 	dc.w	$106,$e00	
-	dc.w	$182,$fd3    ;Dummy operation as placeholder	
+	dc.w	$180,$fd3    ;Dummy operation as placeholder	
 	dc.w    $182,$fd3    ;00001
         dc.w    $184,$f82    ;00010
         dc.w    $186,$fe6    ;00011
@@ -2485,12 +2485,13 @@ BPLTITLE:
 
       INCLUDE PatternData.i
 	  INCLUDE FrameData.i
-	  INCLUDE FrameData_Color.i
 	  INCLUDE FrameData2.i
 	  INCLUDE FrameData3.i
+	  INCLUDE FrameData_Color.i	  
 	  INCLUDE FrameData3_Color.i
+	  INCLUDE FrameData2_Color.i
 
-	  DCB.B 600000,0
+	  DCB.B 900000,0
 	
     ;SECTION	GRAPHICS,BSS_C
 
