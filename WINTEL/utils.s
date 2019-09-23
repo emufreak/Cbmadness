@@ -11,7 +11,7 @@ SetBitplanePointersDefault:
 	swap 	d1
 	move.w	d1,2(a2)
 	swap	d1
-	add.l	#80*256,d1
+	add.l	#40*256,d1
 	addq	#8,a2
 	dbf	d2,.lp1
 	rts

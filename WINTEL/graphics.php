@@ -49,6 +49,7 @@ Module1:
   incbin  mod/P61.chippy524   
   	  ;INCLUDE FrameData4.i
 	  INCLUDE FrameData5.i
+	  INCLUDE FrameData6.i
   CNOP 0,8
 <?php  
   for($i=1;$i<=2;$i++) {
@@ -1300,13 +1301,13 @@ COPPERLISTIMAGE:
 	dc.w	$8E,$2c81	                 ; DiwStrt
 	dc.w	$90,$2cc1	                 ; DiwStop
 	dc.w	$92,$38		                 ; DdfStart
-	dc.w	$94,$c8		                 ; DdfStop
+	dc.w	$94,$a0		                 ; DdfStop
 	dc.w	$102,0		                 ; BplCon1
 	dc.w	$104,$20	                 ; BplCon2
 	dc.w	$108,0                       ; Bpl1Mod
 	dc.w	$10a,0                       ; Bpl2Mod
 
-	dc.w	$100,$210+$8000              ; bplcon0
+	dc.w	$100,$210              ; bplcon0
 
 IMGBPLPOINTERS:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
@@ -1878,15 +1879,17 @@ COLP0B:
 
 bitplane:
 BPLLOGO:
-  INCBIN "raw/voidlogo.raw"
+  INCBIN "raw/madhatter.raw"
+  dcb.b  120000,0
 
 BPLTITLE:
-  INCBIN "raw/title.raw"
+  INCBIN "raw/madhatter.raw"
+  dcb.b  120000,0
 
       INCLUDE PatternData.i
 	  INCLUDE FrameData.i
 	  INCLUDE FrameData2.i
-	  INCLUDE FrameData3.i
+	  INCLUDE FrameData3.i	 
 	  INCLUDE FrameData_Color.i	  
 	  INCLUDE FrameData3_Color.i
 	  INCLUDE FrameData2_Color.i

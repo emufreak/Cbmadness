@@ -1,7 +1,7 @@
 DEBUG = 0
 SOUND    = 1
 BLITTER  = 0
-BPLWIDTH  = 40
+BPLWIDTH  = 40 
 BPLHEIGHT = 256
 BPLCOUNT  = 8
 MAXDEPTH = 8
@@ -87,17 +87,19 @@ jmplistpos:
         dc.l  jmplist
 jmplist:
         bra.w Effect0_1
-		bra.w Effect0_2		
-		bra.w Effect1_0	 		
+		bra.w Effect0_2
+		bra.w Effect6_0
+		bra.w Effect7_1	
+        bra.w Effect7_2	
+		bra.w Effect1_0		
         bra.w Effect1_1 	
 		bra.w Effect1_2
-		bra.w Effect1_3	
+		bra.w Effect1_3		
 		bra.w Effect2_0
 		bra.w Effect2_1
 		bra.w Effect3_0
 		bra.w Effect3_1
-		bra.w Effect4_1
-        bra.w Effect6_0		
+		bra.w Effect4_1		
 		bra.w Effect6_11
 		bra.w Effect6_12
 		bra.w Effect6_13
@@ -105,9 +107,7 @@ jmplist:
         bra.w Effect6_2
 		bra.w Effect6_4
 		bra.w Effect6_5
-		;bra.w Effect5_0
-		;bra.w Effect5_1
-		;bra.w Effect5_2		
+			
         rts
 		
 
@@ -132,8 +132,8 @@ Effect0_1:
   move.l #IMGBPLPOINTERS,draw_cprbitmap
   move.l #IMGBPLPOINTERS,view_cprbitmap
   bsr.w  SetBitplanePointersDefault
-  lea    PalettePic,a3
-  bsr.w  CalculateFade
+  ;lea    PalettePic,a3
+  ;bsr.w  CalculateFade
   move.w #$c00,$dff106
   move.w #$000,$dff180
   sub.w  #1,.counter
@@ -147,8 +147,8 @@ Effect0_1:
 
 Effect0_2:
   bsr.w  SetBitplanePointersDefault
-  lea    PalettePic,a3
-  bsr.w  CalculateFade
+  ;lea    PalettePic,a3
+  ;bsr.w  SetColDataFade
   sub.w  #4,ColMultiplier
   sub.w  #1,.counter
   beq.s  .br1
@@ -182,8 +182,8 @@ Effect1_0:
   move.w #1,continue
   bra.w mlgoon
   
- ;include "effect5.s"
  include "effect6.s"
+ include "effect7.s"
 
 Effect1_1:
   ;move.w #$f00,$dff180
@@ -264,8 +264,14 @@ Effect2_0:
 Effect2_1:
   ;move.w #$000,$dff180
   bsr.w  SetBitplanePointersDefault
-  lea    PalTitle,a3
-  bsr.w  CalculateFade
+  lea    PalTitle,a5
+  move.w  #255,d5
+  moveq.l #0,d2
+  lea    colp0,a4
+  addq.l #2,a4
+  lea    colp0b,a6
+  addq.l #2,a6
+  bsr.w  SetColDataFade
   move.w #$c00,$dff106
   move.w #$000,$dff180
   cmp.w  #256,ColMultiplier
@@ -320,7 +326,7 @@ Effect4_1:
 Eff2ZoomIn: dc.w 0
 
 PalTitle:
-  INCBIN "raw/titlepal.raw"
+  INCBIN "raw/madhatterpal.raw"
 
 RotateMove:
   ;a0 Directions
@@ -402,12 +408,13 @@ Effect1_Main:
 		lea	    .colptr,a5
 	    add.l   #2,(a3)				    ;    frame++
 		cmp.l   #134,(a3)               ;    if(frame > 66) {
-		bne.s   .br3                    ;      frame = 0;
-		move.l 	#0,(a3)                 ;      colptr = EF1_COLORS0;
-		move.l  .colptr2,d0             ;      reverse(colptr, colptr2);
-		move.l  .colptr,.colptr2 
-		move.l  d0,.colptr
-		;move.l  #EF1_COLORS1,(a5)        ;    }
+		bne.s   .br3                    ;      frame = 0
+		move.l  #0,(a3)
+		add.l   #1024,(a5)
+		move.l  (a5),a3
+		cmp.l   #-1,(a3)
+		bne.s   .br3
+		move.l  #EF1_COLORS1,(a5)        ;    }
 		
 .br3                                    ;    }
                                         ;  }
@@ -520,7 +527,7 @@ Effect4_Main:
 ;a4 = reserved SetColData
 ;a5 = colptr
 ;a6 = *blarraycont.data (temp)
-  
+        clr.w $200
         subq    #1,.counter		        ;if(counter-- == 0)
         bne.w   .br1				    ;{
         bsr.w   SetCopperList			;  Setcopperlist();
@@ -806,7 +813,7 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   lsr.l   #8,d4                  ;greenpart /= 256; 
   lsr.l   #4,d4                  ;gggg
                                  ;0ggg 
-  move.l  d4,d3                  ;colorhw += greenpart & $f0 
+  move.l  d4,d3                  ;cotlorhlorhw += greenpart & $f0 
   and.w   #$f0,d3                ;00g0         
   add.w   d3,d6                  ;00gb
   lsr.w   #4,d4                  ;colorlw +=  (greenpart << 4) & $f0
@@ -979,152 +986,6 @@ MoveAdjust:
   move.w  d7,percentage
   rts
 
-CalculateFade:
-	LEA	Temporaneo(PC),A0 	; Long temporanea per colore a 24
-					; bit nel formato $00RrGgBb
-	LEA	COLP0+2,A1		; Indirizzo del primo registro
-					; settato per i nibble ALTI
-	LEA	COLP0B+2,A2		; Indirizzo del primo registro
-					; settato per i nibble BASSI
-
-	MOVEQ	#8-1,d7			; 8 banchi da 32 registri ciascuno
-ConvertiPaletteBank:
-	moveq	#0,d0           
-	moveq	#0,d2
-	moveq	#0,d3
-	moveq	#32-1,d6	; 32 registri colore per banco
-
-DaLongARegistri:	; loop che trasforma i colori $00RrGgBb.l nelle 2
-			; word $0RGB,$0rgb adatte ai registri copper.
-
-;	CALCOLA IL ROSSO
-
-	MOVE.L	(A3),D4			; READ COLOR FROM TAB
-	ANDI.L	#%000011111111,D4	; SELECT BLUE
-	MULU.W	ColMultiplier(PC),D4		; Eff0Multiplier
-	ASR.w	#8,D4			; -> 8 BITS
-	ANDI.L	#%000011111111,D4	; SELECT BLUE VAL
-	MOVE.L	D4,D5			; SAVE BLUE TO D5
-
-;	CALCOLA IL VERDE
-
-	MOVE.L	(A3),D4			; READ COLOR FROM TAB
-	ANDI.L	#%1111111100000000,D4	; SELECT GREEN
-	LSR.L	#8,D4			; -> 8 bits (so from 0 to 7)
-	MULU.W	ColMultiplier(PC),D4	; Eff0Multiplier
-	ASR.w	#8,D4			; -> 8 BITS
-	ANDI.L	#%0000000011111111,D4	; SELECT GREEN
-	LSL.L	#8,D4			; <- 8 bits (so from 8 to 15)
-	OR.L	D4,D5			; SAVE GREEN TO D5
-
-;	CALCOLA IL BLU
-
-	MOVE.L	(A3)+,D4		; READ COLOR FROM TAB AND GO TO NEXT
-	ANDI.L	#%111111110000000000000000,D4	; SELECT RED
-	LSR.L	#8,D4			; -> 8 bits (so from 8 to 15)
-	LSR.L	#8,D4			; -> 8 bits (so from 0 to 7)
-	MULU.W	ColMultiplier(PC),D4	; Eff0Multiplier
-	ASR.w	#8,D4			; -> 8 BITS
-	ANDI.L	#%0000000011111111,D4	; SELECT RED
-	LSL.L	#8,D4			; <- 8 bits (so from 8 to 15)
-	LSL.L	#8,D4			; <- 8 bits (so from 0 to 7)
-	OR.L	D4,D5			; SAVE RED TO D5
-	MOVE.L	D5,(A0)			; SAVE 24 BIT VALUE IN temporaneo
-
-; Conversione dei nibble bassi da $00RgGgBb (long) al colore aga $0rgb (word)
-
-	MOVE.B	1(A0),(a2)	; Byte alto del colore $00Rr0000 copiato
-				; nel registro cop per nibble bassi
-	ANDI.B	#%00001111,(a2) ; Seleziona solo il nibble BASSO ($0r)
-	move.b	2(a0),d2	; Prendi il byte $0000Gg00 dal colore a 24bit
-	lsl.b	#4,d2		; Sposta a sinistra di 4 bit il nibble basso
-				; del GREEN,"trasformandolo" in nibble alto
-				; di del byte basso di D2 ($g0)
-	move.b	3(a0),d3	; Prendi il byte $000000Bb dal colore a 24bit
-	ANDI.B	#%00001111,d3	; Seleziona solo il nibble BASSO ($0b)
-	or.b	d2,d3		; "FONDI" i nibble bassi di green e blu...
-	move.b	d3,1(a2)	; Formando il byte basso finale $gb da mettere
-				; nel registro colore,dopo il byte $0r,per
-				; formare la word $0rgb dei nibble bassi
-
-; Conversione dei nibble alti da $00RgGgBb (long) al colore aga $0RGB (word)
-
-	MOVE.B	1(A0),d0	; Byte alto del colore $00Rr0000 in d0
-	ANDI.B	#%11110000,d0	; Seleziona solo il nibble ALTO ($R0)
-	lsr.b	#4,d0		; Shifta a destra di 4 bit il nibble,in modo
-				; che diventi il nibble basso del byte ($0R)
-	move.b	d0,(a1)		; Copia il byte alto $0R nel color register
-	move.b	2(a0),d2	; Prendi il byte $0000Gg00 dal colore a 24bit
-	ANDI.B	#%11110000,d2	; Seleziona solo il nibble ALTO ($G0)
-	move.b	3(a0),d3	; Prendi il byte $000000Bb dal colore a 24 bit
-	ANDI.B	#%11110000,d3	; Seleziona solo il nibble ALTO ($B0)
-	lsr.b	#4,d3		; Shiftalo di 4 bit a destra trasformandolo in
-				; nibble basso del byte basso di d3 ($0B)
-	or.b	d2,d3		; Fondi i nibble alti di green e blu ($G0+$0B)
-	move.b	d3,1(a1)	; Formando il byte basso finale $GB da mettere
-				; nel registro colore,dopo il byte $0R,per
-				; formare la word $0RGB dei nibble alti.
-
-	addq.w	#4,a1		; Saltiamo al prossimo registro colore per i
-				; nibble ALTI in Copperlist
-	addq.w	#4,a2		; Saltiamo al prossimo registro colore per i
-				; nibble BASSI in Copperlist
-
-	dbra	d6,DaLongARegistri
-
-	addq.l	#4,a1	        ; salta i registri colore + il dc.w $106,xxx
-				; dei nibble ALTI
-	addq.l	#4,a2	        ; salta i registri colore + il dc.w $106,xxx
-				; dei nibble BASSI
-
-	dbra	d7,ConvertiPaletteBank	; Converte un banco da 32 colori per
-	rts				; loop. 8 loop per i 256 colori.
-
-PalettePic:
-
-	dc.l	$00000100,$00030005,$00000105,$0001000e,$00060000,$00000200
-	dc.l	$00080100,$0000002a,$00000214,$00000121,$00030025,$00000219
-	dc.l	$00000125,$00010400,$0000021d,$0000012f,$00020501,$00000044
-	dc.l	$000a0301,$00000609,$0000023b,$0007040a,$000b0503,$00050804
-	dc.l	$00040a0d,$001c1e33,$00252120,$00272025,$002c1f25,$00212320
-	dc.l	$00272529,$00232729,$001a1ebc,$002b2826,$000028c7,$000029c0
-	dc.l	$000f27b9,$00002bc2,$00002db5,$00042acb,$001426c1,$00002cc4
-	dc.l	$000c2ba6,$00002dbd,$001825c8,$001f25b2,$001229b4,$00002fb0
-	dc.l	$00072ad3,$00222797,$001a299e,$00112bad,$001927c2,$001f27ac
-	dc.l	$00052dc5,$00192b99,$00162d8d,$00002ed3,$000e2ea1,$001729bc
-	dc.l	$00212a8c,$001e29a6,$00062ec6,$002a288c,$001b28c4,$000c2ccd
-	dc.l	$000d309c,$000030ce,$001a2d94,$00242a93,$001b2abd,$001e29c5
-	dc.l	$001f2ca2,$001a2cb7,$00242e7b,$002a2d71,$00172faa,$00202ac6
-	dc.l	$00212f88,$00102fc7,$000f30c1,$00202e9d,$0027316e,$001c2fb3
-	dc.l	$000039b9,$001e32ae,$00213494,$003e3434,$00023cb5,$001736b8
-	dc.l	$002933a3,$002336ab,$001b39a6,$001939b3,$00183aae,$003e3a39
-	dc.l	$0041393e,$00233aa1,$00443843,$003a3c39,$00433b40,$00413f3e
-	dc.l	$0030408c,$003d3e7a,$002e40a2,$003c409f,$0034439c,$003649b3
-	dc.l	$0054504e,$00535057,$00424fa8,$00515350,$00565349,$004d546b
-	dc.l	$004b55a5,$004657bf,$004a59b1,$005a5e71,$00525dad,$004f5dbd
-	dc.l	$0064605e,$005a6179,$00606556,$00666267,$00626561,$00696463
-	dc.l	$005b6ace,$00616ebf,$00606ec9,$00686fb9,$007a7076,$00767372
-	dc.l	$006b72b4,$007075a6,$006b74d1,$006775db,$006a77c0,$007175c0
-	dc.l	$006778d4,$006f77c7,$007478bd,$006e7bd1,$00787dbb,$00868180
-	dc.l	$007581cb,$00828480,$0088828a,$008283b1,$007f8bd9,$00868bd1
-	dc.l	$008f918e,$00818ee8,$009090ac,$00959190,$008990cd,$009b9094
-	dc.l	$00909ae6,$00929ae1,$00979bc9,$00909af0,$00aa99a1,$00a59b9f
-	dc.l	$00a29d9d,$00959cdc,$009d9f9c,$0098a3f9,$009fa5d9,$0099a5f2
-	dc.l	$009da5e6,$009fa5e0,$009ea5ed,$00aca7a7,$00a4a9c7,$009faafa
-	dc.l	$00b1acab,$00aaaaea,$00a5adea,$00adafbe,$00a9afdd,$00aaafe4
-	dc.l	$00a8b1ff,$00aab1f9,$00bdb2b5,$00bab5b4,$00b5b7b4,$00b1bbff
-	dc.l	$00c4bcc8,$00b9bdf2,$00c3bfbd,$00c5c1c6,$00bbc3ff,$00cbc6c5
-	dc.l	$00c7c7d1,$00c7c6e4,$00c5c8ff,$00c5ccd4,$00c0cbff,$00d3cecc
-	dc.l	$00ced0cc,$00cdcdff,$00c7cfff,$00ccd1fa,$00d0d4ea,$00d7d6da
-	dc.l	$00d6d8d5,$00dcd7d5,$00d1d7ff,$00ddd7fd,$00d6dcff,$00e0decf
-	dc.l	$00e6e1e0,$00dce2fe,$00e3e6e2,$00f1e4e5,$00e9e7eb,$00e4e9ff
-	dc.l	$00f1ecea,$00f1ecff,$00f5edf9,$00e7f1ff,$00eeefff,$00f0f2ef
-	dc.l	$00f2f2fc,$00fbf0f7,$00f5f2f6,$00f7f2f0,$00fef1f2,$00f5f4ff
-	dc.l	$00f9f4f2,$00fff3ed,$00fbf3ff,$00eff7ff,$00faf5f3,$00f4f7f3
-	dc.l	$00f3f7fa,$00fdf5ee,$00fff4f5,$00f7f6ff,$00fff4fb,$00f9f6fa
-	dc.l	$00fbf6f5,$00fcf7f6,$00f8f9ef,$00fff7f0,$00f7f9f6,$00f8fae9
-	dc.l	$00fbf8fd,$00fff7fd,$00fef8f7,$00f5fbfd,$00fff9f8,$00fffaf9
-	dc.l	$00fafcf9,$00fffcfa,$00fffcff,$00fcfefb
 
 InitScreenBuffers:
 ; Needs to be aligned to $10000. This way only low word has to be
@@ -1314,8 +1175,7 @@ DrawLines4Rotation:
 .br1
 		addq.w   #1,d7
         cmp.w    #320+1,d7
-        bne.s    .lp1 
-        clr.w    $200		
+        bne.s    .lp1 	
         rts
 
 .regsave dc.w 0								  
@@ -1327,7 +1187,6 @@ DrawLineSize4Rotation:            ;DrawLine4Rotation(writeptr, readptr)
 .wblit:                           ;  wblit();
   btst    #6,$2(a6)
   bne.s   .wblit 
-  clr.w   $200
   move.w  d1,$42(a6)   			  ;  set_register_bltcon1(bltconx)  
   or.w    #$9f0,d1                ;  bltconx.w |= 0x9f0
   move.w  d1,$40(a6)               ;  set_register_bltcon0(bltconx);
