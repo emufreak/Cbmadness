@@ -1880,11 +1880,11 @@ COLP0B:
 bitplane:
 BPLLOGO:
   INCBIN "raw/madhatter.raw"
-  dcb.b  120000,0
+  dcb.b  110000,0
 
 BPLTITLE:
   INCBIN "raw/madhatter.raw"
-  dcb.b  120000,0
+  dcb.b  110000,0
 
       INCLUDE PatternData.i
 	  INCLUDE FrameData.i
@@ -1894,11 +1894,8 @@ BPLTITLE:
 	  INCLUDE FrameData3_Color.i
 	  INCLUDE FrameData2_Color.i
 
-	  DCB.B 900000,0
+	  DCB.B 830000,0
 	
-    ;SECTION	GRAPHICS,BSS_C
-
- ;bitplane:
-        ;DS.B $10000+120*310*16
+  
   
 

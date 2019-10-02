@@ -20,7 +20,7 @@
                          array( "blue" => 0x97, "green" => 0x0e, "red" => 0xce),
                          array( "blue" => 0x5d, "green" => 0x14, "red" => 0xfc),
                         array( "blue" => 0x16, "green" => 0x37, "red" => 0xff));
-  for($i=1;$i<=16;$i++) {
+  for($i=1;$i<=8;$i++) {
     $sizeuse = $size;
 	
 ?>

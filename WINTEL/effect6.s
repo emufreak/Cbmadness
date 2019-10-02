@@ -420,8 +420,8 @@ Effect6_3:
   dc.l EF61_LINESHIFTSCCW
 
 .linesizepos: 
-  dc.l EF61_LINESIZE_0
-  dc.l EF61_LINESIZE_0
+  dc.l EF74_LINESIZE_0
+  dc.l EF74_LINESIZE_0
   dc.l EF61_LINESIZE_1
   dc.l EF61_LINESIZE_1
   dc.l EF61_LINESIZE_2
