@@ -87,8 +87,11 @@ jmplistpos:
         dc.l  jmplist
 jmplist:
         bra.w Effect0_1
-		bra.w Effect0_2	
-		bra.w Effect1_0		
+		bra.w Effect0_2
+        bra.w Effect6_0
+        bra.w Effect7_1
+        bra.w Effect7_4		
+		bra.w Effect1_0        		
         bra.w Effect1_1 	
 		bra.w Effect1_2
 		bra.w Effect1_3		
@@ -388,7 +391,7 @@ Effect1_Main:
 		
 		movem.l d0-d7/a0-a6,.save
 
-		move.l  #165,d4
+		;move.l  #165,d4
 		move.l  draw_copper,a4          ;  copptr = draw_buffer;
 		add.l   #2,a4                   ;  copptr += 10;
 		move.l  a4,a6                   ;  copptrlw = copptr;

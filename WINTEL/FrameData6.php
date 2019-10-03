@@ -44,7 +44,6 @@ EF71_COLORS<?php echo( $i); ?>
 		}     
       }	 	  
 	}
-    //$size *= $multfactor;
   }
 ?>
   dc.l $fffffff
@@ -133,16 +132,29 @@ EF73_COLORS<?php echo( $i); ?>
 ?>
   dc.l $fffffff
 
-<?php  
+<?php
+  $multfactor = 1.006486;
   $multfactor = 1.005186;
   $layfactor = pow($multfactor,67);
   $lwcount = 1;
-  $size = 10;
-  
-  for($i=1;$i<=67;$i++) {
-	$colorb = 0;
-    $sizeuse = $size;
-?> 
+  $size = 20;
+  $colors = array( array( "blue" => 0xe8, "green" => 0x56, "red" => 0x26),
+		               array( "blue" => 0xe2, "green" => 0x65, "red" => 0x09),
+					    array( "blue" => 0xad, "green" => 0x4e, "red" => 0x09),
+						 array( "blue" => 0x8e, "green" => 0x69, "red" => 0x07),
+						 array( "blue" => 0x6f, "green" => 0x8f, "red" => 0x08),
+						 array( "blue" => 0x46, "green" => 0xa4, "red" => 0x0a),
+						 array( "blue" => 0x3c, "green" => 0xb6, "red" => 0x22),
+						 array( "blue" => 0x38, "green" => 0xc6, "red" => 0x61),
+						array( "blue" => 0x3c, "green" => 0xb6, "red" => 0x22),
+						array( "blue" => 0x46, "green" => 0xa4, "red" => 0x0a),
+                        array( "blue" => 0x6f, "green" => 0x8f, "red" => 0x08),
+                        array( "blue" => 0x8e, "green" => 0x69, "red" => 0x07),
+                        array( "blue" => 0xad, "green" => 0x4e, "red" => 0x09),
+                        array( "blue" => 0xe2, "green" => 0x65, "red" => 0x09));
+  for($i=1;$i<=14;$i++) {
+    $sizeuse = $size;	
+?>
 EF74_COLORS<?php echo( $i); ?>:
 <?php    
     $index = 0;
@@ -150,25 +162,33 @@ EF74_COLORS<?php echo( $i); ?>:
       for($z=1;$z<=pow( 2,$y-1);$z++) {
         $index++;		
 	    if($lwcount == 1) 
-		  echo("  dc.w ");
+		  echo("  dc.l ");
 	    if($y==1)
-		  echo( "0,0,");
+		  echo( "0,");
 	    
-		$sizeuse = 0;
-		for( $x=0;$x<=7;$x++)
-		  if( ( $index & pow(2, $x)) != 0)
-			$colorb = $colorb * 0.2 +  $size * pow( $layfactor, $x) * 0.8;
+		$colorr = 0;
+		$colorg = 0;
+		$colorb = 0;
 		
-		$colorr = floor( 0);
-		$colorg = floor( 0);
+		for( $x=0;$x<=7;$x++) {		  
+		  if( ( $index & pow(2, $x)) != 0)  {
+            $colorr = $colorr * 0.2 + $colors[7-$x]["red"] * pow($layfactor, $x) 
+															    / 11.313 * 0.8;
+		    $colorg = $colorg * 0.2 + $colors[7-$x]["green"]  * pow($layfactor, $x) 
+		                                                        / 11.313 * 0.8;
+		    $colorb = $colorb * 0.2 + $colors[7-$x]["blue"]  * pow($layfactor, $x) 
+		                                                        / 11.313 * 0.8;
+		  }
+		}		
+		
+		//165.6
+        //e76100  ff6b00
+	    $colorr = floor( $colorr);
+		$colorg = floor( $colorg);
 		$colorb = floor( $colorb);
-		$color = ($colorr << 16) + ($colorg << 8) + $colorb;
-		$colorlw = ( ( $colorr & 0b1111) << 8)
-		                   + ( ( $colorg & 0b1111) << 4) + ( $colorb & 0b1111);
-		$colorhw = ( ( $colorr >> 4) << 8)
-		                   + ( ( $colorg >> 4) << 4) + ( $colorb >> 4);
-		//echo($color . " ");				   
-		echo($colorhw . "," . $colorlw);
+		$color = ($colorr << 16) + ($colorg << 8) + $colorb;	
+		
+		echo("$" . dechex($color));
 		if($lwcount < 10 && $z < pow( 2,$y-1)) {
 		  $lwcount++;
 		  echo(",");
@@ -178,10 +198,13 @@ EF74_COLORS<?php echo( $i); ?>:
 		}     
       }	 	  
 	}
-    $size *= $multfactor;
+
+
+	$tmp = array_shift($colors);
+	array_push($colors, $tmp);
   }
 ?>
-  dc.l $fffffff  
+  dc.l $fffffff
 
 <?php
   $size = 10;
