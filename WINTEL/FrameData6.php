@@ -1,4 +1,18 @@
 <?php
+  $colors = array( array( "blue" => 0xfc, "green" => 0x42, "red" => 0x02),
+		               array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
+					    array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
+						 array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
+						 array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
+						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
+						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
+						 array( "blue" => 0x00, "green" => 0xfe, "red" => 0xbf),
+						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
+						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
+						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
+						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
+						  array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
+						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01));
   //$multfactor = 1.006486;
   $multfactor = 1.005186;
   $layfactor = pow($multfactor,134);
@@ -10,6 +24,9 @@
 
 EF71_COLORS<?php echo( $i); ?>
 <?php    
+    $colorr = 0;
+	$colorb = 0;
+	$colorg = 0;
     $index = 0;
     for($y=1;$y<=8;$y++) {
       for($z=1;$z<=pow( 2,$y-1);$z++) {
@@ -21,19 +38,33 @@ EF71_COLORS<?php echo( $i); ?>
 	    
 		for($i2=0;$i2<=3;$i2++) {
 	      if( ( $index & pow( 2,$i2*2)) != 0) {
-			$sizeuse = $sizeuse*0.2 +  $size * pow($layfactor, $i2)*0.8;	 
+			$colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["red"] / 320;
+			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["green"] / 320;
+			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["blue"] / 320;
+			//$sizeuse = $sizeuse*0.2 +  $size * pow($layfactor, $i2)*0.8;	 
 	        if( ( $index & pow(2,$i2*2+1)) != 0) {
-			  $sizeuse = $sizeuse*0.2 + $size * pow($layfactor, $i2)*0.8 
-			                                                        * $i / 276;	
+		      $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["red"] / 320 * $i / 276;
+			  $colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["green"] / 320 * $i / 276;
+			  $colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["blue"] / 320 * $i / 276;
+			  /*$sizeuse = $sizeuse*0.2 + $size * pow($layfactor, $i2)*0.8 
+			                                                        * $i / 276;	*/
 		    }
 		  } elseif( ($index & pow(2,$i2*2+1)) != 0) {
-		   $sizeuse = $sizeuse*0.2 + $size * pow($layfactor, $i2)*0.8;	
+		    $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["red"] / 320;
+			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["green"] / 320;
+			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[$i2+5]["blue"] / 320;
 		  }
 	    }	
 		
-	    $color = floor( $sizeuse / 320 * 255);
-		$colorlw = ($color & 0b1111);
-		$colorhw = ($color >> 4);
+	    $colorr = floor( $colorr);
+		$colorg = floor( $colorg);
+		$colorb = floor( $colorb);
+		$color = ($colorr << 16) + ($colorg << 8) + $colorb;
+		$colorlw = ( ( $colorr & 0b1111) << 8)
+		                   + ( ( $colorg & 0b1111) << 4) + ( $colorb & 0b1111);
+		$colorhw = ( ( $colorr >> 4) << 8)
+		                   + ( ( $colorg >> 4) << 4) + ( $colorb >> 4);
+						   
 		echo($colorhw . "," . $colorlw);
 		if($lwcount < 10 && $z < pow( 2,$y-1)) {
 		  $lwcount++;
@@ -138,20 +169,7 @@ EF73_COLORS<?php echo( $i); ?>
   $layfactor = pow($multfactor,67);
   $lwcount = 1;
   $size = 20;
-  $colors = array( array( "blue" => 0xe8, "green" => 0x56, "red" => 0x26),
-		               array( "blue" => 0xe2, "green" => 0x65, "red" => 0x09),
-					    array( "blue" => 0xad, "green" => 0x4e, "red" => 0x09),
-						 array( "blue" => 0x8e, "green" => 0x69, "red" => 0x07),
-						 array( "blue" => 0x6f, "green" => 0x8f, "red" => 0x08),
-						 array( "blue" => 0x46, "green" => 0xa4, "red" => 0x0a),
-						 array( "blue" => 0x3c, "green" => 0xb6, "red" => 0x22),
-						 array( "blue" => 0x38, "green" => 0xc6, "red" => 0x61),
-						array( "blue" => 0x3c, "green" => 0xb6, "red" => 0x22),
-						array( "blue" => 0x46, "green" => 0xa4, "red" => 0x0a),
-                        array( "blue" => 0x6f, "green" => 0x8f, "red" => 0x08),
-                        array( "blue" => 0x8e, "green" => 0x69, "red" => 0x07),
-                        array( "blue" => 0xad, "green" => 0x4e, "red" => 0x09),
-                        array( "blue" => 0xe2, "green" => 0x65, "red" => 0x09));
+						
   for($i=1;$i<=14;$i++) {
     $sizeuse = $size;	
 ?>

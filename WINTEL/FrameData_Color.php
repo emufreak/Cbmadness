@@ -4,22 +4,20 @@
   $layfactor = pow($multfactor,67);
   $lwcount = 1;
   $size = 20;
-  $colors = array( array( "blue" => 0x31, "green" => 0xc3, "red" => 0xff),
-		               array( "blue" => 0x23, "green" => 0x9b, "red" => 0xff),
-					    array( "blue" => 0x1b, "green" => 0x76, "red" => 0xff),
-						 array( "blue" => 0x16, "green" => 0x37, "red" => 0xff),
-						 array( "blue" => 0x5d, "green" => 0x14, "red" => 0xfc),
-						 array( "blue" => 0x97, "green" => 0x0e, "red" => 0xce),
-						 array( "blue" => 0xb4, "green" => 0x15, "red" => 0xb0),
-						 array( "blue" => 0xd4, "green" => 0x32, "red" => 0xa8),
-						 array( "blue" => 0xd9, "green" => 0x34, "red" => 0x8f),
-						 array( "blue" => 0xd5, "green" => 0x2c, "red" => 0x71),
-						 array( "blue" => 0xd9, "green" => 0x34, "red" => 0x8f),
-						 array( "blue" => 0xd4, "green" => 0x32, "red" => 0xa8),
-                         array( "blue" => 0xb4, "green" => 0x15, "red" => 0xb0),
-                         array( "blue" => 0x97, "green" => 0x0e, "red" => 0xce),
-                         array( "blue" => 0x5d, "green" => 0x14, "red" => 0xfc),
-                        array( "blue" => 0x16, "green" => 0x37, "red" => 0xff));
+  $colors = array( array( "blue" => 0x04, "green" => 0xbe, "red" => 0xfe),
+		               array( "blue" => 0x01, "green" => 0x7e, "red" => 0xfe),
+					    array( "blue" => 0x01, "green" => 0x44, "red" => 0xff),
+						 array( "blue" => 0x44, "green" => 0x03, "red" => 0xff),
+						 array( "blue" => 0x7c, "green" => 0x01, "red" => 0xfd),
+						 array( "blue" => 0xbd, "green" => 0x02, "red" => 0xff),
+						 array( "blue" => 0xfe, "green" => 0x02, "red" => 0xbf),
+						 array( "blue" => 0xfc, "green" => 0x02, "red" => 0x80),
+						 array( "blue" => 0xfe, "green" => 0x02, "red" => 0xbf),
+						 array( "blue" => 0xbd, "green" => 0x02, "red" => 0xff),
+						 array( "blue" => 0x7c, "green" => 0x01, "red" => 0xfd),
+						 array( "blue" => 0x44, "green" => 0x03, "red" => 0xff),
+						  array( "blue" => 0x01, "green" => 0x44, "red" => 0xff),
+						  array( "blue" => 0x01, "green" => 0x7e, "red" => 0xfe));
   for($i=1;$i<=8;$i++) {
     $sizeuse = $size;
 	
