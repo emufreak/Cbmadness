@@ -23,7 +23,7 @@ Effect7_2:
   beq.s  .br1
   bra.w  mlgoon
 .br1
-  clr.w $200
+
   move.w #1,continue
   bra.w  mlgoon 
 
@@ -115,14 +115,14 @@ Main_Effect7_1:
   dc.l EF61_LINESHIFTSCCW+134*4
 
 .linesizepos: 
-  dc.l EF61_LINESIZE_0
-  dc.l EF61_LINESIZE_0
-  dc.l EF61_LINESIZE_1
-  dc.l EF61_LINESIZE_1
-  dc.l EF61_LINESIZE_2
-  dc.l EF61_LINESIZE_2
-  dc.l EF61_LINESIZE_3
-  dc.l EF61_LINESIZE_3
+  dc.l EF73_LINESIZE_1
+  dc.l EF73_LINESIZE_1
+  dc.l EF73_LINESIZE_3
+  dc.l EF73_LINESIZE_3
+  dc.l EF73_LINESIZE_5
+  dc.l EF73_LINESIZE_5
+  dc.l EF73_LINESIZE_7
+  dc.l EF73_LINESIZE_7
   
 .colptr dc.l EF71_COLORS1
 .curfrmpos: dc.l 0
@@ -232,7 +232,7 @@ Effect7_3:
 
 ;a4 = copptr
 ;a5 = colptrhw
-;a6 = copptrlw   
+;a6 = copptrlw  
 
   lea.l  COLRBPLCON0_1,a0
   move.w #$210,2(a0)
@@ -347,7 +347,7 @@ Effect7_4:
 ;a4 = copptr
 ;a5 = colptrhw
 ;a6 = copptrlw   
-
+  clr.w $200
   lea.l  COLRBPLCON0_1,a0
   move.w #$210,2(a0)
   lea.l  COLRBPLCON0_2,a0
