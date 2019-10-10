@@ -101,7 +101,20 @@ Effect6_1x:
   move.l  .colptr(pc),a5
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
-  bsr.w   SetColDataDefault 
+  sub.l   d5,d5
+  lea.l  .linesizepos,a0
+  move.l  28(a0),a0
+  move.l  (a0),d5
+  lsl.l   #8,d5                   ;  intensity = frmdat[7].size*256/640
+  divu.l  #640,d5
+  and.l   #$ffff,d5
+  move.w  #7,d2
+  bsr.w   SetColDataFade
+  
+  ;move.l  .colptr(pc),a5
+  ;move.l  draw_cprpalh,a4
+  ;move.l  draw_cprpall,a6 
+  ;bsr.w   SetColDataDefault 
   move.l  .colptr(pc),a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
@@ -173,14 +186,14 @@ Effect6_1x:
   dc.l EF61_LINESHIFTSCCW+134*4
 
 .linesizepos: 
-  dc.l EF61_LINESIZE_0
-  dc.l EF61_LINESIZE_0
-  dc.l EF61_LINESIZE_1
-  dc.l EF61_LINESIZE_1
-  dc.l EF61_LINESIZE_2
-  dc.l EF61_LINESIZE_2
-  dc.l EF61_LINESIZE_3
-  dc.l EF61_LINESIZE_3
+  dc.l EF74_LINESIZE_0
+  dc.l EF74_LINESIZE_0
+  dc.l EF74_LINESIZE_2
+  dc.l EF74_LINESIZE_2
+  dc.l EF74_LINESIZE_4
+  dc.l EF74_LINESIZE_4
+  dc.l EF74_LINESIZE_6
+  dc.l EF74_LINESIZE_6
   
 .colptr dc.l EF61_COLORS1
 .curfrmpos: dc.l 0

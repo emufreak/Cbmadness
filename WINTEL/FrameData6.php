@@ -18,6 +18,65 @@
   $layfactor = pow($multfactor,134);
   $lwcount = 1;
   $size = 20;
+  $coltmp = $colors;
+  
+  for($i=1;$i<=14;$i++) {
+    $sizeuse = 20*$layfactor;
+?>
+
+EF61_COLORS<?php echo( $i); ?>
+<?php    
+    $index = 0;
+    for($y=1;$y<=8;$y++) {
+      for($z=1;$z<=pow( 2,$y-1);$z++) {
+        $index++;		
+	    if($lwcount == 1) 
+		  echo("  dc.l ");
+	    if($y==1)
+		  echo( "0,");
+	    
+		$colorr = 0;
+	    $colorb = 0;
+	    $colorg = 0;
+		for($i2=0;$i2<=3;$i2++) {
+	      if( ( $index & pow( 2,$i2*2)) != 0) {
+			if( ( $index & pow(2,$i2*2+1)) == 0) {
+			  $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["red"] / 640;
+			  $colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["green"] / 640;
+			  $colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["blue"] / 640;
+			}
+		  } elseif( ($index & pow(2,$i2*2+1)) != 0) {
+		    $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["red"] / 640;
+			$colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["green"] / 640;
+			$colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
+		  }
+	    }	
+		
+	    $colorr = floor( $colorr);
+		$colorg = floor( $colorg);
+		$colorb = floor( $colorb);
+		$color = ($colorr << 16) + ($colorg << 8) + $colorb;
+		$colorlw = ( ( $colorr & 0b1111) << 8)
+		                   + ( ( $colorg & 0b1111) << 4) + ( $colorb & 0b1111);
+		$colorhw = ( ( $colorr >> 4) << 8)
+		                   + ( ( $colorg >> 4) << 4) + ( $colorb >> 4);
+		echo("$" . dechex($color));
+		//echo($colorhw . "," . $colorlw);
+		if($lwcount < 10 && $z < pow( 2,$y-1)) {
+		  $lwcount++;
+		  echo(",");
+		} else {
+		  echo("\n");
+		  $lwcount = 1;
+		}     
+      }	 	  
+	}
+	$tmp = array_shift($coltmp);
+	array_push($coltmp, $tmp);
+  }
+?>
+  dc.l $fffffff
+<?php
   for($i=1;$i<=276;$i++) {
     $sizeuse = $size;
 ?>
@@ -38,21 +97,21 @@ EF71_COLORS<?php echo( $i); ?>
 	    
 		for($i2=0;$i2<=3;$i2++) {
 	      if( ( $index & pow( 2,$i2*2)) != 0) {
-			$colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 320;
-			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 320;
-			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 320;
+			$colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640;
+			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640;
+			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
 			//$sizeuse = $sizeuse*0.2 +  $size * pow($layfactor, $i2)*0.8;	 
 	        if( ( $index & pow(2,$i2*2+1)) != 0) {
-		      $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 320 * $i / 276;
-			  $colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 320 * $i / 276;
-			  $colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 320 * $i / 276;
+		      $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640 * $i / 276;
+			  $colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640 * $i / 276;
+			  $colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640 * $i / 276;
 			  /*$sizeuse = $sizeuse*0.2 + $size * pow($layfactor, $i2)*0.8 
 			                                                        * $i / 276;	*/
 		    }
 		  } elseif( ($index & pow(2,$i2*2+1)) != 0) {
-		    $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 320;
-			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 320;
-			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 320;
+		    $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640;
+			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640;
+			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
 		  }
 	    }	
 		
@@ -162,10 +221,10 @@ EF73_COLORS<?php echo( $i); ?>
 		    if( ( $index & pow(2, $x)) != 0)  { 
 		      if( ( $x & 1) == 0) {
 			    $colorarr = calcef73colors( 10-floor( $x/2), 13-$x, $i/67, 
-			                   $sizeodd * pow( $layfactor, floor( $x/2))/320 , $colorarr);														 
+			                   $sizeodd * pow( $layfactor, floor( $x/2))/640 , $colorarr);														 
 			  } else {
 				$colorarr = calcef73colors( 10-floor( $x/2), 13-$x, $i/67, 
-					             $sizeeven*pow( $layfactor, floor( $x/2))/320, $colorarr);
+					             $sizeeven*pow( $layfactor, floor( $x/2))/640, $colorarr);
 			  }
 		    } 
 		$colorr = floor( $colorarr["red"]);
@@ -222,11 +281,11 @@ EF74_COLORS<?php echo( $i); ?>:
 		  if( ( $index & pow(2, $x)) != 0)  {
 			
             $colorr = $colorr * 0.2 + $colors[13-$x]["red"] * pow($layfactor, $x) 
-															    / 11.3137 * 0.8;
+															    / (11.3137*2) * 0.8;
 		    $colorg = $colorg * 0.2 + $colors[13-$x]["green"]  * pow($layfactor, $x) 
-		                                                        / 11.3137 * 0.8;
+		                                                        / (11.3137*2) * 0.8;
 		    $colorb = $colorb * 0.2 + $colors[13-$x]["blue"]  * pow($layfactor, $x) 
-		                                                        / 11.3137 * 0.8;
+		                                                        / (11.3137*2) * 0.8;
 		  }
 		}		
 		
