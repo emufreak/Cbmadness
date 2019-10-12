@@ -218,15 +218,20 @@ Effect6_2:
   move.l  .colptr(pc),a5
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
-  bsr.w   SetColDataDefault
+  sub.l   d5,d5
+  lea.l  .linesizepos,a0
+  move.l  28(a0),a0
+  move.l  (a0),d5
+  lsl.l   #8,d5                   ;  intensity = frmdat[7].size*256/640
+  divu.l  #640,d5
+  and.l   #$ffff,d5
+  move.w  #7,d2
+  bsr.w   SetColDataFade
   move.l  .colptr(pc),a5
-  add.l   #1024,a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
   lea.l   EF61_COLORS1,a5
-.br5  
-  move.l   a5,.colptr  
-  ;move.l  .linesizepos,a2  
+.br5    
   movem.l  empty,d0-d7              
   lea.l    EF4_STARTPOS1,a0
   move.l   draw_cprlnsel,a3
@@ -263,11 +268,19 @@ Effect6_2:
   dbf      d3,.lp2
 
   cmp.l    #$0fffffff,(a2)         
-  bne.s    .br4
+  bne.w    .br4
+  clr.w    $200
   lea.l    .linesizepos,a0
   REPT 8
   sub.l    #134*4,(a0)+
   ENDR
+  move.l   .colptr(pc),a5
+  add.l    #1024,a5
+  cmp.l    #$0fffffff,(a5) 
+  bne.s    .br6
+  lea.l    EF61_COLORS1,a5
+.br6
+  move.l   a5,.colptr 
   lea.l    .lineshiftpos,a0
   move.l   24(a0),d0
   move.l   28(a0),d1

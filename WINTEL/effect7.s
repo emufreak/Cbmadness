@@ -347,7 +347,7 @@ Effect7_4:
 ;a4 = copptr
 ;a5 = colptrhw
 ;a6 = copptrlw   
-  clr.w $200
+  
   lea.l  COLRBPLCON0_1,a0
   move.w #$210,2(a0)
   lea.l  COLRBPLCON0_2,a0
@@ -370,7 +370,6 @@ Effect7_4:
   move.w  #7,d2
   bsr.w   SetColDataFade
   move.l  .colptr(pc),a5
-  ;add.l   #1024,a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
   lea.l   EF74_COLORS1,a5

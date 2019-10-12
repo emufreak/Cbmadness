@@ -48,13 +48,14 @@ EF61_COLORS<?php echo( $i); ?>
 		  } elseif( ($index & pow(2,$i2*2+1)) != 0) {
 		    $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["red"] / 640;
 			$colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["green"] / 640;
-			$colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
+			$colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["blue"] / 640;
 		  }
 	    }	
 		
 	    $colorr = floor( $colorr);
 		$colorg = floor( $colorg);
 		$colorb = floor( $colorb);
+
 		$color = ($colorr << 16) + ($colorg << 8) + $colorb;
 		$colorlw = ( ( $colorr & 0b1111) << 8)
 		                   + ( ( $colorg & 0b1111) << 4) + ( $colorb & 0b1111);
@@ -71,6 +72,7 @@ EF61_COLORS<?php echo( $i); ?>
 		}     
       }	 	  
 	}
+	//print_r( $coltmp);
 	$tmp = array_shift($coltmp);
 	array_push($coltmp, $tmp);
   }

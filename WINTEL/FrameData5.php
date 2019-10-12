@@ -72,7 +72,7 @@ EF61_LINESHIFTSCCW:
 ?>,$fffffff
 
 <?php
-  $size = 10;
+  $size = 20;
   for($x=0;$x<4;$x++) { ?>
 EF61_LINESIZE_<?php echo($x); ?>:
 <?php
@@ -97,11 +97,11 @@ EF61_LINESIZE_<?php echo($x); ?>:
 
 <?php
   $multfactor = 1.006486;
-  $multfactor = 1.005186;
+  //$multfactor = 1.005186;
   $layfactor = pow($multfactor,134);
   $lwcount = 1;
   $size = 20;
-?> 
+?>
 
 EF64_LINESHIFTS:
 <?php 

@@ -93,6 +93,7 @@ jmplist:
 		bra.w Effect6_12
 		bra.w Effect6_13
 		bra.w Effect6_14
+		bra.w Effect6_2
 		bra.w Effect7_1	
         bra.w Effect7_3
         bra.w Effect7_4		
