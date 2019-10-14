@@ -87,16 +87,7 @@ jmplistpos:
         dc.l  jmplist
 jmplist:
         bra.w Effect0_1
-		bra.w Effect0_2
-		bra.w Effect6_0	
-		bra.w Effect6_11
-		bra.w Effect6_12
-		bra.w Effect6_13
-		bra.w Effect6_14
-		bra.w Effect6_2
-		bra.w Effect7_1	
-        bra.w Effect7_3
-        bra.w Effect7_4		
+		bra.w Effect0_2		
 		bra.w Effect1_0        		
         bra.w Effect1_1 	
 		bra.w Effect1_2
@@ -537,7 +528,6 @@ Effect4_Main:
 ;a4 = reserved SetColData
 ;a5 = colptr
 ;a6 = *blarraycont.data (temp)
-        clr.w $200
         subq    #1,.counter		        ;if(counter-- == 0)
         bne.w   .br1				    ;{
         bsr.w   SetCopperList			;  Setcopperlist();
@@ -808,19 +798,19 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   move.l  (a5)+,d0               ;curcolor = *color++
   move.l  d0,d6                  ;bluepart = curcolor & $ff		
   and.l   #$ff,d6                ;00bb
-  mulu.w  d5,d6                  ;bluepart *= intensity;
+  ;mulu.w  d5,d6                  ;bluepart *= intensity;
                                  ;bbbb
-  lsr.l   #8,d6                  ;bluepart /= 256
-                                 ;00bbt
+  ;lsr.l   #8,d6                  ;bluepart /= 256
+                                 ;00bb
   move.l  d6,d7                  ;colorhw = bluepart >> 4;
   lsr.l   #4,d7                  ;000b
   and.w   #$f,d6                 ;colorlw = bluepart & $f                              
                                  ;000b
   move.l  d0,d4                  ;greenpart = curcolor & $ff00 
   and.w   #$ff00,d4              ;gg00								 
-  mulu.w  d5,d4                  ;greenpart *= intensity;
+  ;mulu.w  d5,d4                  ;greenpart *= intensity;
                                  ;gggg00
-  lsr.l   #8,d4                  ;greenpart /= 256; 
+  ;lsr.l   #8,d4                  ;greenpart /= 256; 
   lsr.l   #4,d4                  ;gggg
                                  ;0ggg 
   move.l  d4,d3                  ;cotlorhlorhw += greenpart & $f0 
@@ -835,9 +825,9 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
                                  ;rr0000  
   lsr.l	  #8,d4                  ;rrgg
   and.l   #$ff00,d4              ;rr00  
-  mulu.w  d5,d4                  ;redpart *= intensity >> 8; 
+  ;mulu.w  d5,d4                  ;redpart *= intensity >> 8; 
                                  ;rrrr00
-  lsr.l   #8,d4                  ;rrrr
+  ;lsr.l   #8,d4                  ;rrrr
   move.l  d4,d3                  ;colorlw = redpart & $f00  
   and.w   #$f00,d3               ;0r00               
   add.w   d3,d6                  ;0rgb
