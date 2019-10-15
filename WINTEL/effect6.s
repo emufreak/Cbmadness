@@ -110,11 +110,6 @@ Effect6_1x:
   and.l   #$ffff,d5
   move.w  #7,d2
   bsr.w   SetColDataFade
-  
-  ;move.l  .colptr(pc),a5
-  ;move.l  draw_cprpalh,a4
-  ;move.l  draw_cprpall,a6 
-  ;bsr.w   SetColDataDefault 
   move.l  .colptr(pc),a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
