@@ -90,7 +90,7 @@ COLRBITPLANEPOINTERS<?php echo($i); ?>:
 	dc.w	$106, $0c00
 
 COLCOLORSHIGH<?php echo($i); ?>:
-	dc.w	$180,$000    ;Dummy operation as placeholder
+	dc.w	$182,$000    ;Dummy operation as placeholder
         dc.w    $182,$fd3    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
@@ -1894,7 +1894,7 @@ BPLTITLE:
 	  INCLUDE FrameData3_Color.i
 	  INCLUDE FrameData2_Color.i
 
-	  DCB.B 750000,0
+	  DCB.B 850000,0
 	
   
   

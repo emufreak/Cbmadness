@@ -93,7 +93,14 @@ jmplist:
 		bra.w Effect6_11
 		bra.w Effect6_12
 		bra.w Effect6_13
-		bra.w Effect6_14		
+		bra.w Effect6_14
+        bra.w Effect6_2
+		bra.w Effect6_4
+		bra.w Effect6_5
+		bra.w Effect7_1	
+        bra.w Effect7_2
+        bra.w Effect7_3
+        bra.w Effect7_4				
         bra.w Effect1_1 	
 		bra.w Effect1_2
 		bra.w Effect1_3		
@@ -796,6 +803,8 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   ;a5 - colors
   ;a4 - copperpos highwordcol
   ;a6 - copperpos lowword pos
+  move.w  #$c00,$dff106
+  move.w  #$f00,$dff180
   lea     .intstore,a0
   sub.l   d0,d0                   ;curvalue = 0  
   moveq.l #64-1,d6                ;for i = 1 to 64
@@ -874,6 +883,8 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   addq.l  #4,a4		            
   addq.l  #4,a6
   dbf     d2,.lp1 
+  move.w  #$000,$dff106
+  move.w  #$0c0,$dff180
   rts
 
  cnop 0,4
