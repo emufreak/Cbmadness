@@ -1,9 +1,9 @@
 EF61_LINEMULTIPLIERS:
 <?php 
-  $startsize = 10;
+  $startsize = 20;
   $anglechange = 360 / 536;
   $angle = 0;
-  $size = 10;
+  $size = 20;
   $y = 0;
   do {
 	echo( "  dc.l ");
@@ -158,7 +158,7 @@ EF64_LINEMULTIPLIERS:
 EF65_LINESHIFTS:
 <?php 
   $anglechange = 80 / 268;
-  $angle = 150;
+  $angle = 340;
   $size = 10;
   $y = 0;
   $direction = 1;
@@ -184,7 +184,7 @@ EF65_LINESHIFTS:
 EF65_LINEMULTIPLIERS:
 <?php 
   $anglechange = 80 / 268;
-  $angle = 150;
+  $angle = 340;
   $size = 10;
   $y = 0;
   $direction = 1;

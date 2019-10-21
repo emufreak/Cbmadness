@@ -71,7 +71,7 @@ COPPERLISTROTATE1:
 	dc.w	$108,0                       ; Bpl1Mod
 	dc.w	$10a,0                       ; Bpl2Mod
 
-COLRBPLCON0_1	dc.w	$100,$7200;                   ; bplcon0
+COLRBPLCON0_1	dc.w	$100,$1200;                   ; bplcon0
 
 COLRBITPLANEPOINTERS1:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
@@ -87,7 +87,7 @@ COLRBITPLANEPOINTERS1:
 
 COLCOLORSHIGH1:
 	dc.w	$180,$000    ;Dummy operation as placeholder
-        dc.w    $182,$fd3    ;01
+        dc.w    $182,$000    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
         dc.w    $188,$190    ;100
@@ -658,6 +658,7 @@ COLRLINESELECT1:
 
 		DC.W	$ffff,$FFFE
 
+
 COPPERLISTROTATE2:
 
     ;Sprpointers
@@ -678,7 +679,7 @@ COPPERLISTROTATE2:
 	dc.w	$108,0                       ; Bpl1Mod
 	dc.w	$10a,0                       ; Bpl2Mod
 
-COLRBPLCON0_2	dc.w	$100,$7200;                   ; bplcon0
+COLRBPLCON0_2	dc.w	$100,$1200;                   ; bplcon0
 
 COLRBITPLANEPOINTERS2:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
@@ -694,7 +695,7 @@ COLRBITPLANEPOINTERS2:
 
 COLCOLORSHIGH2:
 	dc.w	$180,$000    ;Dummy operation as placeholder
-        dc.w    $182,$fd3    ;01
+        dc.w    $182,$000    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
         dc.w    $188,$190    ;100
@@ -1264,6 +1265,7 @@ COLRLINESELECT2:
         ENDR		
 
 		DC.W	$ffff,$FFFE
+
 
 
 linebuffer:

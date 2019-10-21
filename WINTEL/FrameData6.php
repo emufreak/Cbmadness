@@ -79,6 +79,22 @@ EF61_COLORS<?php echo( $i); ?>
 ?>
   dc.l $fffffff
 <?php
+
+  $colors = array(     	array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
+						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
+						 array( "blue" => 0x00, "green" => 0xfe, "red" => 0xbf),
+						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
+						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
+						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
+						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
+						  array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
+						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
+						  array( "blue" => 0xfc, "green" => 0x42, "red" => 0x02),
+						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
+						  array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
+						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
+						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01));
+
   for($i=1;$i<=276;$i++) {
     $sizeuse = $size;
 ?>

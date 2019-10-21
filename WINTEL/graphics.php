@@ -75,7 +75,7 @@ COPPERLISTROTATE<?php echo($i); ?>:
 	dc.w	$10a,0                       ; Bpl2Mod
 
 COLRBPLCON0_<?php echo($i); ?>
-	dc.w	$100,$7200;                   ; bplcon0
+	dc.w	$100,$1200;                   ; bplcon0
 
 COLRBITPLANEPOINTERS<?php echo($i); ?>:
 	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane
@@ -90,8 +90,8 @@ COLRBITPLANEPOINTERS<?php echo($i); ?>:
 	dc.w	$106, $0c00
 
 COLCOLORSHIGH<?php echo($i); ?>:
-	dc.w	$182,$000    ;Dummy operation as placeholder
-        dc.w    $182,$fd3    ;01
+	dc.w	$180,$000    ;Dummy operation as placeholder
+        dc.w    $182,$000    ;01
         dc.w    $184,$f82    ;10
         dc.w    $186,$fe6    ;11
         dc.w    $188,$190    ;100
@@ -661,6 +661,7 @@ COLRLINESELECT<?php echo($i); ?>:
         ENDR		
 
 		DC.W	$ffff,$FFFE
+
 
 <?php 
   }

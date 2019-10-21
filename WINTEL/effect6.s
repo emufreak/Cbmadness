@@ -1,4 +1,5 @@
 Effect6_0:
+  move.l #COPPERLISTROTATE1,$dff080
   move.l #BPLLOGO,draw_buffer
   move.l #BPLLOGO,view_buffer
   move.l #COPPERLISTROTATE1,view_copper
@@ -24,16 +25,15 @@ Effect6_0:
   add.l  #9*4,a3
   add.b  #1,d1
   dbf    d0,.lp2
-  
   move.w #1,continue
   bra.w  mlgoon
 
 Effect6_11:
+  bsr.w  Effect6_1x
   lea.l  COLRBPLCON0_1,a0
   move.w #$2200,2(a0)
   lea.l  COLRBPLCON0_2,a0
   move.w #$2200,2(a0)
-  bsr.w  Effect6_1x
   sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
@@ -195,6 +195,8 @@ Effect6_1x:
 .curlshiftpos: dc.l 0
 .curlsizepos: dc.l 0
 
+ef6_colptr: dc.l EF61_COLORS1
+
 Effect6_2:
 
 ;a4 = copptr
@@ -210,7 +212,7 @@ Effect6_2:
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
   bsr.w   SetCopperList4Rotation  
-  move.l  .colptr(pc),a5
+  move.l  ef6_colptr(pc),a5
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
   sub.l   d5,d5
@@ -222,7 +224,7 @@ Effect6_2:
   and.l   #$ffff,d5
   move.w  #7,d2
   bsr.w   SetColDataFade
-  move.l  .colptr(pc),a5
+  move.l  ef6_colptr(pc),a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
   lea.l   EF61_COLORS1,a5
@@ -268,13 +270,13 @@ Effect6_2:
   REPT 8
   sub.l    #134*4,(a0)+
   ENDR
-  move.l   .colptr(pc),a5
+  move.l   ef6_colptr(pc),a5
   add.l    #1024,a5
   cmp.l    #$0fffffff,(a5) 
   bne.s    .br6
   lea.l    EF61_COLORS1,a5
 .br6
-  move.l   a5,.colptr 
+  move.l   a5,ef6_colptr 
   lea.l    .lineshiftpos,a0
   move.l   24(a0),d0
   move.l   28(a0),d1
@@ -297,7 +299,6 @@ Effect6_2:
 .br7 
   bra.w  mlgoon
 .br1
-  clr.w  $200
   move.w #1,continue
   bra.w  mlgoon
 
@@ -331,7 +332,6 @@ Effect6_2:
   dc.l EF61_LINESIZE_3
   dc.l EF61_LINESIZE_3
   
-.colptr dc.l EF61_COLORS1
 .curfrmpos: dc.l 0
 .curlshiftpos: dc.l 0
 .curlsizepos: dc.l 0
@@ -352,7 +352,7 @@ Effect6_4:
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
   bsr.w   SetCopperList4Rotation  
-  move.l  .colptr(pc),a5
+  move.l  ef6_colptr(pc),a5
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
   sub.l   d5,d5
@@ -364,7 +364,7 @@ Effect6_4:
   and.l   #$ffff,d5
   move.w  #7,d2
   bsr.w   SetColDataFade
-  move.l  .colptr(pc),a5
+  move.l  ef6_colptr(pc),a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
   lea.l   EF61_COLORS1,a5
@@ -413,13 +413,13 @@ Effect6_4:
   REPT 8
   sub.l    #134*4,(a0)+
   ENDR
-  move.l   .colptr(pc),a5
+  move.l   ef6_colptr(pc),a5
   add.l    #1024,a5
   cmp.l    #$0fffffff,(a5) 
   bne.s    .br6
   lea.l    EF61_COLORS1,a5
 .br6
-  move.l   a5,.colptr 
+  move.l   a5,ef6_colptr 
   lea.l    .lineshiftpos,a0
   move.l   24(a0),d0
   move.l   28(a0),d1
@@ -457,23 +457,23 @@ Effect6_4:
   bra.w  mlgoon
 
 .frmpos: 
-  dc.l EF64_LINEMULTIPLIERS
+  dc.l EF64_LINEMULTIPLIERS+34*4
   dc.l EF61_LINEMULTIPLIERS
-  dc.l EF64_LINEMULTIPLIERS+134*4
+  dc.l EF64_LINEMULTIPLIERS+232*4
   dc.l EF61_LINEMULTIPLIERS
-  dc.l EF64_LINEMULTIPLIERS
+  dc.l EF64_LINEMULTIPLIERS+34*4
   dc.l EF61_LINEMULTIPLIERS
-  dc.l EF64_LINEMULTIPLIERS+134*4
+  dc.l EF64_LINEMULTIPLIERS+232*4
   dc.l EF61_LINEMULTIPLIERS
   
 .lineshiftpos: 
-  dc.l EF64_LINESHIFTS
+  dc.l EF64_LINESHIFTS+34*4
   dc.l EF61_LINESHIFTS
-  dc.l EF64_LINESHIFTS+134*4
+  dc.l EF64_LINESHIFTS+232*4
   dc.l EF61_LINESHIFTS
-  dc.l EF64_LINESHIFTS
+  dc.l EF64_LINESHIFTS+34*4
   dc.l EF61_LINESHIFTS
-  dc.l EF64_LINESHIFTS+134*4
+  dc.l EF64_LINESHIFTS+232*4
   dc.l EF61_LINESHIFTS
 
 .linesizepos: 
@@ -486,7 +486,6 @@ Effect6_4:
   dc.l EF61_LINESIZE_3
   dc.l EF61_LINESIZE_3
   
-.colptr dc.l EF61_COLORS1
 .curfrmpos: dc.l 0
 .curlshiftpos: dc.l 0
 .curlsizepos: dc.l 0
@@ -506,7 +505,7 @@ Effect6_5:
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
   bsr.w   SetCopperList4Rotation  
-  move.l  .colptr(pc),a5
+  move.l  ef6_colptr(pc),a5
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
   sub.l   d5,d5
@@ -518,7 +517,7 @@ Effect6_5:
   and.l   #$ffff,d5
   move.w  #7,d2
   bsr.w   SetColDataFade
-  move.l  .colptr(pc),a5
+  move.l  ef6_colptr(pc),a5
   cmp.l   #$0fffffff,(a5)   
   bne.s   .br5
   lea.l   EF61_COLORS1,a5
@@ -567,13 +566,13 @@ Effect6_5:
   REPT 8
   sub.l    #134*4,(a0)+
   ENDR
-  move.l   .colptr(pc),a5
+  move.l   ef6_colptr(pc),a5
   add.l    #1024,a5
   cmp.l    #$0fffffff,(a5) 
   bne.s    .br6
   lea.l    EF61_COLORS1,a5
 .br6
-  move.l   a5,.colptr 
+  move.l   a5,ef6_colptr 
   lea.l    .lineshiftpos,a0
   move.l   24(a0),d0
   move.l   28(a0),d1
@@ -600,30 +599,36 @@ Effect6_5:
   move.w  #$c00,$dff106
   move.w  #$000,$dff180
   cmp.w  #23,P61_Pos
+  bne.s  .br8
+  move.l .lineshiftpos,a5        ;load frame[curplane].linemultiplier[pos]
+  cmp.l  #0,(a5)
   beq.s  .br1
+.br8
   bra.w  mlgoon
 .br1
+  clr.w  $200
+  move.l ef6_colptr,d0
   move.w #1,continue
   bra.w  mlgoon
 
 .frmpos: 
-  dc.l EF65_LINEMULTIPLIERS
+  dc.l EF65_LINEMULTIPLIERS+67*4
   dc.l EF61_LINEMULTIPLIERS+134*4
-  dc.l EF65_LINEMULTIPLIERS+134*4
+  dc.l EF65_LINEMULTIPLIERS+199*4
   dc.l EF61_LINEMULTIPLIERS+134*4
-  dc.l EF65_LINEMULTIPLIERS
+  dc.l EF65_LINEMULTIPLIERS+67*4
   dc.l EF61_LINEMULTIPLIERS+134*4
-  dc.l EF65_LINEMULTIPLIERS+134*4
+  dc.l EF65_LINEMULTIPLIERS+199*4
   dc.l EF61_LINEMULTIPLIERS+134*4
   
 .lineshiftpos: 
-  dc.l EF65_LINESHIFTS
+  dc.l EF65_LINESHIFTS+67*4
   dc.l EF61_LINESHIFTS+134*4
-  dc.l EF65_LINESHIFTS+134*4
+  dc.l EF65_LINESHIFTS+199*4
   dc.l EF61_LINESHIFTS+134*4
-  dc.l EF65_LINESHIFTS
+  dc.l EF65_LINESHIFTS+67*4
   dc.l EF61_LINESHIFTS+134*4
-  dc.l EF65_LINESHIFTS+134*4
+  dc.l EF65_LINESHIFTS+199*4
   dc.l EF61_LINESHIFTS+134*4
 
 .linesizepos: 
@@ -636,7 +641,6 @@ Effect6_5:
   dc.l EF61_LINESIZE_3
   dc.l EF61_LINESIZE_3
   
-.colptr dc.l EF61_COLORS1
 .curfrmpos: dc.l 0
 .curlshiftpos: dc.l 0
 .curlsizepos: dc.l 0
