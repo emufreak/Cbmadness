@@ -1,7 +1,6 @@
 ﻿
 SET folderpath=C:\Users\uersu\Documents\GitData\Cbmadness\WINTEL\
 SET usbpath=E:\Transfer\
-php %folderpath%FrameData4.php >%folderpath%FrameData4.i
 php %folderpath%FrameData5.php >%folderpath%FrameData5.i
 php %folderpath%graphics.php >%folderpath%graphics.i
 php %folderpath%FrameData_Color.php >%folderpath%FrameData_Color.i

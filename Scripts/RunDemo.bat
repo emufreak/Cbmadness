@@ -1,6 +1,5 @@
 ﻿
 SET folderpath=C:\Users\uersu\Documents\GitData\Cbmadness\WINTEL\
-php %folderpath%FrameData4.php >%folderpath%FrameData4.i
 php %folderpath%FrameData5.php >%folderpath%FrameData5.i
 php %folderpath%graphics.php >%folderpath%graphics.s
 php %folderpath%FrameData_Color.php >%folderpath%FrameData_Color.i

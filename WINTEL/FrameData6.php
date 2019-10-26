@@ -5,7 +5,7 @@
 						 array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
 						 array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
 						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
-						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
+				 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
 						 array( "blue" => 0x00, "green" => 0xfe, "red" => 0xbf),
 						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
 						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
@@ -79,7 +79,6 @@ EF61_COLORS<?php echo( $i); ?>
 ?>
   dc.l $fffffff
 <?php
-
   $colors = array(     	array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
 						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
 						 array( "blue" => 0x00, "green" => 0xfe, "red" => 0xbf),
@@ -95,37 +94,28 @@ EF61_COLORS<?php echo( $i); ?>
 						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
 						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01));
 
-  for($i=1;$i<=276;$i++) {
-    $sizeuse = $size;
 ?>
-
-EF71_COLORS<?php echo( $i); ?>
+EF71_COLORS1:
 <?php    
-    $colorr = 0;
-	$colorb = 0;
-	$colorg = 0;
     $index = 0;
     for($y=1;$y<=8;$y++) {
       for($z=1;$z<=pow( 2,$y-1);$z++) {
         $index++;		
 	    if($lwcount == 1) 
-		  echo("  dc.w ");
+		  echo("  dc.l ");
 	    if($y==1)
-		  echo( "0,0,");
+		  echo( "0,");
 	    
+		$colorr = 0;
+	    $colorb = 0;
+	    $colorg = 0;
 		for($i2=0;$i2<=3;$i2++) {
 	      if( ( $index & pow( 2,$i2*2)) != 0) {
-			$colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640;
-			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640;
-			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
-			//$sizeuse = $sizeuse*0.2 +  $size * pow($layfactor, $i2)*0.8;	 
-	        if( ( $index & pow(2,$i2*2+1)) != 0) {
-		      $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640 * $i / 276;
-			  $colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640 * $i / 276;
-			  $colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640 * $i / 276;
-			  /*$sizeuse = $sizeuse*0.2 + $size * pow($layfactor, $i2)*0.8 
-			                                                        * $i / 276;	*/
-		    }
+			if( ( $index & pow(2,$i2*2+1)) == 0) {
+			  $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640;
+			  $colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640;
+			  $colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
+			}
 		  } elseif( ($index & pow(2,$i2*2+1)) != 0) {
 		    $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640;
 			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640;
@@ -136,13 +126,14 @@ EF71_COLORS<?php echo( $i); ?>
 	    $colorr = floor( $colorr);
 		$colorg = floor( $colorg);
 		$colorb = floor( $colorb);
+
 		$color = ($colorr << 16) + ($colorg << 8) + $colorb;
 		$colorlw = ( ( $colorr & 0b1111) << 8)
 		                   + ( ( $colorg & 0b1111) << 4) + ( $colorb & 0b1111);
 		$colorhw = ( ( $colorr >> 4) << 8)
 		                   + ( ( $colorg >> 4) << 4) + ( $colorb >> 4);
-						   
-		echo($colorhw . "," . $colorlw);
+		echo("$" . dechex($color));
+		//echo($colorhw . "," . $colorlw);
 		if($lwcount < 10 && $z < pow( 2,$y-1)) {
 		  $lwcount++;
 		  echo(",");
@@ -152,10 +143,10 @@ EF71_COLORS<?php echo( $i); ?>
 		}     
       }	 	  
 	}
-  }
+
 ?>
   dc.l $fffffff
-
+  dcb.l 256*275,0
 <?php
   $size = 20;
   for($i=1;$i<=8;$i++) { ?>
@@ -193,7 +184,7 @@ EF73_LINESIZE_<?php echo($i); ?>:
 	
 	//echo "TEST: " . $intnewcolor;
 	
-    $colorr1 = $colors[ $coloridx1]["red"] * (1 - $intnewcolor);
+    $colorr1 = $colors[ $coloridx1]["red"] * (1.0000 - $intnewcolor);
 	$colorr2 = $colors[ $coloridx2]["red"] * $intnewcolor;
     //echo "TESTr: " .  $colors[ $coloridx2]["red"];	
 	$colorret["red"] = $colorret["red"] * 0.2 
@@ -206,9 +197,9 @@ EF73_LINESIZE_<?php echo($i); ?>:
 	$colorret["green"] = $colorret["green"] * 0.2 
 	                             + ( $colorg1 + $colorg2) * 0.8 * $intall;
 	
-	$colorb1 = $colors[ $coloridx1]["blue"] * (1 - $intnewcolor);
-	$colorb1 = $colors[ $coloridx2]["blue"] * $intnewcolor;
-	//echo "TESTb: " . $colors[ $coloridx2]["blue"] . " ";	
+	$colorb1 = $colors[ $coloridx1]["blue"] * (1.0000 - $intnewcolor);
+	$colorb2 = $colors[ $coloridx2]["blue"] * $intnewcolor;
+	
 	$colorret["blue"] = $colorret["blue"] * 0.2 
 	                             + ( $colorb1 + $colorb2) * 0.8 * $intall;
 					
@@ -231,9 +222,9 @@ EF73_COLORS<?php echo( $i); ?>
 		$colorb = 0;
         $index++;		
 	    if($lwcount == 1) 
-		  echo("  dc.w ");
+		  echo("  dc.l ");
 	    if($y==1)
-		  echo( "0,0,");
+		  echo( "0,");
 	    $colorarr = array( "blue" => 0x0, "green" => 0x0, "red" => 0x0);
 		for( $x=0;$x<=7;$x++)
 		    if( ( $index & pow(2, $x)) != 0)  { 
@@ -255,7 +246,8 @@ EF73_COLORS<?php echo( $i); ?>
 		$colorhw = ( ( $colorr >> 4) << 8)
 		                   + ( ( $colorg >> 4) << 4) + ( $colorb >> 4);
 
-		echo($colorhw . "," . $colorlw);
+		//echo($colorhw . "," . $colorlw);
+		echo("$" . dechex($color));
 		if($lwcount < 10 && $z < pow( 2,$y-1)) {
 		  $lwcount++;
 		  echo(",");

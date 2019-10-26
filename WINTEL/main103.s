@@ -45,7 +45,7 @@ STARTPROG:
     ENDC
 
     bsr.w	InitScreenBuffers
-    bsr.w       SetCopperList
+    bsr.w   SetCopperList
     bsr.w	SetBitplanePointers
 
 MainLoop:
@@ -88,7 +88,11 @@ jmplistpos:
 jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
+		bra.w Effect0_3
         bra.w Effect1_0
+  bra.w Effect6_0
+  bra.w Effect7_1
+  ;bra.w Effect7_4
         bra.w Effect1_1 	
 		bra.w Effect1_2
 		bra.w Effect1_3		
@@ -147,6 +151,11 @@ Effect0_1:
 .counter: dc.w 1*50
 
 Effect0_2:
+  bsr.w  Prepare_Effect7
+  move.w #1,continue
+  bra.w  mlgoon
+
+Effect0_3:
   bsr.w  SetBitplanePointersDefault
   ;lea    PalettePic,a3
   ;bsr.w  SetColDataFade
