@@ -2482,11 +2482,11 @@ COLP0B:
 
 bitplane:
 BPLLOGO:
-  INCBIN "raw/madhatter.chk"
+  INCBIN "raw/madhatter.raw"
   dcb.b  80000,0
 
 BPLTITLE:
-  INCBIN "raw/madhatter.chk"
+  INCBIN "raw/madhatter.raw"
   dcb.b  80000,0
 
       INCLUDE PatternData.i

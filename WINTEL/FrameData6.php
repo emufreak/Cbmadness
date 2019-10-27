@@ -79,20 +79,21 @@ EF61_COLORS<?php echo( $i); ?>
 ?>
   dc.l $fffffff
 <?php
-  $colors = array(     	array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
-						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
-						 array( "blue" => 0x00, "green" => 0xfe, "red" => 0xbf),
-						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
-						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
-						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
-						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
-						  array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
+  $colors = array(   array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
 						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
 						  array( "blue" => 0xfc, "green" => 0x42, "red" => 0x02),
 						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
 						  array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
 						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
-						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01));
+						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),   
+                         array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
+						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
+						 array( "blue" => 0x00, "green" => 0xfe, "red" => 0xbf),
+						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
+						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
+						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
+						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02));
+						 
 
 ?>
 EF71_COLORS1:
@@ -145,8 +146,8 @@ EF71_COLORS1:
 	}
 
 ?>
-  dc.l $fffffff
   dcb.l 256*275,0
+   dc.l $fffffff
 <?php
   $size = 20;
   for($i=1;$i<=8;$i++) { ?>
@@ -211,11 +212,19 @@ EF73_LINESIZE_<?php echo($i); ?>:
   $sizeodd = 20;
   $sizeeven = $sizeodd;
   $layfactor = pow($multfactor,67*2);
-  for($i=1;$i<=67;$i++) {	  
+  for($i=1;$i<=67;$i++) {
+  if($i != 1 && $i != 67) {
+	 ?> dcb.l 256,0 
+	 <?php
+	 continue;
+	}	  
 ?>
+
 EF73_COLORS<?php echo( $i); ?>
 <?php  
-		
+	
+    
+	
     $index = 0;
     for($y=1;$y<=8;$y++) {
       for($z=1;$z<=pow( 2,$y-1);$z++) {

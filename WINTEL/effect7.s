@@ -1,74 +1,3 @@
-Prepare_Effect7:                    ;Write Palettes
-  lea    EF71_COLORS1+1024,a0       ;Destination
-  lea    EF71_COLORS1,a1            ;Startcolors
-  lea    EF73_COLORS1,a2            ;End Colors
-                                                       
-  move.w #274,d2                    ;Number of tables for all 275 frames 
-                                    ;=intensitystart 
-.lp2
-  clr.w  $300									
-  move.w #255,d7                    ;Colorcounter 
-.lp1	
-  clr.w  $200							
-  sub.l  d6,d6                      ;init reg for final result									
-  move.l (a1)+,d0                   ;fetch start color
-  move.l (a2)+,d3                   ;fetch end color
-  move.l d0,d1                      
-  and.l #$0000ff,d1                 ;get color part for blue
-  mulu.w d2,d1                      ;colorpart * intensitystart / 275
-  divu.w #275,d1                    ;1st part of color 
-  move.l d3,d4
-  and.l #$0000ff,d4                 ;get color part for endcolor
-  move.w #275,d5                    ;intensity endcolor = 275 - intensitystart
-  sub.w  d2,d5 
-  mulu.w d5,d4                      ;bluepart * intensityend
-  divu.w #275,d4                    ;2nd part of color
-  add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
-  move.w d1,d6
-  
-  lsr.l  #8,d0                      ;shift to green part of color
-  move.l d0,d1  
-  and.w  #$00ff,d1                  ;get color part for green
-  mulu.w d2,d1                      ;colorpart * intensitystart / 275
-  divu.w #275,d1                    ;1st part of color
-  lsr.l  #8,d3                      ;shift to green part of color
-  move.l d3,d4
-  and.w  #$00ff,d4                  ;get color part for endcolor
-  move.w #275,d5                    ;intensity endcolor = 275 - intensitystart
-  sub.w  d2,d5 
-  mulu.w d5,d4                      ;bluepart * intensityend
-  divu.w #275,d4                    ;2nd part of color
-  add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
-  lsl.l  #8,d1                      ;overwrite right section for green part
-  add.w  d1,d6                      ;add to final result 
-
-  lsr.l  #8,d0                      ;shift to red part of color
-  move.l d0,d1  
-  and.w #$00ff,d1                   ;get color part for red
-  mulu.w d2,d1                      ;colorpart * intensitystart / 275
-  divu.w #275,d1                    ;1st part of color
-  lsr.l  #8,d3                      ;shift to red part of color
-  move.l d3,d4                    
-  and.w  #$00ff,d4                  ;get color part for endcolor
-  move.w #275,d5                    ;intensity endcolor = 275 - intensitystart
-  sub.w  d2,d5 
-  mulu.w d5,d4                      ;bluepart * intensityend
-  divu.w #275,d4                    ;2nd part of color
-  add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
-  lsl.l  #8,d1                      ;overwrite right section for red part
-  lsl.l  #8,d1
-  and.l  #$ffffff,d1
-  add.l  d1,d6                      ;add to final result  
-  
-  move.l d6,(a0)+                   ;write color 
-  clr.w  $210
-  dbf    d7,.lp1                    ;next color
-  lea    EF71_COLORS1,a1            ;Reset Startcolors
-  lea    EF73_COLORS1,a2            ;Reset End Colors
-  clr.w  $310
-  dbf    d2,.lp2                    ;next table   
-  rts
-
 Effect7_1:
   lea.l  COLRBPLCON0_1,a0
   move.w #$210,2(a0)
@@ -80,6 +9,7 @@ Effect7_1:
   bra.w  mlgoon
 .br1
   move.w #1,continue
+  clr.w  $200
   bra.w  mlgoon 
 
 .counter: dc.w 268
@@ -105,7 +35,7 @@ Main_Effect7_1:
 ;a4 = copptr
 ;a5 = colptrhw
 ;a6 = copptrlw   
-
+  
   movem.l empty,a0-a5/d0-d7
   move.w  #$c00,$dff106
   move.w  #$0,$dff180
@@ -113,7 +43,9 @@ Main_Effect7_1:
   move.l  .colptr(pc),a5
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
-  bsr.w   SetColDataDefault 
+  move.l  #255,d5
+  move.w  #7,d2
+  bsr.w   SetColDataFade 
   move.l  .colptr(pc),a5
   add.l   #1024,a5
   cmp.l   #$0fffffff,(a5)   

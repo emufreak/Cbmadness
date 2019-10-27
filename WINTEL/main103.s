@@ -58,9 +58,11 @@ MainLoop:
     CMP.L D2,D0                            ; selected vpos reached
     BNE.S  .mlwaity
 
+  
     lea    continue,a0
     cmp.w  #1,(a0)
     bne.s  .br1
+	clr.w  $200
     move.w #0,(a0)
     add.l  #4,jmplistpos
 .br1
@@ -90,9 +92,6 @@ jmplist:
 		bra.w Effect0_2
 		bra.w Effect0_3
         bra.w Effect1_0
-  bra.w Effect6_0
-  bra.w Effect7_1
-  ;bra.w Effect7_4
         bra.w Effect1_1 	
 		bra.w Effect1_2
 		bra.w Effect1_3		
@@ -110,7 +109,7 @@ jmplist:
 		bra.w Effect6_4
 		bra.w Effect6_5
 		bra.w Effect7_1	
-        bra.w Effect7_2
+        ;bra.w Effect7_2
         bra.w Effect7_3
         bra.w Effect7_4		
         rts
@@ -151,9 +150,20 @@ Effect0_1:
 .counter: dc.w 1*50
 
 Effect0_2:
-  bsr.w  Prepare_Effect7
-  move.w #1,continue
-  bra.w  mlgoon
+  ;Calculate Colors for effect7_2
+  lea.l   EF71_COLORS1+1024,a0       ;Destination
+  lea.l   EF71_COLORS1,a1            ;Startcolors
+  lea.l   EF73_COLORS1,a2            ;End Colors
+  move.l  #275,d6                    ;Colortables to write
+  bsr.w   Prepare_Transition
+  ;Calculate Colors for effect7_3
+  lea.l   EF73_COLORS1+1024,a0       ;Destination
+  lea.l   EF73_COLORS1,a1            ;Startcolors
+  lea.l   EF73_COLORS67,a2            ;End Colors
+  move.l  #66,d6
+  bsr.w   Prepare_Transition
+  move.w  #1,continue
+  bra.w   mlgoon
 
 Effect0_3:
   bsr.w  SetBitplanePointersDefault
@@ -805,7 +815,7 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   lea     .intstore,a0
   sub.l   d0,d0                   ;curvalue = 0  
   moveq.l #64-1,d6                ;for i = 1 to 64
-.lp2                              ;Write multiplication table 
+.lp2                              ;Write multiplication table  
   move.l  d0,d1                   ;lwtowrite = curvalue / 256
   lsr.l   #8,d1   
   moveq.l #24,d3                  ;lwtowrite <<= 24; 
@@ -831,7 +841,7 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   ;moveq.l #7,d2			     ;  for(	x=0;x<=layers;x++)
   moveq.l #31,d1                 ;  // skip color 0 in loop      
 .lp1
-                                 ;// red color
+  ;// red color
   move.l  (a5)+,d0               ;curcolor = *color++
   move.l  d0,d6                  ;bluepart = curcolor & $ff		
   and.l   #$ff,d6                ;00bb
@@ -1975,6 +1985,9 @@ DrawLine:
         move.w    DIMWIDTH(a0),d7
         rts
 
+
+
+
 .clearalllw:
         sub.l     d2,d2
         bra.s     .br7
@@ -2023,6 +2036,74 @@ DrawLine:
 
 currentdrawpos: dc.l 0
 patternpos: dc.l 0
+
+Prepare_Transition:                    ;Write Palettes
+  ;lea    EF71_COLORS1+1024,a0       ;Destination
+  ;lea    EF71_COLORS1,a1            ;Startcolors
+  ;lea    EF73_COLORS1,a2            ;End Colors
+  
+  move.w d6,d2  
+  subq.w #1,d2                      ;Number of tables for all 275 frames 
+                                    ;=intensitystart 
+.lp2									
+  move.w #255,d7                    ;Colorcounter 
+.lp1								
+  sub.l  a4,a4                      ;init reg for final result									
+  move.l (a1)+,d0                   ;fetch start color
+  move.l (a2)+,d3                   ;fetch end color
+  move.l d0,d1                      
+  and.l #$0000ff,d1                 ;get color part for blue
+  mulu.w d2,d1                      ;colorpart * intensitystart / 275
+  divu.w d6,d1                    ;1st part of color 
+  move.l d3,d4
+  and.l #$0000ff,d4                 ;get color part for endcolor
+  move.w d6,d5                    ;intensity endcolor = 275 - intensitystart
+  sub.w  d2,d5
+  mulu.w d5,d4                      ;bluepart * intensityend
+  divu.w d6,d4                    ;2nd part of color
+  add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
+  move.w d1,a4
+  
+  lsr.l  #8,d0                      ;shift to green part of color
+  move.l d0,d1  
+  and.w  #$00ff,d1                  ;get color part for green
+  mulu.w d2,d1                      ;colorpart * intensitystart / 275
+  divu.w d6,d1                    ;1st part of color
+  lsr.l  #8,d3                      ;shift to green part of color
+  move.l d3,d4
+  and.w  #$00ff,d4                  ;get color part for endcolor
+  move.w d6,d5                    ;intensity endcolor = 275 - intensitystart
+  sub.w  d2,d5 
+  mulu.w d5,d4                      ;bluepart * intensityend
+  divu.w d6,d4                    ;2nd part of color
+  add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
+  lsl.l  #8,d1                      ;overwrite right section for green part
+  add.w  d1,a4                      ;add to final result 
+
+  lsr.l  #8,d0                      ;shift to red part of color
+  move.l d0,d1  
+  and.w #$00ff,d1                   ;get color part for red
+  mulu.w d2,d1                      ;colorpart * intensitystart / 275
+  divu.w d6,d1                      ;1st part of color
+  lsr.l  #8,d3                      ;shift to red part of color
+  move.l d3,d4                    
+  and.w  #$00ff,d4                  ;get color part for endcolor
+  move.w d6,d5                      ;intensity endcolor = 275 - intensitystart
+  sub.w  d2,d5 
+  mulu.w d5,d4                      ;bluepart * intensityend
+  divu.w d6,d4                      ;2nd part of color
+  add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
+  lsl.l  #8,d1                      ;overwrite right section for red part
+  lsl.l  #8,d1
+  and.l  #$ffffff,d1
+  add.l  d1,a4                      ;add to final result  
+  
+  move.l a4,(a0)+                   ;write color 
+  dbf    d7,.lp1                    ;next color
+  lea    EF71_COLORS1,a1            ;Reset Startcolors
+  lea    EF73_COLORS1,a2            ;Reset End Colors
+  dbf    d2,.lp2                    ;next table   
+  rts
 
 mpchkblline:
         dcb.w 4*60,0
