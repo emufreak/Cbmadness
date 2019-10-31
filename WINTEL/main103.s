@@ -99,6 +99,10 @@ jmplist:
 		bra.w Effect2_1
 		bra.w Effect3_0
 		bra.w Effect3_1
+		bra.w Effect3_21
+		bra.w Effect3_22
+		bra.w Effect3_23
+		bra.w Effect3_24
 		bra.w Effect4_1	
         bra.w Effect6_0			
 		bra.w Effect6_11
@@ -279,6 +283,7 @@ Effect2_0:
   move.w #1,ColMultiplier
   move.l #BPLTITLE,draw_buffer
   move.l #BPLTITLE,view_buffer
+
   bra.w  mlgoon
 
 Effect2_1:
@@ -313,18 +318,113 @@ Effect3_0:
 
 Effect3_1:
   ;move.w #$00,$dff180
+  move.w #1,Eff2ZoomIn        
+  bsr.w  Effect3_Main
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
+  cmp.w  #10,ef3_dirchanges        ;pos 9 song
+  bne.s  .br1 
+  move.w #0,ef3_dirchanges
+  cmp.w  #8,P61_Pos
+  bne.s  .br1
+  lea    EF2_PATTERNDATA5,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA0,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  move.w #1,continue
+.br1
+  bra.w  mlgoon
+
+Effect3_21:
+  ;move.w #$00,$dff180
   move.w #1,Eff2ZoomIn
   bsr.w  Effect3_Main
   ;move.w #$c00,$dff106
   ;move.w #$000,$dff180
-  cmp.w  #9,P61_Pos
+  sub.w  #1,.counter
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  lea    EF2_PATTERNDATA0,a0
+  move.l #PTR_CHECKERBOARD_DATA,(a0)
+  lea    EF2_PATTERNDATA1,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA4,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  move.w #1,continue
+  bra.w  mlgoon
+
+.counter: dc.w 45 
+
+Effect3_22:
+  ;move.w #$00,$dff180
+  move.w #1,Eff2ZoomIn
+  bsr.w  Effect3_Main
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
+  sub.w  #1,.counter
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  lea    EF2_PATTERNDATA0,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA1,a0
+  move.l #PTR_CHECKERBOARDINV_DATA,(a0)
+  lea    EF2_PATTERNDATA2,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA3,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA4,a0
+  move.l #PTR_CHECKERBOARD_DATA,(a0)
+  lea    EF2_PATTERNDATA5,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  move.w #1,continue
+  bra.w  mlgoon
+
+.counter: dc.w 45 
+
+Effect3_23:
+  ;move.w #$00,$dff180
+  move.w #1,Eff2ZoomIn
+  bsr.w  Effect3_Main
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
+  sub.w  #1,.counter
+  beq.s  .br1
+  bra.w  mlgoon
+.br1
+  lea    EF2_PATTERNDATA0,a0
+  move.l #PTR_CHECKERBOARD_DATA,(a0)
+  lea    EF2_PATTERNDATA1,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA2,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA3,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA4,a0
+  move.l #PTR_EMPTY_DATA,(a0)
+  lea    EF2_PATTERNDATA5,a0
+  move.l #PTR_CHECKERBOARD_DATA,(a0)
+  move.w #1,continue
+  bra.w  mlgoon
+
+.counter: dc.w 45 
+
+Effect3_24:
+  ;move.w #$00,$dff180
+  move.w #1,Eff2ZoomIn
+  bsr.w  Effect3_Main
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
+  sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
 .br1
   move.w #1,continue
   bra.w  mlgoon
 
-.counter dc.w 67
+.counter: dc.w 45 
+  
 
 Effect4_1:
   ;move.w #$f,$dff180
@@ -452,6 +552,8 @@ Effect1_Main:
 .colptr: dc.l EF1_COLORS1
 .colptr2: dc.l EF1_COLORS2
 
+ef3_dirchanges: dc.w 0
+
 Effect3_Main:
 ;a0 = blarraydim
 ;a1 = frmdat[]
@@ -506,7 +608,8 @@ Effect3_Main:
 		beq.s  .br4                     ;                || frame == 0)
 		cmp.l  #-2,(a3)                  ;    {
 		bne.s  .br2
-.br4          
+.br4  
+        add.w   #1,ef3_dirchanges        
 		neg.l   d1                      ;      direction =* -1;
 		move.l  d1,.direction
 		add.l   d1,(a3)                 ;      frame += direction;
@@ -538,6 +641,7 @@ Effect3_Main:
 .colptr: dc.l EF2_COLORS1
 .direction: dc.l 2
 .dircolor: dc.l 1024
+
 
 Effect4_Main:
 ;a0 = blarraydim
@@ -705,7 +809,7 @@ GetFrame2:
 ;input
 ;a1 = frmdat[]
 ;a3 = frame
-;output;    GetFrame(  framedate,frmnr)
+;output;    GetFrame(  framedata,frmnr)
 ;d1 = blposx
 ;d2 = blposy
 ;d3 = detposx
