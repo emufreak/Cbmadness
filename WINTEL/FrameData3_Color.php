@@ -21,7 +21,7 @@
 	$colstart = $tmp;	
   }
 
-  for($i=1;$i<=14;$i++) {
+  for($i=1;$i<=7;$i++) {
     $sizeuse = $size;
 	
 ?>
