@@ -221,10 +221,7 @@ EF73_LINESIZE_<?php echo($i); ?>:
 ?>
 
 EF73_COLORS<?php echo( $i); ?>
-<?php  
-	
-    
-	
+<?php  	
     $index = 0;
     for($y=1;$y<=8;$y++) {
       for($z=1;$z<=pow( 2,$y-1);$z++) {
