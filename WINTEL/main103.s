@@ -72,14 +72,7 @@ mlgoon:
     lea         $dff000,a6
     btst.b	#10,$16(a6)	; left mouse button clicked
     bne.s	MainLoop        ; if not continue programm
-    ifeq SOUND-1
-	lea	$dff000,a6
-	exit:
-	btst	#14,2(a6)		;Wait for blitter to finish
-	bne.b	exit
-	jsr	P61_End
-	endc
-	rts
+	bra.w   End
 
 continue:
         dc.w 0
@@ -123,7 +116,7 @@ jmplist:
         ;bra.w Effect7_2
         bra.w Effect7_3
         bra.w Effect7_4		
-        rts
+        bra.w End
 		
 
 BLINCREMENT = 1
@@ -136,19 +129,36 @@ Temporaneo: dc.l 0
 Eff1ZoomIn:
   dc.w 0
 
+End:
+    ifeq SOUND-1
+	lea	$dff000,a6
+	exit:
+	btst	#14,2(a6)		;Wait for blitter to finish
+	bne.b	exit
+	jsr	P61_End
+	endc
+	rts
+
+
 Effect0_1:
+  lea    PalTitle,a5
+  move.w  #255,d5
+  moveq.l #0,d2
+  lea    colp0,a4
+  addq.l #2,a4
+  lea    colp0b,a6
+  addq.l #2,a6
+  bsr.w  SetColDataFade
   move.w #$f00,$dff180
   IFEQ DEBUG-0
   move.l #COPPERLISTIMAGE,$dff080
   ENDC
-  move.w #256,ColMultiplier
+  move.w #255,ColMultiplier
   move.l #BPLLOGO,draw_buffer
   move.l #BPLLOGO,view_buffer
   move.l #IMGBPLPOINTERS,draw_cprbitmap
   move.l #IMGBPLPOINTERS,view_cprbitmap
   bsr.w  SetBitplanePointersDefault
-  ;lea    PalettePic,a3
-  ;bsr.w  CalculateFade
   move.w #$c00,$dff106
   move.w #$000,$dff180
   sub.w  #1,.counter
@@ -178,6 +188,19 @@ Effect0_2:
 
 Effect0_3:
   bsr.w  SetBitplanePointersDefault
+  lea    PalTitle,a5
+  sub.l  d5,d5
+  move.w  ColMultiplier,d5
+  moveq.l #0,d2
+  lea    colp0,a4
+  addq.l #2,a4
+  lea    colp0b,a6
+  addq.l #2,a6
+  bsr.w  SetColDataFade
+    ;d5 - intensity
+  ;a5 - colors
+  ;a4 - copperpos highwordcol
+  ;a6 - copperpos lowword pos  
   ;lea    PalettePic,a3
   ;bsr.w  SetColDataFade
   sub.w  #4,ColMultiplier
@@ -508,7 +531,7 @@ Effect1_Main:
 		sub.l   d5,d5
 		move.w  CNTBLSIZE(a0),d5
 		lsl.l   #8,d5                   ;  intensity = frmdat[7].size*256/320
-		divu.l  #320,d5
+		divu.l  #400,d5
 		and.l   #$ffff,d5
 		move.w  #7,d2
 		bsr.w   SetColDataFade		    ;  SetColDataFade(intensity);

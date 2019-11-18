@@ -19,8 +19,9 @@ FRMSIZE equ 674
   $posycnt = 31;
   $frames = 67;
   $multfactor = 1.006486;
+  $multfactor = 1.005605;
   $layfactor = pow($multfactor,$frames);
-  $size = 10;
+  $size = 20;
   
   for($i=0;$i<8;$i++) {
 ?>
