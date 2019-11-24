@@ -3,7 +3,7 @@
   $multfactor = 1.009673;
   
   $lwcount = 1; 
-  $size = 20;   
+  $size = 10;  
   $colors = array( array( "blue" => 0xff, "green" => 0x8a, "red" => 0xf6),
 		               array( "blue" => 0x14, "green" => 0xff, "red" => 0x16));
   $direction = array( 1,-1,1,-1,1,-1,1,-1);

@@ -349,7 +349,7 @@ public class GameBrain : MonoBehaviour
         cntframe++;
       }
 
-      if( i <= 5) 
+      //if( i <= 7) 
       sizemin = sizemax;
       direction *= -1;
     }

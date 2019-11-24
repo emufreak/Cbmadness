@@ -83,7 +83,7 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect0_3
-        bra.w Effect1_0		
+        bra.w Effect1_0			
         bra.w Effect1_1 	
 		bra.w Effect1_2
 		bra.w Effect1_3		
@@ -321,7 +321,9 @@ Effect2_1:
   ;move.w #$000,$dff180
   bsr.w  SetBitplanePointersDefault
   lea    PalTitle,a5
-  move.w  #255,d5
+  
+  sub.l   d5,d5
+  move.w  ColMultiplier,d5 
   moveq.l #0,d2
   lea    colp0,a4
   addq.l #2,a4
@@ -344,8 +346,13 @@ Effect3_0:
   bsr.w  InitScreenBuffers
   move.l #BITPLANE,view_buffer
   move.l #BITPLANE+BPLWIDTH*40*BPLCOUNT,draw_buffer
+  ;lea    EF2_PATTERNDATA7,a0
+  ;move.l #PTR_EMPTY_DATA,(a0)
+ ; lea    EF2_PATTERNDATA6,a0
+  ;move.l #PTR_EMPTY_DATA,(a0)
   move.w #1,continue
   bra.w  mlgoon
+
 
 Effect3_1:
   ;move.w #$00,$dff180
@@ -596,6 +603,7 @@ Effect3_Main:
 .lp1  									;  {
 		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap
 		bsr.w   GetFrame2        		;    GetFrame(  framedate,frmnr)
+		;bsr.w   MoveData
 		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
 		sub.l   #FRMSIZE2,a1		    ;  	 frmdat++; //Next object
 		add.l   #CNTOBJSIZE,a2         ;    laydat++;
@@ -905,6 +913,70 @@ SetColDataFadeWhite:                  ;SetColDataFade(intensity, layers, colorpt
   dbf     d2,.lp1 
   rts
 
+MoveDataV2:                               ;MoveData(	input
+;input                                  ;{
+;d1 = blposx
+;d2 = blposy
+;d3 = detposx
+;d4 = detposy
+;d5 = size
+;a5 = movex
+;a6 = movey
+
+;process
+  move.w  a5,d6                      ;  if(*movex != 0)
+  beq.s   .br1                          ;  {
+  move.w  d3,d0
+  move.w  d1,a4
+  bsr.s   MoveDataItem                  ;    MoveColDataItem( posdet,pos);
+  move.w  a4,d1
+  move.w  d0,d3
+.br1                                    ;  }
+  move.w  a6,d6                      ;  if(EF1_MoveY != 0)
+  beq.s   .br2                          ;  {
+  move.w  d4,d0                        ;    MoveColDataItem( );
+  move.w  d2,a4
+  bsr.s   MoveDataItem
+  move.w  a4,d2
+  move.w  d0,d4
+.br2                                    ;  }
+  rts									;}
+  
+MoveDataItemV2:                        ;MoveDataItem(	posdet,pos)
+;d5 = size
+;d6 = movepct
+;d0 = posdet
+;a4 = pos
+  move.w  d5,d7                        ;{
+
+  muls.w  d6,d7                         ;    posdet -= size * prct / 100
+  divu.w  #100,d7	                    ;                        * movedir;
+  cmp.w   #0,d6
+  bpl.s   .br3
+  neg.w   d7
+.br3
+  sub.w   d7,d0
+  moveq.l #2,d7                        ;    for(int i=0;i < 2; i++)
+.lp1 									;    {
+  move.w  d0,d0							;      if(posdet < 0)
+  bpl.s   .br1                          ;      {
+  beq.s   .br2
+  add.w   d5,d0                        ;	     posdet += size;
+  addq    #1,a4						;	     pos++;
+  dbf     d7,.lp1
+  bra.s   .br2
+.br1									;      }
+  cmp.w   d5,d0							;      else if(posdet >= size)
+  blt.s   .br2							;      {
+  sub.w   d5,d0							;	     posdet -= size;
+  subq    #1,a4							;	     pos--;
+.br2
+  dbf     d7,.lp1                       ;      }                   				;    }
+  rts									;}
+
+percentage:
+	dc.w 168;
+
 MoveData:                               ;MoveData(	input
 ;input                                  ;{
 ;d1 = blposx
@@ -963,9 +1035,6 @@ MoveDataItem:                        ;MoveDataItem(	posdet,pos)
 .br2
   dbf     d7,.lp1                       ;      }                   				;    }
   rts									;}
-
-percentage:
-	dc.w 168;
 
 MoveAdjust:
   move.w  percentage(pc),d7           ;    if(percentage <	200)
