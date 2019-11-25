@@ -83,7 +83,13 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect0_3
-        bra.w Effect1_0			
+        bra.w Effect1_0
+        bra.w Effect3_0
+		bra.w Effect3_1
+		bra.w Effect3_21
+		bra.w Effect3_22
+		bra.w Effect3_23
+		bra.w Effect3_24		
         bra.w Effect1_1 	
 		bra.w Effect1_2
 		bra.w Effect1_3		
@@ -603,13 +609,15 @@ Effect3_Main:
 .lp1  									;  {
 		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap
 		bsr.w   GetFrame2        		;    GetFrame(  framedate,frmnr)
-		;bsr.w   MoveData
+		move.l  #150,a5
+		sub.l   a6,a6
+		bsr.w   MoveDataV2
 		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
 		sub.l   #FRMSIZE2,a1		    ;  	 frmdat++; //Next object
 		add.l   #CNTOBJSIZE,a2         ;    laydat++;
 		sub.w   #1,.i
 		bpl.s   .lp1			        ;  }
-        bsr.w    MoveAdjust             ;  MoveAdjust( );
+        ;bsr.w    MoveAdjust             ;  MoveAdjust( );
 		move.l  .colptr(pc),a5
 		movem.l d0-d7/a0-a6,.save
 		move.l  draw_copper,a4          ;  copptr = draw_buffer;
