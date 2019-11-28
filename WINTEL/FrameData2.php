@@ -1,15 +1,16 @@
 FDOPOSX2 equ 4
-FDOPOSY2 equ 84
-FDOPOSXDET2 equ 164
-FDOPOSYDET2 equ 244
-FDOBLSIZE2 equ 324
-FRMSIZE2 equ 404
+FDOPOSY2 equ 94
+FDOPOSXDET2 equ 184
+FDOPOSYDET2 equ 274
+FDOBLSIZE2 equ 364
+FRMSIZE2 equ 454
 
 <?php
 
-  $frames = 40
+  $frames = 45;
   $multfactor = 1.011294;
   $multfactor = 1.009674;
+  $multfactor = 1.010003;
   
   function calcsize( $sizebase, $layer, $frame) {
 	
@@ -32,7 +33,7 @@ FRMSIZE2 equ 404
 	return floor( ( 128 - floor( $size / 2)) / $size + 0.999);
   }
   
-  $posxcnt = 32;
+  $posxcnt = 31;
   $posycnt = 31;
   $layfactor = pow($multfactor,$frames);
   $size = 10;

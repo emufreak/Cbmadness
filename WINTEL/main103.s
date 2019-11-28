@@ -584,11 +584,11 @@ Effect3_Main:
 ;a5 = colptr
 ;a6 = *blarraycont.data (temp)
 
-        subq    #1,.counter		    ;if(counter-- == 0)
-        bne.w   .br1				    ;{
+        ;subq    #1,.counter		        ;if(counter-- == 0)
+        ;bne.w   .br1				    ;{
         bsr.w   SetCopperList			;  Setcopperlist();
         bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
-        move.w  #1,.counter            ;  counter = 1; //50 fps
+        ;move.w  #1,.counter            ;  counter = 1; //50 fps
 		lea     .frame,a3              ;
 		lea     EF2_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
 		;sub.l nam  #FRMSIZE*7,a1         ; DEBUG
@@ -599,12 +599,46 @@ Effect3_Main:
 		move.w  (a6),DIMWIDTH(a0)	;  	        *blarraycont.data.width;
 		move.w  2(a6),DIMHEIGHT(a0)	;  blarraydim.height =
 										;  		    blarraycont.data.height;
+		
+	    lea     .counter,a5             
+		add.w   #1,(a5) 
+		cmp.w   #35,(a5)                ; frame < 55 no movement
+		bls.s   .br7
+		cmp.w   #55,(a5)                ; frame < 75 move right
+        bge.s   .br8
+        add.w   #5,.movement
+		bra.s   .br7		
+.br8
+        cmp.w   #80,(a5)
+        bls.s   .br7
+        cmp.w   #99,(a5)                ; frame between 70 and 89 move to left
+		bge.s   .br9       
+        add.w   #5,.movement
+        bra.s   .br7	
+.br9
+        move.w  #0,.movement
+        ;cmp.w   #94,(a5)
+      	;bne.s   .br7
+		move.l  (a3),d0
+		lsr.l   d0
+		move.w  d0,(a5)
+.br7
+        move.w  .movement,a5		
+		sub.l   a6,a6
+										
         move.w   #7,.i     		    ;  for(int i=0;i<8;i++)
-.lp1  									;  {
-		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap
-		bsr.w   GetFrame2        		;    GetFrame(  framedate,frmnr)
-		;bsr.w   MoveData
+.lp1  
+								;  {	
+		bsr.w   GetFrame2        		;    GetFrame(  framedate,frmnr)		        
+		bsr.w   MoveDataV2
 		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
+		cmp.w   #320,d5
+		bhi.s   .br5
+		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap
+		bra.s   .br6
+.br5
+        move.l  #PTR_EMPTY_DATA,CNTBLMAP(a2)
+.br6
 		sub.l   #FRMSIZE2,a1		    ;  	 frmdat++; //Next object
 		add.l   #CNTOBJSIZE,a2         ;    laydat++;
 		sub.w   #1,.i
@@ -630,7 +664,7 @@ Effect3_Main:
 		beq.s  .br4                     ;                || frame == 0)
 		cmp.l  #-2,(a3)                  ;    {
 		bne.s  .br2
-.br4  
+.br4             
         add.w   #1,ef3_dirchanges        
 		neg.l   d1                      ;      direction =* -1;
 		move.l  d1,.direction
@@ -658,11 +692,12 @@ Effect3_Main:
 
 .save dcb.l 15,0
 .i dc.w 7
-.counter: dc.w 1
+.counter: dc.w 0
 .frame: dc.l 0
 .colptr: dc.l EF2_COLORS1
 .direction: dc.l 2
 .dircolor: dc.l 1024
+.movement: dc.w 0
 
 EffInvert: dc.w 0
 
@@ -928,7 +963,7 @@ MoveDataV2:                               ;MoveData(	input
   beq.s   .br1                          ;  {
   move.w  d3,d0
   move.w  d1,a4
-  bsr.s   MoveDataItem                  ;    MoveColDataItem( posdet,pos);
+  bsr.s   MoveDataItemV2                  ;    MoveColDataItem( posdet,pos);
   move.w  a4,d1
   move.w  d0,d3
 .br1                                    ;  }
@@ -936,7 +971,7 @@ MoveDataV2:                               ;MoveData(	input
   beq.s   .br2                          ;  {
   move.w  d4,d0                        ;    MoveColDataItem( );
   move.w  d2,a4
-  bsr.s   MoveDataItem
+  bsr.s   MoveDataItemV2
   move.w  a4,d2
   move.w  d0,d4
 .br2                                    ;  }
