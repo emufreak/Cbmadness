@@ -278,9 +278,11 @@ Effect1_3:
   bne.s  .br1
   sub.w  #1,.ptrnleft
   bne.s  .br2
+  
   move.w #1,continue
   bra.w  mlgoon
 .br2
+  cmp.w  #2,.ptrnleft
   move.w #0,.framecount
   lea    EF1_MoveX,a0
   bsr.w  RotateMove
