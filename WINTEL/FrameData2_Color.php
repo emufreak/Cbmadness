@@ -1,6 +1,8 @@
 <?php
-  $multfactor = 1.006486;
   $multfactor = 1.009673;
+  $multfactor = 1.010889;
+  $multfactor = 1.010300;
+    
   
   $lwcount = 1; 
   $size = 10;  
