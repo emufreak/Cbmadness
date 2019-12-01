@@ -2482,7 +2482,7 @@ COLP0B:
 
 bitplane:
 BPLLOGO:
-  INCBIN "raw/madhatter.raw"
+  INCBIN "raw/voidlogo.raw"
   dcb.b  80000,0
 
 BPLTITLE:

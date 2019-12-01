@@ -83,13 +83,7 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect0_3
-        bra.w Effect1_0
-        bra.w Effect3_0
-		bra.w Effect3_1
-		bra.w Effect3_21
-		bra.w Effect3_22
-		bra.w Effect3_23
-		bra.w Effect3_24		
+        bra.w Effect1_0		
         bra.w Effect1_1 	
 		bra.w Effect1_2
 		bra.w Effect1_3		
@@ -635,17 +629,9 @@ Effect3_Main:
 		sub.l   a6,a6
 										
         move.w   #7,.i     		    ;  for(int i=0;i<8;i++)
-<<<<<<< HEAD
 .lp1  
 								;  {	
 		bsr.w   GetFrame2        		;    GetFrame(  framedate,frmnr)		        
-=======
-.lp1  									;  {
-		move.l  (a1),CNTBLMAP(a2)      ;    *frmdat.blmap = *laydat.blmap
-		bsr.w   GetFrame2        		;    GetFrame(  framedate,frmnr)
-		move.l  #150,a5
-		sub.l   a6,a6
->>>>>>> 944140033f1ea02d80eff5cc66988451bfddecd7
 		bsr.w   MoveDataV2
 		bsr.w   SetFrame                ;    SetFrame(  input,laydat)
 		cmp.w   #320,d5

@@ -370,7 +370,7 @@ Effect7_4:
   lea.l  .linesizepos,a0
   move.l  28(a0),a0
   move.l  (a0),d5
-  lsl.l   #8,d5                   ;  intensity = frmdat[7].size*256/320
+  mulu.l  .intensity,d5                   ;  intensity = frmdat[7].size*256/320
   divu.l  #640,d5
   and.l   #$ffff,d5
   move.w  #7,d2
@@ -496,3 +496,4 @@ Effect7_4:
 .curfrmpos: dc.l 0
 .curlshiftpos: dc.l 0
 .curlsizepos: dc.l 0
+.intensity dc.l 255

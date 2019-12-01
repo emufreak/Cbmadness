@@ -8,15 +8,8 @@ FRMSIZE2 equ 454
 <?php
 
   $frames = 45;
-<<<<<<< HEAD
-  $multfactor = 1.011294;
-  $multfactor = 1.009674;
-  $multfactor = 1.010003;
-  
-=======
   $multfactor = 1.010300;
     
->>>>>>> 944140033f1ea02d80eff5cc66988451bfddecd7
   function calcsize( $sizebase, $layer, $frame) {
 	
 	global $frames, $multfactor;
