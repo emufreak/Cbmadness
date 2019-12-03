@@ -1895,7 +1895,7 @@ BPLTITLE:
 	  INCLUDE FrameData3_Color.i
 	  INCLUDE FrameData2_Color.i
 
-	  DCB.B 650000,0
+	  DCB.B 850000,0
 	
   
   

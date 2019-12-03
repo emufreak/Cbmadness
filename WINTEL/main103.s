@@ -139,9 +139,11 @@ End:
 	endc
 	rts
 
+PalLogo:
+  INCBIN "raw/voidlogopal.raw"
 
 Effect0_1:
-  lea    PalTitle,a5
+  lea    PalLogo,a5
   move.w  #255,d5
   moveq.l #0,d2
   lea    colp0,a4
@@ -149,7 +151,7 @@ Effect0_1:
   lea    colp0b,a6
   addq.l #2,a6
   bsr.w  SetColDataFade
-  move.w #$f00,$dff180
+  ;move.w #$f00,$dff180
   IFEQ DEBUG-0
   move.l #COPPERLISTIMAGE,$dff080
   ENDC
@@ -159,8 +161,8 @@ Effect0_1:
   move.l #IMGBPLPOINTERS,draw_cprbitmap
   move.l #IMGBPLPOINTERS,view_cprbitmap
   bsr.w  SetBitplanePointersDefault
-  move.w #$c00,$dff106
-  move.w #$000,$dff180
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
   sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
@@ -188,7 +190,7 @@ Effect0_2:
 
 Effect0_3:
   bsr.w  SetBitplanePointersDefault
-  lea    PalTitle,a5
+  lea    PalLogo,a5
   sub.l  d5,d5
   move.w  ColMultiplier,d5
   moveq.l #0,d2
@@ -465,11 +467,12 @@ Effect3_24:
 
 .counter: dc.w 45 
 
-
 Eff2ZoomIn: dc.w 0
 
 PalTitle:
   INCBIN "raw/madhatterpal.raw"
+  
+  
 
 RotateMove:
   ;a0 Directions
