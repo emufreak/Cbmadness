@@ -1,7 +1,7 @@
 DEBUG = 0
 SOUND    = 1
 BLITTER  = 0
-BPLWIDTH  = 40 
+BPLWIDTH  = 40
 BPLHEIGHT = 256
 BPLCOUNT  = 8
 MAXDEPTH = 8
@@ -58,7 +58,7 @@ MainLoop:
     CMP.L D2,D0                            ; selected vpos reached
     BNE.S  .mlwaity
 
-  
+
     lea    continue,a0
     cmp.w  #1,(a0)
     bne.s  .br1
@@ -83,10 +83,10 @@ jmplist:
         bra.w Effect0_1
 		bra.w Effect0_2
 		bra.w Effect0_3
-        bra.w Effect1_0		
-        bra.w Effect1_1 	
+        bra.w Effect1_0
+        bra.w Effect1_1
 		bra.w Effect1_2
-		bra.w Effect1_3		
+		bra.w Effect1_3
 		bra.w Effect2_0
 		bra.w Effect2_1
 		bra.w Effect3_0
@@ -104,10 +104,10 @@ jmplist:
 		bra.w Effect4_14
 		bra.w Effect4_15
 		bra.w Effect4_16
-       ; bra.w Effect4_2	
-        bra.w Effect4_3	
-        bra.w Effect4_4		
-        bra.w Effect6_0			
+       ; bra.w Effect4_2
+        bra.w Effect4_3
+        bra.w Effect4_4
+        bra.w Effect6_0
 		bra.w Effect6_11
 		bra.w Effect6_12
 		bra.w Effect6_13
@@ -115,12 +115,12 @@ jmplist:
         bra.w Effect6_2
 		bra.w Effect6_4
 		bra.w Effect6_5
-		bra.w Effect7_1	
+		bra.w Effect7_1
         ;bra.w Effect7_2
         bra.w Effect7_3
-        bra.w Effect7_4		
+        bra.w Effect7_4
         bra.w End
-		
+
 
 BLINCREMENT = 1
 SPINCREMENT = 2
@@ -185,9 +185,10 @@ Effect0_2:
   ;Calculate Colors for effect7_3
   lea.l   EF73_COLORS1+1024,a0       ;Destination
   lea.l   EF73_COLORS1,a1            ;Startcolors
-  lea.l   EF73_COLORS67,a2            ;End Colors
+  lea.l   EF74_COLORS1,a2            ;End Colors
   move.l  #66,d6
   bsr.w   Prepare_Transition
+  ;clr.w   $200
   move.w  #1,continue
   bra.w   mlgoon
 
@@ -205,7 +206,7 @@ Effect0_3:
     ;d5 - intensity
   ;a5 - colors
   ;a4 - copperpos highwordcol
-  ;a6 - copperpos lowword pos  
+  ;a6 - copperpos lowword pos
   ;lea    PalettePic,a3
   ;bsr.w  SetColDataFade
   sub.w  #4,ColMultiplier
@@ -240,7 +241,7 @@ Effect1_0:
   endc
   move.w #1,continue
   bra.w mlgoon
- 
+
  include "effect3.s"
  include "effect4.s"
  include "effect6.s"
@@ -284,7 +285,7 @@ Effect1_3:
   bne.s  .br1
   sub.w  #1,.ptrnleft
   bne.s  .br2
-  
+
   move.w #1,continue
   bra.w  mlgoon
 .br2
@@ -329,9 +330,9 @@ Effect2_1:
   ;move.w #$000,$dff180
   bsr.w  SetBitplanePointersDefault
   lea    PalTitle,a5
-  
+
   sub.l   d5,d5
-  move.w  ColMultiplier,d5 
+  move.w  ColMultiplier,d5
   moveq.l #0,d2
   lea    colp0,a4
   addq.l #2,a4
@@ -354,8 +355,8 @@ Eff2ZoomIn: dc.w 0
 
 PalTitle:
   INCBIN "raw/madhatterpal.raw"
-  
-  
+
+
 
 RotateMove:
   ;a0 Directions
@@ -413,7 +414,7 @@ Effect1_Main:
 
         bsr.w   MoveAdjust              ;  MoveAdjust( );
 		move.l  .colptr(pc),a5
-		
+
 		movem.l d0-d7/a0-a6,.save
 
 		;move.l  #165,d4
@@ -431,9 +432,9 @@ Effect1_Main:
 		move.w  #7,d2
 		bsr.w   SetColDataFade		    ;  SetColDataFade(intensity);
     	movem.l .save,d0-d7/a0-a6
-		
-		cmp.w   #0,Eff1ZoomIn           ;  if(Eff1ZoomIn( )	
-		beq.s   .br3                    ;  {		
+
+		cmp.w   #0,Eff1ZoomIn           ;  if(Eff1ZoomIn( )
+		beq.s   .br3                    ;  {
 		lea	    .colptr,a5
 	    add.l   #2,(a3)				    ;    frame++
 		cmp.l   #134,(a3)               ;    if(frame > 66) {
@@ -444,7 +445,7 @@ Effect1_Main:
 		cmp.l   #-1,(a3)
 		bne.s   .br3
 		move.l  #EF1_COLORS1,(a5)        ;    }
-		
+
 .br3                                    ;    }
                                         ;  }
 		bsr.w  DrawLines                ;  DrawLines(blarraydim);
@@ -453,7 +454,7 @@ Effect1_Main:
 
 .br1        							;}
         rts
-		
+
 .save dcb.l 15,0
 .i dc.w 7
 .counter: dc.w 1
@@ -557,68 +558,68 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   ;move.w  #$c00,$dff106
   ;move.w  #$f00,$dff180
   lea     .intstore,a0
-  sub.l   d0,d0                   ;curvalue = 0  
+  sub.l   d0,d0                   ;curvalue = 0
   moveq.l #64-1,d6                ;for i = 1 to 64
-.lp2                              ;Write multiplication table  
+.lp2                              ;Write multiplication table
   move.l  d0,d1                   ;lwtowrite = curvalue / 256
-  lsr.l   #8,d1   
-  moveq.l #24,d3                  ;lwtowrite <<= 24; 
-  lsl.l   d3,d1                  
+  lsr.l   #8,d1
+  moveq.l #24,d3                  ;lwtowrite <<= 24;
+  lsl.l   d3,d1
   add.l   d5,d0                   ;curvalue += intensity
   move.l  d0,d3                   ;tmp = curvalue / 256
-  lsr.l   #8,d3                                     
+  lsr.l   #8,d3
   moveq.l #16,d4                  ;tmp <<= 16
   lsl.l   d4,d3
   add.l   d3,d1                   ;lwtowrite += tmp;
   add.l   d5,d0                   ;curvalue += intensity;
   move.l  d0,d3                   ;tmp = curvalue / 256;
-  and.l   #$ff00,d3               ;tmp <<= 8; 
+  and.l   #$ff00,d3               ;tmp <<= 8;
   add.l   d3,d1                   ;lwtowrite += tmp;
   add.l   d5,d0                   ;curvalue += intensity;
   move.l  d0,d3                   ;tmp = curvalue / 256;
-  lsr.l   #8,d3 
-  add.l   d3,d1                   ;lwtowrite += tmp; 
-  add.l   d5,d0                   ;curvalue += intensity;  
+  lsr.l   #8,d3
+  add.l   d3,d1                   ;lwtowrite += tmp;
+  add.l   d5,d0                   ;curvalue += intensity;
   move.l  d1,(a0)+
-  dbf     d6,.lp2   
-  
+  dbf     d6,.lp2
+
   ;moveq.l #7,d2			     ;  for(	x=0;x<=layers;x++)
-  moveq.l #31,d1                 ;  // skip color 0 in loop      
+  moveq.l #31,d1                 ;  // skip color 0 in loop
 .lp1
   ;// red color
   move.l  (a5)+,d0               ;curcolor = *color++
-  move.l  d0,d6                  ;bluepart = curcolor & $ff		
+  move.l  d0,d6                  ;bluepart = curcolor & $ff
   and.l   #$ff,d6                ;00bb
   lea.l   .intstore,a0
   move.b  (a0,d6),d6              ;bluepart *= intensity;
                                  ;00bb
   move.l  d6,d7                  ;colorhw = bluepart >> 4;
   lsr.l   #4,d7                  ;000b
-  and.w   #$f,d6                 ;colorlw = bluepart & $f                              
+  and.w   #$f,d6                 ;colorlw = bluepart & $f
                                  ;000b
-  move.l  d0,d4                  ;greenpart = curcolor & $ff00 
-  and.l   #$ff00,d4              ;gg00	
-  lsr.l   #8,d4                  ;00gg 
+  move.l  d0,d4                  ;greenpart = curcolor & $ff00
+  and.l   #$ff00,d4              ;gg00
+  lsr.l   #8,d4                  ;00gg
   move.b  (a0,d4),d4              ;greenpart *= intensity;
                                  ;00gg
-  move.l  d4,d3                  ;colorhw += greenpart & $f0 
-  and.w   #$f0,d3                ;00g0         
+  move.l  d4,d3                  ;colorhw += greenpart & $f0
+  and.w   #$f0,d3                ;00g0
   add.w   d3,d7                  ;00gb
   lsl.w   #4,d4                  ;colorlw +=  (greenpart << 4) & $f0
                                  ;gg0
-  and.w   #$f0,d4                ;00g0              
+  and.w   #$f0,d4                ;00g0
   add.w   d4,d6                  ;00gb
-					
+
   move.l  d0,d4                  ;redpart = (curcolor & $$ff0000) >> 8
-                                 ;rr0000  
+                                 ;rr0000
   lsr.l	  #8,d4                  ;rrgg
   lsr.l	  #8,d4                  ;00rr
-  move.b  (a0,d4),d4             ;redpart *= intensity; 
+  move.b  (a0,d4),d4             ;redpart *= intensity;
                                  ;00rr
   lsl.l   #8,d4                  ;rr00
-  
-  move.l  d4,d3                  ;colorlw = redpart & $f00  
-  and.w   #$f00,d3               ;0r00               
+
+  move.l  d4,d3                  ;colorlw = redpart & $f00
+  and.w   #$f00,d3               ;0r00
   add.w   d3,d6                  ;0rgb
   lsr.w   #4,d4                  ;colorhw +=  (redpart << 4) & $f00
                                  ;0rr0
@@ -626,19 +627,19 @@ SetColDataFade:                  ;SetColDataFade(intensity, layers, colorptr)
   add.w   d4,d7                  ;0rgb
   move.w  d6,(a6)
   move.w  d7,(a4)
-  addq.l  #4,a4		            
+  addq.l  #4,a4
   addq.l  #4,a6
-  dbf     d1,.lp1                
+  dbf     d1,.lp1
   move.w  #31,d1
-  addq.l  #4,a4		            
+  addq.l  #4,a4
   addq.l  #4,a6
-  dbf     d2,.lp1 
+  dbf     d2,.lp1
   ;move.w  #$000,$dff106
   ;move.w  #$0c0,$dff180
   rts
 
  cnop 0,4
- 
+
 .intstore: dcb.b 256,255
 
 SetColDataFadeWhite:                  ;SetColDataFade(intensity, layers, colorptr)
@@ -649,47 +650,47 @@ SetColDataFadeWhite:                  ;SetColDataFade(intensity, layers, colorpt
   ;move.l  d5,d3                  ;  for(	x=0;x<=layers;x++)
   ;not.b   d3                     ;  white = 255 - intensity
   ;move.l  d3,a0
-  moveq.l #31,d1                 ;  // skip color 0 in loop                           
+  moveq.l #31,d1                 ;  // skip color 0 in loop
 .lp1                                ;// red color
   move.l  (a5)+,d0               ;curcolor = *color++
-  move.l  d0,d6                  ;bluepart = curcolor & $ff		
+  move.l  d0,d6                  ;bluepart = curcolor & $ff
   and.l   #$ff,d6                ;00bb
-  mulu.w  d5,d6                  ;bluepart *= intensity; 
+  mulu.w  d5,d6                  ;bluepart *= intensity;
                                  ;bbbb
   lsr.l   #8,d6                  ;bluepart /= 256
   add.l   a0,d6                  ;bluepart += white;
                                  ;00bb
   move.l  d6,d7                  ;colorhw = bluepart >> 4;
   lsr.l   #4,d7                  ;000b
-  and.w   #$f,d6                 ;colorlw = bluepart & $f                              
+  and.w   #$f,d6                 ;colorlw = bluepart & $f
                                  ;000b
-  move.w  d0,d4                  ;greenpart = curcolor & $ff00 
-  and.w   #$ff00,d4              ;gg00	
-  lsr.l   #8,d4                  ;00gg  
+  move.w  d0,d4                  ;greenpart = curcolor & $ff00
+  and.w   #$ff00,d4              ;gg00
+  lsr.l   #8,d4                  ;00gg
   mulu.w  d5,d4                  ;greenpart *= intensity;
                                  ;gggg
-  lsr.l   #8,d4                  ;greenpart /= 256;  
-                                 ;gg                               
+  lsr.l   #8,d4                  ;greenpart /= 256;
+                                 ;gg
   add.l   a0,d4                  ;greenpart += white;
-  move.l  d4,d3                  ;colorhw += greenpart & $f0 
-  and.w   #$f0,d3                ;g0         
+  move.l  d4,d3                  ;colorhw += greenpart & $f0
+  and.w   #$f0,d3                ;g0
   add.w   d3,d7                  ;gb
   lsl.w   #4,d4                  ;colorlw +=  (greenpart << 4) & $f0
                                  ;gg0
-  and.w   #$f0,d4                ;00g0              
+  and.w   #$f0,d4                ;00g0
   add.w   d4,d6                  ;00gb
-				
+
   move.l  d0,d4                  ;redpart = (curcolor & $$ff0000) >> 8
-                                 ;rr0000  
+                                 ;rr0000
   lsr.l	  #8,d4                  ;rrgg
-  and.l   #$ff00,d4              ;rr00  
-  mulu.w  d5,d4                  ;redpart *= intensity >> 8; 
+  and.l   #$ff00,d4              ;rr00
+  mulu.w  d5,d4                  ;redpart *= intensity >> 8;
                                  ;rrrr00
   lsr.l   #8,d4                  ;rrrr
   lsr.l   #8,d4                  ;rr
-  add.l   a0,d4  
+  add.l   a0,d4
   move.l  d4,d3                  ;colorlw = redpart & $f00
-  lsl.l   #8,d3 
+  lsl.l   #8,d3
   and.w   #$f00,d3               ;rr00
   add.w   d3,d6                  ;0rgb
   lsl.w   #4,d4                  ;colorhw +=  (redpart >> 4) & $f0
@@ -698,13 +699,13 @@ SetColDataFadeWhite:                  ;SetColDataFade(intensity, layers, colorpt
   add.w   d4,d7                  ;0rgb
   move.w  d6,(a6)
   move.w  d7,(a4)
-  addq.l  #4,a4		            
+  addq.l  #4,a4
   addq.l  #4,a6
-  dbf     d1,.lp1                
+  dbf     d1,.lp1
   move.w  #31,d1
-  addq.l  #4,a4		            
+  addq.l  #4,a4
   addq.l  #4,a6
-  dbf     d2,.lp1 
+  dbf     d2,.lp1
   rts
 
 MoveDataV2:                               ;MoveData(	input
@@ -735,7 +736,7 @@ MoveDataV2:                               ;MoveData(	input
   move.w  d0,d4
 .br2                                    ;  }
   rts									;}
-  
+
 MoveDataItemV2:                        ;MoveDataItem(	posdet,pos)
 ;d5 = size
 ;d6 = movepct
@@ -873,29 +874,29 @@ GetArrValue:
 ia
         lea      (a1,d4),a2
 
-;input 
+;input
 ;d0: sizecol
 ;d1: invsin
 ;d2: slope
-CalcRotation:                       ;CalcRotation(sizecol, 
-                                    ;      slope, invsin) { 
+CalcRotation:                       ;CalcRotation(sizecol,
+                                    ;      slope, invsin) {
   move.l  d0,d3                     ;  startpos = sizelinehor / 2;
  ;lsr.l   #9,d3                     ;  startpos =>> 8;
                                     ;  // /2 and to word = rshift 9
   move.l  d2,d4                     ;  tmp = 128*slope;
   lsr.l   d4                        ;  //*128 and to word = rshift 1
   sub.w   d4,d3                     ;  startpos -= tmp;
-  move.l  d2,d4                     ;  
+  move.l  d2,d4                     ;
   add.l   d4,d4
-  divu.w  d3,d4                     ;   
-  lsr.l   #8,d0                     ;  sizelinehor =>> 8;  
+  divu.w  d3,d4                     ;
+  lsr.l   #8,d0                     ;  sizelinehor =>> 8;
   bsr.s  WriteCopper4Rotation       ;  WriteCopper4Rotation(sizelinehor
-  rts								;                         , slope);								
+  rts								;                         , slope);
                                     ;}
 
 
 WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
-                                    ;                  slope,startpos);							
+                                    ;                  slope,startpos);
   ;Calculate size horizontal line   ;  {
   move.l   (a2),d1                  ;    sizecol = frame.sizecol[x];
   move.l   (a5),d0                  ;    invsin = frame.invsin[x];
@@ -904,17 +905,17 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   move.l   d1,d7
   sub.l    d0,d0                    ;
   move.l   #linebuffer,d0           ;    64kalign(linebuffer)
-  add.l    #$10000,d0               ;   
-  clr.w    d0  
-  cmp.l    #320,d1                  ;    if(size > 320) sizepos = 320;             
+  add.l    #$10000,d0               ;
+  clr.w    d0
+  cmp.l    #320,d1                  ;    if(size > 320) sizepos = 320;
   ble.s    .br1                     ;    else sizepos = size;
   move.l   #320,d1
-.br1  
+.br1
   sub.l    #MINLINE,d1
   moveq.l  #12,d2                   ;    bufferpos = 32*120*sizepos+linebuffer;
-  lsl.l    d2,d1 
-  add.l    d0,d1  
-  swap     d1  
+  lsl.l    d2,d1
+  add.l    d0,d1
+  swap     d1
   move.w   d1,2(a1)
   swap     d1
   move.l   a3,a4                    ;    curcopperpos = copperpos;
@@ -924,19 +925,19 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
   addq.l   #6,d4                    ;
   add.l    d4,a4                    ;    curcopperpos += tmp;
   move.l   d7,d2
-  add.l    d7,d7    
-  move.l   #640,d4                  ;     maxpos = 640; 
+  add.l    d7,d7
+  move.l   #640,d4                  ;     maxpos = 640;
   cmp.l    d4,d7                    ;     if(size*2 < 640) {
   bge.s    .br3                     ;       maxpos =
-  divu.l   d7,d4                    ;       (int)640/(size*2) *size*2;   
+  divu.l   d7,d4                    ;       (int)640/(size*2) *size*2;
   mulu.l   d7,d4
   bra.s    .br2                     ;     }
 .br3                                ;     else {
   move.l   d7,d4                    ;       maxpos = size * 2;
-.br2                                ;     } 
+.br2                                ;     }
   move.l   d2,d7
-  move.l   d7,d0                    ;   startpos = (size * 1.5) - 160;    
-  lsr.l    d0  
+  move.l   d7,d0                    ;   startpos = (size * 1.5) - 160;
+  lsr.l    d0
   add.l    d7,d0
   sub.l    #160,d0
   move.l   d0,d2
@@ -955,7 +956,7 @@ WriteCopper4Rotation:               ;WriteCopper4Rotation(sizelinehor
 .save
   dcb.l 6,0
 
- 
+
 WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   move.w   #256-1,d0                ;  for(i=0;i<256,i++) {
   lsl.l    #8,d4
@@ -967,9 +968,9 @@ WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   moveq.l  #%11111,d3
   move.l   d1,a5
   move.l   #$fffc,d1
-.lp1 
+.lp1
   tst.l    a3                       ;    if(effpos < 0)
-  bge.s    .br2                     ;    { 
+  bge.s    .br2                     ;    {
   add.l    d4,a3                    ;      effpos += maxpos;
   bra.s    .br1
 .br2                                ;    }
@@ -979,7 +980,7 @@ WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
 .br1                                ;    }
   move.l   a3,d2                    ;    curpos = effpos
   lsr.l    #8,d2
-  move.l   a0,d5                  ;    
+  move.l   a0,d5                  ;
   cmp.l    d5,d7                    ;    if(320 < linesize)
   ble.s    .br3                     ;    {
   sub.l    d7,d2                    ;      curpos -= linesize;
@@ -990,10 +991,10 @@ WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
   bra.s    .br3                     ;      }
 .br4                                ;      else {
   sub.l    d7,d2                    ;        curpos -= linesize + 640
-  add.l    a1,d2 
+  add.l    a1,d2
   cmp.l    d5,d2                    ;        if(curpos < 320)
   bge.s    .br3                     ;        {
-  move.l   d5,d2                    ;         curpos = 320; }      
+  move.l   d5,d2                    ;         curpos = 320; }
                                     ;      }
                                     ;    }
 .br3                                ;    //Pixelexact offset part
@@ -1014,9 +1015,9 @@ WriteCopperLine4Rotation:           ;WriteCopperLine4Rotation() {
 
 
 
-DrawLines4Rotation: 
+DrawLines4Rotation:
         lea      linebuffer,a2
-		move.l   a2,d0 
+		move.l   a2,d0
 		add.l    #$10000,d0          ;do not cross 64k border to optimize
 		clr.w    d0                  ;copper
         moveq.l  #MINLINE,d7
@@ -1028,24 +1029,24 @@ DrawLines4Rotation:
         move.l   d0,a0               ;fill in parameters
         move.l   d0,d4
 		add.l    #126,d4
-        bsr.s    DrawLineSize4Rotation  
+        bsr.s    DrawLineSize4Rotation
 		add.l    #128*32,d0
 .br1
 		addq.w   #1,d7
         cmp.w    #320+1,d7
-        bne.s    .lp1 	
+        bne.s    .lp1
         rts
 
-.regsave dc.w 0								  
-                                  
+.regsave dc.w 0
 
-DrawLineSize4Rotation:            ;DrawLine4Rotation(writeptr, readptr) 
+
+DrawLineSize4Rotation:            ;DrawLine4Rotation(writeptr, readptr)
 								  ;{
   move.w  #15*4096,d1             ;  bltconx = 15 >> 12
 .wblit:                           ;  wblit();
   btst    #6,$2(a6)
-  bne.s   .wblit 
-  move.w  d1,$42(a6)   			  ;  set_register_bltcon1(bltconx)  
+  bne.s   .wblit
+  move.w  d1,$42(a6)   			  ;  set_register_bltcon1(bltconx)
   or.w    #$9f0,d1                ;  bltconx.w |= 0x9f0
   move.w  d1,$40(a6)               ;  set_register_bltcon0(bltconx);
   move.l  #$ffffffff,$44(a6)       ;  set_register_bltafwm(#$0000fffe)
@@ -1054,9 +1055,9 @@ DrawLineSize4Rotation:            ;DrawLine4Rotation(writeptr, readptr)
   move.l  a0,$50(a6)				  ;  set_register_bltapt(readptr);
   ;subq.l  #2,d4                   ;  writeptr -= 2
   move.l  d4,$54(a6)               ;  set_register_bltdpt(writeptr);
-  move.w  #31*64+63,$58(a6)		  ;  bltsize = 31*64+63; 
+  move.w  #31*64+63,$58(a6)		  ;  bltsize = 31*64+63;
   rts                             ;}
-	
+
 DrawLine4Rotation:
         ;input
         ;d3 - offset
@@ -1120,7 +1121,7 @@ DrawLine4Rotation:
 		neg.w     d1
 		move.w    d1,d3
 		bra.s     .ldrawbl2
-.br8		
+.br8
         cmp.w     #32,d1
         blt.s     .br4
         move.l    d5,(a2)+             ;write to buffer
@@ -1846,20 +1847,21 @@ Prepare_Transition:                    ;Write Palettes
   ;lea    EF71_COLORS1+1024,a0       ;Destination
   ;lea    EF71_COLORS1,a1            ;Startcolors
   ;lea    EF73_COLORS1,a2            ;End Colors
-  
-  move.w d6,d2  
-  subq.w #1,d2                      ;Number of tables for all 275 frames 
-                                    ;=intensitystart 
-.lp2									
-  move.w #255,d7                    ;Colorcounter 
-.lp1								
-  sub.l  a4,a4                      ;init reg for final result									
+  move.l a1,a3                      ;backup startcolor
+  move.l a2,a5
+  move.w d6,d2
+  subq.w #1,d2                      ;Number of tables for all 275 frames
+                                    ;=intensitystart
+.lp2
+  move.w #255,d7                    ;Colorcounter
+.lp1
+  sub.l  a4,a4                      ;init reg for final result
   move.l (a1)+,d0                   ;fetch start color
   move.l (a2)+,d3                   ;fetch end color
-  move.l d0,d1                      
+  move.l d0,d1
   and.l #$0000ff,d1                 ;get color part for blue
   mulu.w d2,d1                      ;colorpart * intensitystart / 275
-  divu.w d6,d1                    ;1st part of color 
+  divu.w d6,d1                    ;1st part of color
   move.l d3,d4
   and.l #$0000ff,d4                 ;get color part for endcolor
   move.w d6,d5                    ;intensity endcolor = 275 - intensitystart
@@ -1868,9 +1870,9 @@ Prepare_Transition:                    ;Write Palettes
   divu.w d6,d4                    ;2nd part of color
   add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
   move.w d1,a4
-  
+
   lsr.l  #8,d0                      ;shift to green part of color
-  move.l d0,d1  
+  move.l d0,d1
   and.w  #$00ff,d1                  ;get color part for green
   mulu.w d2,d1                      ;colorpart * intensitystart / 275
   divu.w d6,d1                    ;1st part of color
@@ -1878,36 +1880,36 @@ Prepare_Transition:                    ;Write Palettes
   move.l d3,d4
   and.w  #$00ff,d4                  ;get color part for endcolor
   move.w d6,d5                    ;intensity endcolor = 275 - intensitystart
-  sub.w  d2,d5 
+  sub.w  d2,d5
   mulu.w d5,d4                      ;bluepart * intensityend
   divu.w d6,d4                    ;2nd part of color
   add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
   lsl.l  #8,d1                      ;overwrite right section for green part
-  add.w  d1,a4                      ;add to final result 
+  add.w  d1,a4                      ;add to final result
 
   lsr.l  #8,d0                      ;shift to red part of color
-  move.l d0,d1  
+  move.l d0,d1
   and.w #$00ff,d1                   ;get color part for red
   mulu.w d2,d1                      ;colorpart * intensitystart / 275
   divu.w d6,d1                      ;1st part of color
   lsr.l  #8,d3                      ;shift to red part of color
-  move.l d3,d4                    
+  move.l d3,d4
   and.w  #$00ff,d4                  ;get color part for endcolor
   move.w d6,d5                      ;intensity endcolor = 275 - intensitystart
-  sub.w  d2,d5 
+  sub.w  d2,d5
   mulu.w d5,d4                      ;bluepart * intensityend
   divu.w d6,d4                      ;2nd part of color
   add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
   lsl.l  #8,d1                      ;overwrite right section for red part
   lsl.l  #8,d1
   and.l  #$ffffff,d1
-  add.l  d1,a4                      ;add to final result  
-  
-  move.l a4,(a0)+                   ;write color 
+  add.l  d1,a4                      ;add to final result
+
+  move.l a4,(a0)+                   ;write color
   dbf    d7,.lp1                    ;next color
-  lea    EF71_COLORS1,a1            ;Reset Startcolors
-  lea    EF73_COLORS1,a2            ;Reset End Colors
-  dbf    d2,.lp2                    ;next table   
+  move.l a3,a1                      ;Reset Startcolors
+  move.l a5,a2                      ;Reset End Colors
+  dbf    d2,.lp2                    ;next table
   rts
 
 mpchkblline:
@@ -2129,6 +2131,6 @@ CNTOBJSIZE = 24
 empty: dcb.l 52,0
 
       INCLUDE graphics.s
-      
+
  END
 

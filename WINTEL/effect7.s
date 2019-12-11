@@ -248,6 +248,7 @@ Effect7_3:
   move.w  #$000,$dff180
   bsr.w   SetCopperList4Rotation  
   move.l  .colptr(pc),a5
+  clr.w   $200
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
   move.l  #255,d5
