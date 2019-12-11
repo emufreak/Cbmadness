@@ -371,7 +371,7 @@ Effect7_4:
   lea.l  .linesizepos,a0
   move.l  28(a0),a0
   move.l  (a0),d5
-  mulu.l  .intensity,d5                   ;  intensity = frmdat[7].size*256/320
+  mulu.l  .intensity,d5                   ;  intensity = frmdat[7].size*256/640
   divu.l  #640,d5
   and.l   #$ffff,d5
   move.w  #7,d2
@@ -455,6 +455,9 @@ Effect7_4:
   move.w  #$000,$dff180
   cmp.w  #28,P61_Pos
   bne.s  .br2
+  cmp.w  #20,P61_CRow
+  bcs.s  .br2
+  sub.l  #1,.intensity
   cmp.w  #60,P61_CRow
   beq.s  .br1
 .br2
