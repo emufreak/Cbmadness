@@ -18,7 +18,7 @@ Playrtn:
      else
            jmp          StartProg
      endc
-           include      "utils.s"
+
 *****************************************************************************u
 
 		    ;5432109876543210
@@ -145,7 +145,17 @@ End:
 PalLogo:
   INCBIN "raw/voidlogopal.raw"
 
+             include      "utils.s"
+		   include      "c2p.s"
+
 Effect0_1:
+  move.w  #320,d0                ;chunkyx
+  move.w  #256,d1                ;chunky y
+  move.w  #0,d3                  ;offset
+  bsr.w   c2p1x1_4_c5_gen_init
+  lea.l   LOGOCHK,a0
+  lea.l   BPLLOGO,a1
+  bsr.w   c2p1x1_4_c5_gen
   lea    PalLogo,a5
   move.w  #255,d5
   moveq.l #0,d2
@@ -311,6 +321,15 @@ Effect1_3:
 .ptrnleft: dc.w 8
 
 Effect2_0:
+  
+  ;c2p conversion
+  move.w  #320,d0                ;chunkyx
+  move.w  #256,d1                ;chunky y
+  move.w  #0,d3                  ;offset
+  bsr.w   c2p1x1_4_c5_gen_init
+  lea.l   TITLECHK,a0
+  lea.l   BPLTITLE,a1
+  bsr.w   c2p1x1_4_c5_gen
   ;move.w #$0,$dff180
   cmp.w  #4,P61_Pos
   beq.s  .br2
@@ -1844,9 +1863,9 @@ currentdrawpos: dc.l 0
 patternpos: dc.l 0
 
 Prepare_Transition:                    ;Write Palettes
-  ;lea    EF71_COLORS1+1024,a0       ;Destination
-  ;lea    EF71_COLORS1,a1            ;Startcolors
-  ;lea    EF73_COLORS1,a2            ;End Colors
+  ;a0 - Destination
+  ;a1 - Startcolors
+  ;a2 - End Colors
   move.l a1,a3                      ;backup startcolor
   move.l a2,a5
   move.w d6,d2

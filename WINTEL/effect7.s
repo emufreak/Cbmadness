@@ -6,10 +6,10 @@ Effect7_1:
   bsr.w  Main_Effect7_1
   sub.w  #1,.counter
   beq.s  .br1
+  clr.w  $200
   bra.w  mlgoon
 .br1
   move.w #1,continue
-  clr.w  $200
   bra.w  mlgoon 
 
 .counter: dc.w 268
@@ -32,7 +32,7 @@ Effect7_2:
 
 Main_Effect7_1:
 
-;a4 = copptr
+;a4 = copptr          6b
 ;a5 = colptrhw
 ;a6 = copptrlw   
   
@@ -43,7 +43,8 @@ Main_Effect7_1:
   move.l  .colptr(pc),a5
   move.l  draw_cprpalh,a4
   move.l  draw_cprpall,a6 
-  move.l  #255,d5
+  ;move.l  #$c5,d5
+  move.l  #$6b,d5
   move.w  #7,d2
   bsr.w   SetColDataFade 
   move.l  .colptr(pc),a5

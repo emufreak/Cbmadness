@@ -2482,12 +2482,16 @@ COLP0B:
 
 bitplane:
 BPLLOGO:
-  INCBIN "raw/voidlogo.raw"
-  dcb.b  80000,0
+   dcb.b  160000,0
 
 BPLTITLE:
-  INCBIN "raw/madhatter.raw"
-  dcb.b  80000,0
+  dcb.b  160000,0
+
+TITLECHK:
+  INCBIN "raw/madhatter.chk"
+
+LOGOCHK:
+  INCBIN "raw/voidlogo.chk"
 
       INCLUDE PatternData.i
 	  INCLUDE FrameData.i
@@ -2497,7 +2501,7 @@ BPLTITLE:
 	  INCLUDE FrameData3_Color.i
 	  INCLUDE FrameData2_Color.i
 
-	  DCB.B 850000,0
+	  DCB.B 720000,0
 	
   
   

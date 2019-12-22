@@ -1,5 +1,5 @@
 <?php
-  $colors = array( array( "blue" => 0xfc, "green" => 0x42, "red" => 0x02),
+  $colors = array( 
 		               array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
 					    array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
 						 array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
@@ -12,7 +12,8 @@
 						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
 						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02),
 						  array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
-						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01));
+						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
+						  array( "blue" => 0xfc, "green" => 0x42, "red" => 0x02));
   $multfactor = 1.006486;
   //$multfactor = 1.005186;
   $layfactor = pow($multfactor,134);
@@ -41,14 +42,14 @@ EF61_COLORS<?php echo( $i); ?>
 		for($i2=0;$i2<=3;$i2++) {
 	      if( ( $index & pow( 2,$i2*2)) != 0) {
 			if( ( $index & pow(2,$i2*2+1)) == 0) {
-			  $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["red"] / 640;
-			  $colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["green"] / 640;
-			  $colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["blue"] / 640;
+			  $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[9-$i2]["red"] / 640;
+			  $colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[9-$i2]["green"] / 640;
+			  $colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[9-$i2]["blue"] / 640;
 			}
 		  } elseif( ($index & pow(2,$i2*2+1)) != 0) {
-		    $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["red"] / 640;
-			$colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["green"] / 640;
-			$colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[10-$i2]["blue"] / 640;
+		    $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[9-$i2]["red"] / 640;
+			$colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[9-$i2]["green"] / 640;
+			$colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $coltmp[9-$i2]["blue"] / 640;
 		  }
 	    }	
 		
@@ -79,7 +80,7 @@ EF61_COLORS<?php echo( $i); ?>
 ?>
   dc.l $fffffff
 <?php
-  $colors = array(   array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
+  /*$colors = array(   array( "blue" => 0xfc, "green" => 0xbd, "red" => 0x01),
 						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
 						  array( "blue" => 0xfc, "green" => 0x42, "red" => 0x02),
 						  array( "blue" => 0xfc, "green" => 0x7e, "red" => 0x01),
@@ -92,7 +93,7 @@ EF61_COLORS<?php echo( $i); ?>
 						 array( "blue" => 0x03, "green" => 0xfe, "red" => 0x7d),
 						 array( "blue" => 0x05, "green" => 0xfe, "red" => 0x05),
 						  array( "blue" => 0x7d, "green" => 0xfe, "red" => 0x01),
-						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02));
+						  array( "blue" => 0xbf, "green" => 0xff, "red" => 0x02));*/
 						 
 
 ?>
@@ -113,14 +114,14 @@ EF71_COLORS1:
 		for($i2=0;$i2<=3;$i2++) {
 	      if( ( $index & pow( 2,$i2*2)) != 0) {
 			if( ( $index & pow(2,$i2*2+1)) == 0) {
-			  $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640;
-			  $colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640;
-			  $colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
+			  $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[13-$i2]["red"] / 640;
+			  $colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[13-$i2]["green"] / 640;
+			  $colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[13-$i2]["blue"] / 640;
 			}
 		  } elseif( ($index & pow(2,$i2*2+1)) != 0) {
-		    $colorr = $colorr * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["red"] / 640;
-			$colorg = $colorg * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["green"] / 640;
-			$colorb = $colorb * 0.2 + $size * pow($layfactor, $i2)*0.8 * $colors[10-$i2]["blue"] / 640;
+		    $colorr = $colorr * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[13-$i2]["red"] / 640;
+			$colorg = $colorg * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[13-$i2]["green"] / 640;
+			$colorb = $colorb * 0.2 + $sizeuse * pow($layfactor, $i2)*0.8 * $colors[13-$i2]["blue"] / 640;
 		  }
 	    }	
 		
