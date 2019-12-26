@@ -119,6 +119,7 @@ jmplist:
         ;bra.w Effect7_2
         bra.w Effect7_3
         bra.w Effect7_4
+		bra.w Effect8_1
         bra.w End
 
 
@@ -135,7 +136,7 @@ Eff1ZoomIn:
 End:
     ifeq SOUND-1
 	lea	$dff000,a6
-	exit:
+exit:
 	btst	#14,2(a6)		;Wait for blitter to finish
 	bne.b	exit
 	jsr	P61_End
@@ -154,14 +155,14 @@ Effect0_1:
   move.w  #0,d3                  ;offset
   bsr.w   c2p1x1_4_c5_gen_init
   lea.l   LOGOCHK,a0
-  lea.l   BPLLOGO,a1
+  lea.l   BPLIMAGE,a1
   bsr.w   c2p1x1_4_c5_gen
-  lea    PalLogo,a5
+  lea     PalLogo,a5
   move.w  #255,d5
   moveq.l #0,d2
-  lea    colp0,a4
-  addq.l #2,a4
-  lea    colp0b,a6
+  lea     colp0,a4
+  addq.l  #2,a4
+  lea     colp0b,a6
   addq.l #2,a6
   bsr.w  SetColDataFade
   ;move.w #$f00,$dff180
@@ -169,8 +170,8 @@ Effect0_1:
   move.l #COPPERLISTIMAGE,$dff080
   ENDC
   move.w #255,ColMultiplier
-  move.l #BPLLOGO,draw_buffer
-  move.l #BPLLOGO,view_buffer
+  move.l #BPLIMAGE,draw_buffer
+  move.l #BPLIMAGE,view_buffer
   move.l #IMGBPLPOINTERS,draw_cprbitmap
   move.l #IMGBPLPOINTERS,view_cprbitmap
   bsr.w  SetBitplanePointersDefault
@@ -198,7 +199,6 @@ Effect0_2:
   lea.l   EF74_COLORS1,a2            ;End Colors
   move.l  #66,d6
   bsr.w   Prepare_Transition
-  ;clr.w   $200
   move.w  #1,continue
   bra.w   mlgoon
 
@@ -256,6 +256,7 @@ Effect1_0:
  include "effect4.s"
  include "effect6.s"
  include "effect7.s"
+ include "effect8.s"
 
 Effect1_1:
   ;move.w #$f00,$dff180
@@ -328,7 +329,7 @@ Effect2_0:
   move.w  #0,d3                  ;offset
   bsr.w   c2p1x1_4_c5_gen_init
   lea.l   TITLECHK,a0
-  lea.l   BPLTITLE,a1
+  lea.l   BPLIMAGE,a1
   bsr.w   c2p1x1_4_c5_gen
   ;move.w #$0,$dff180
   cmp.w  #4,P61_Pos
@@ -340,8 +341,8 @@ Effect2_0:
   move.l #COPPERLISTIMAGE,$dff080
   ENDC
   move.w #1,ColMultiplier
-  move.l #BPLTITLE,draw_buffer
-  move.l #BPLTITLE,view_buffer
+  move.l #BPLIMAGE,draw_buffer
+  move.l #BPLIMAGE,view_buffer
 
   bra.w  mlgoon
 
