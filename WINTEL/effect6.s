@@ -607,7 +607,6 @@ Effect6_5:
   bra.w  mlgoon
 .br1
   move.l ef6_colptr,d0
-  clr.w  $200
   move.w #1,continue
   bra.w  mlgoon
 

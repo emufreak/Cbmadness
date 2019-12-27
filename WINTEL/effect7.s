@@ -1,4 +1,5 @@
 Effect7_1:
+  clr.w  $200
   lea.l  COLRBPLCON0_1,a0
   move.w #$210,2(a0)
   lea.l  COLRBPLCON0_2,a0
@@ -6,7 +7,6 @@ Effect7_1:
   bsr.w  Main_Effect7_1
   sub.w  #1,.counter
   beq.s  .br1
-  clr.w  $200
   bra.w  mlgoon
 .br1
   move.w #1,continue

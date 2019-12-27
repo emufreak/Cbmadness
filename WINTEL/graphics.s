@@ -2438,14 +2438,14 @@ copperlist:
         dc.w    $1be,$f20    ;11111111
 
 ;bplpointers:
-	dc.w $e0,$0000,$e2,$0000	; bitplane pointers
-	dc.w $e4,$0000,$e6,$0000
-        dc.w $e8,$0000,$ea,$0000
-        dc.w $ec,$0000,$ee,$0000
-        dc.w $f0,$0000,$f2,$0000
-        dc.w $f4,$0000,$f6,$0000
-        dc.w $f8,$0000,$fa,$0000
-        dc.w $fc,$0000,$fe,$0000        
+	dc.w $e0,0,$e2,$0000	; bitplane pointers
+	dc.w $e4,0,$e6,$0000
+        dc.w $e8,0,$ea,$0000
+        dc.w $ec,0,$ee,$0000
+        dc.w $f0,0,$f2,$0000
+        dc.w $f4,0,$f6,$0000
+        dc.w $f8,0,$fa,$0000
+        dc.w $fc,0,$fe,$0000        
 
 ;clblockdraw:
         REPT 255

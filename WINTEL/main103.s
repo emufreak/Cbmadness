@@ -44,9 +44,9 @@ STARTPROG:
     ENDC
     ENDC
 
-    bsr.w	InitScreenBuffers
-    bsr.w   SetCopperList
-    bsr.w	SetBitplanePointers
+    ;bsr.w	InitScreenBuffers
+    ;bsr.w   SetCopperList
+    ;bsr.w	SetBitplanePointers
 
 MainLoop:
     move.l #$1ff00,d1	                    ; bits that contain vpos
@@ -166,9 +166,6 @@ Effect0_1:
   addq.l #2,a6
   bsr.w  SetColDataFade
   ;move.w #$f00,$dff180
-  IFEQ DEBUG-0
-  move.l #COPPERLISTIMAGE,$dff080
-  ENDC
   move.w #255,ColMultiplier
   move.l #BPLIMAGE,draw_buffer
   move.l #BPLIMAGE,view_buffer
@@ -177,6 +174,9 @@ Effect0_1:
   bsr.w  SetBitplanePointersDefault
   ;move.w #$c00,$dff106
   ;move.w #$000,$dff180
+  IFEQ DEBUG-0
+  move.l #COPPERLISTIMAGE,$dff080
+  ENDC
   sub.w  #1,.counter
   beq.s  .br1
   bra.w  mlgoon
@@ -404,8 +404,8 @@ Effect1_Main:
 
         subq    #1,.counter		    ;if(counter-- == 0)
         bne.w   .br1				    ;{
-        bsr.w   SetCopperList			;  Setcopperlist();
-        bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
+		bsr.w   SetBitplanePointers     ;  SetBitplanePointers();
+        bsr.w   SetCopperList
         move.w  #1,.counter            ;  counter = 1; //50 fps
 		lea     .frame,a3              ;
 		lea     EF1_PATTERNDATA7,a1		;  frmdat = EFF1_PATTERNDATA7
@@ -1867,17 +1867,21 @@ Prepare_Transition:                    ;Write Palettes
   ;a0 - Destination
   ;a1 - Startcolors
   ;a2 - End Colors
+  clr.w  $200
   move.l a1,a3                      ;backup startcolor
   move.l a2,a5
   move.w d6,d2
+  
   subq.w #1,d2                      ;Number of tables for all 275 frames
                                     ;=intensitystart
 .lp2
   move.w #255,d7                    ;Colorcounter
 .lp1
   sub.l  a4,a4                      ;init reg for final result
-  move.l (a1)+,d0                   ;fetch start color
+  move.l (a1)+,d0                   ;fetch start color$
+  ;move.l #$1cb98,d0                   ;fetch start color
   move.l (a2)+,d3                   ;fetch end color
+  ;move.l #$2a5500,d3
   move.l d0,d1
   and.l #$0000ff,d1                 ;get color part for blue
   mulu.w d2,d1                      ;colorpart * intensitystart / 275
@@ -1906,7 +1910,10 @@ Prepare_Transition:                    ;Write Palettes
   add.w  d4,d1                      ;resulting color = 1stpart + 2ndpart
   lsl.l  #8,d1                      ;overwrite right section for green part
   add.w  d1,a4                      ;add to final result
-
+  move.l a4,d1
+  and.l  #$ffff,d1
+  move.l d1,a4
+  
   lsr.l  #8,d0                      ;shift to red part of color
   move.l d0,d1
   and.w #$00ff,d1                   ;get color part for red
