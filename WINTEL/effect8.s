@@ -10,7 +10,7 @@ Effect8_1:
   lea.l   CREDITSCHK,a0
   lea.l   BPLIMAGE,a1
   bsr.w   c2p1x1_4_c5_gen
-  lea    PalLogo,a5
+  lea    PalCredits,a5
   move.l  #255,d5
   moveq.l #0,d2
   lea    colp0,a4

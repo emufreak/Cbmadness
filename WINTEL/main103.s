@@ -89,6 +89,7 @@ jmplist:
 		bra.w Effect1_3
 		bra.w Effect2_0
 		bra.w Effect2_1
+		bra.w Effect2_2
 		bra.w Effect3_0
 		bra.w Effect3_1
 		bra.w Effect3_21
@@ -146,6 +147,8 @@ exit:
 PalLogo:
   INCBIN "raw/voidlogopal.raw"
 
+PalCredits:
+  INCBIN "raw/creditspal.raw"
              include      "utils.s"
 		   include      "c2p.s"
 
@@ -296,11 +299,11 @@ Effect1_3:
   bne.s  .br1
   sub.w  #1,.ptrnleft
   bne.s  .br2
-
+  move.l .ptrntohide,a0
+  move.l #PTR_EMPTY_DATA,(a0)
   move.w #1,continue
   bra.w  mlgoon
 .br2
-  cmp.w  #2,.ptrnleft
   move.w #0,.framecount
   lea    EF1_MoveX,a0
   bsr.w  RotateMove
@@ -332,10 +335,6 @@ Effect2_0:
   lea.l   BPLIMAGE,a1
   bsr.w   c2p1x1_4_c5_gen
   ;move.w #$0,$dff180
-  cmp.w  #4,P61_Pos
-  beq.s  .br2
-  bra.w  mlgoon
-.br2
   move.w #1,continue
   IFEQ DEBUG-0
   move.l #COPPERLISTIMAGE,$dff080
@@ -347,6 +346,27 @@ Effect2_0:
   bra.w  mlgoon
 
 Effect2_1:
+  ;move.w #$000,$dff180
+  bsr.w  SetBitplanePointersDefault
+  lea    PalTitle,a5
+
+  sub.l   d5,d5
+  move.w  #0,d5
+  moveq.l #0,d2
+  lea    colp0,a4
+  addq.l #2,a4
+  lea    colp0b,a6
+  addq.l #2,a6
+  bsr.w  SetColDataFade
+  ;move.w #$c00,$dff106
+  ;move.w #$000,$dff180
+  cmp.w  #4,P61_Pos
+  bne.s  .br1
+  move.w #1,continue
+.br1
+  bra.w  mlgoon
+
+Effect2_2:
   ;move.w #$000,$dff180
   bsr.w  SetBitplanePointersDefault
   lea    PalTitle,a5

@@ -1256,7 +1256,7 @@ BPLIMAGE:
    dcb.b  80000,0
 
 CREDITSCHK:
-  INCBIN "raw/voidlogo.chk"
+  INCBIN "raw/credits.chk"
 
 linebuffer:
 copperlist:
