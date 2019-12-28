@@ -69,6 +69,7 @@ Module1:
 	dc.w	$108,0                       ; Bpl1Mod
 	dc.w	$10a,0                       ; Bpl2Mod
 
+clcon0:
 	dc.w	$100,$4200              ; bplcon0
 
 IMGBPLPOINTERS:
@@ -1854,7 +1855,10 @@ COLRLINESELECT2:
 
 
 BPLIMAGE:
-   dcb.b  80000,0
+   dcb.b  40960,0
+
+CREDITSCHKTXT:
+  INCBIN "raw/creditstext.chk"
 
 CREDITSCHK:
   INCBIN "raw/credits.chk"
@@ -2501,7 +2505,7 @@ LOGOCHK:
 	  INCLUDE FrameData3_Color.i
 	  INCLUDE FrameData2_Color.i
 
-	  DCB.B 800000,0
+	  DCB.B 790000,0
 	
   
   

@@ -20,6 +20,8 @@ Effect8_1:
   bsr.w  SetColDataFade
   ;move.w #$f00,$dff180
   IFEQ DEBUG-0
+  lea    clcon0,a0
+  move.w #$5200,2(a0)
   move.l #COPPERLISTIMAGE,$dff080
   ENDC
   move.w #255,ColMultiplier

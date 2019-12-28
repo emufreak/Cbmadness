@@ -153,29 +153,6 @@ Effect4_16:
   
 .counter dc.w 39
 
-Effect4_2:
-  ;move.w #$f,$dff180
-  move.w #1,Eff3ZoomIn
-  lea 	 blarraycont,a0
-  move.w #10,CNTHEIGHT(a0)
-  bsr.w  Effect41_Main
-  ;move.w #$c00,$dff106
-  ;move.w #$000,$dff180
-.br2
-  sub.w  #1,.counter
-  beq.s  .br1
-  bra.w  mlgoon
-.br1
-  lea    EF3_PATTERNDATA7,a0
-  move.l #PTR_CHECKERBOARDTNL_DATA,(a0)
-  move.l #EF32_COLORS1,ef4_colptr
-  move.w #1,continue
-  lea 	 blarraycont,a0
-  move.w #2,CNTHEIGHT(a0)
-  move.l #0,ef4_frame
-  bra.w  mlgoon
-  
-.counter dc.w 530
   
 Effect4_3:
   ;move.w #$f,$dff180
