@@ -1,4 +1,7 @@
 Effect6_0:
+  lea.l   CREDITSCHK,a0
+  lea.l   BPLIMAGE,a1
+  bsr.w   c2p1x1_4_c5_gen
   move.l #COPPERLISTROTATE1,$dff080
   move.l #BPLLOGO,draw_buffer
   move.l #BPLLOGO,view_buffer

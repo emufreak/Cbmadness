@@ -7,9 +7,6 @@ Effect8_1:
   bne.b	.exit
   jsr	P61_End
   endc
-  lea.l   CREDITSCHK,a0
-  lea.l   BPLIMAGE,a1
-  bsr.w   c2p1x1_4_c5_gen
   lea    PalCredits,a5
   move.l  #255,d5
   moveq.l #0,d2

@@ -1259,9 +1259,6 @@ BPLIMAGE:
 CREDITSCHKTXT:
   INCBIN "raw/creditstext.chk"
 
-CREDITSCHK:
-  INCBIN "raw/credits.chk"
-
 linebuffer:
 copperlist:
 
@@ -1896,6 +1893,9 @@ TITLECHK:
 LOGOCHK:
   INCBIN "raw/voidlogo.chk"
 
+CREDITSCHK:
+  INCBIN "raw/credits.chk"
+
       INCLUDE PatternData.i
 	  INCLUDE FrameData.i
 	  INCLUDE FrameData2.i
@@ -1904,7 +1904,7 @@ LOGOCHK:
 	  INCLUDE FrameData3_Color.i
 	  INCLUDE FrameData2_Color.i
 
-	  DCB.B 790000,0
+	  DCB.B 650000
 	
   
   
