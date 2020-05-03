@@ -25,6 +25,7 @@ Playrtn:
 DMASET	=	%1001001111100000	; copper,bitplane,blitter DMA
 
 
+
 STARTPROG:
     lea    $dff000,a6                  ;a6 shall point to graphics register
 

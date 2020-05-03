@@ -65,7 +65,7 @@ Module1:
 	dc.w	$92,$38		                 ; DdfStart
 	dc.w	$94,$a0		                 ; DdfStop
 	dc.w	$102,0		                 ; BplCon1
-	dc.w	$104,$20	                 ; BplCon2
+	dc.w	$104,$0	                 ; BplCon2
 	dc.w	$108,0                       ; Bpl1Mod
 	dc.w	$10a,0                       ; Bpl2Mod
 
